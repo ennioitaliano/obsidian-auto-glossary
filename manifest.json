@@ -1,10 +1,10 @@
 {
-	"id": "obsidian-sample-plugin",
-	"name": "Sample Plugin",
+	"id": "obsidian-auto-glossary",
+	"name": "Auto Glossary",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "This is a sample plugin for Obsidian. This plugin demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
+	"description": "Obsidian plugin to automatically create a glossary-like file based on the content of a folder.",
+	"author": "Ennio Italiano",
+	"authorUrl": "http://ennioitaliano.rf.gd",
 	"isDesktopOnly": false
 }
