@@ -7,7 +7,7 @@ Obsidian plugin that allows user to create:
 Right now in a very simple version
 
 ## TO-DO
-- [ ] option to choose file name + evetual default naming system
+- [ ] option to choose file name + eventual default naming system
 - [ ] modal with options for index, glossary or both
 - [ ] option to choose order of notes in the created file
 - [ ] file creation by right click on folder
