@@ -36,6 +36,7 @@ class GlossaryIndex {
 
 		for (let i = 0; i < this.notes.length; i++) {
 			//console.log(files[i].path.slice(0, -3));
+			// cambiare in [[nomediquestofile#titolo|titolo]]
 			indexArray[i] = "[[" + this.notes[i].path.slice(0, -3) + "]]\n";
 			glossaryArray[i] = "!" + indexArray[i];
 		}
