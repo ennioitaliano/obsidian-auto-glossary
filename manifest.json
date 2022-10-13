@@ -1,9 +1,9 @@
 {
 	"id": "obsidian-auto-glossary",
 	"name": "Auto Glossary",
-	"version": "1.0.0",
+	"version": "0.1.0",
 	"minAppVersion": "0.15.0",
-	"description": "Obsidian plugin to automatically create a glossary-like file based on the content of a folder.",
+	"description": "Obsidian plugin to automatically create a file with an index (MOC), a glossary or both.",
 	"author": "Ennio Italiano",
 	"authorUrl": "http://ennioitaliano.rf.gd",
 	"isDesktopOnly": false
