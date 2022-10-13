@@ -1,14 +1,17 @@
 import {
 	App,
 	Editor,
+	getIcon,
 	MarkdownView,
 	Modal,
 	Notice,
 	Plugin,
 	PluginSettingTab,
 	Setting,
-	Vault,
+	TFile,
 } from "obsidian";
+
+var fs = require("fs");
 
 // Remember to rename these classes and interfaces!
 
@@ -19,6 +22,60 @@ interface MyPluginSettings {
 const DEFAULT_SETTINGS: MyPluginSettings = {
 	mySetting: "default",
 };
+
+class GlossaryIndex {
+	notes: TFile[];
+	indexText: string;
+	glossaryText: string;
+
+	constructor() {
+		this.notes = global.app.vault.getMarkdownFiles();
+
+		const glossaryArray = [];
+		const indexArray = [];
+
+		for (let i = 0; i < this.notes.length; i++) {
+			//console.log(files[i].path.slice(0, -3));
+			indexArray[i] = "[[" + this.notes[i].path.slice(0, -3) + "]]\n";
+			glossaryArray[i] = "!" + indexArray[i];
+		}
+
+		this.indexText = indexArray.toString().replace(/,/g, "");
+		this.glossaryText = glossaryArray.toString().replace(/,/g, "");
+	}
+}
+
+// Three functions kinda boilerplate -> improvable
+
+function createGlossary() {
+	const gi = new GlossaryIndex();
+
+	if (!gi.notes.toString().contains("![[glossary]]\n")) {
+		this.app.vault.create("glossary.md", gi.glossaryText);
+	} else {
+		console.log("Already existing file");
+	}
+}
+
+function createIndex() {
+	const gi = new GlossaryIndex();
+
+	if (!gi.notes.toString().contains("![[index]]\n")) {
+		this.app.vault.create("index.md", gi.indexText);
+	} else {
+		console.log("Already existing file");
+	}
+}
+
+function createGlossaryIndex() {
+	const gi = new GlossaryIndex();
+
+	if (!gi.notes.toString().contains("![[glossaryIndex]]\n")) {
+		this.app.vault.create("glossaryIndex.md", gi.indexText+gi.glossaryText);
+	} else {
+		console.log("Already existing file");
+	}
+}
 
 export default class MyPlugin extends Plugin {
 	settings: MyPluginSettings;
@@ -34,7 +91,7 @@ export default class MyPlugin extends Plugin {
 			"Auto Glossary",
 			(evt: MouseEvent) => {
 				// Called when the user clicks the icon.
-				new Notice("Glossary!");
+				createGlossary();
 			}
 		);
 		// Perform additional things with the ribbon
@@ -42,22 +99,28 @@ export default class MyPlugin extends Plugin {
 
 		// This adds a simple command that can be triggered anywhere
 		this.addCommand({
-			id: "print-all-md-files",
-			name: "Print in console all .md files names",
+			id: "create-glossary",
+			name: "Create a glossary with all files",
 			callback: () => {
-				console.log("ciao");
-
-				const files = this.app.vault.getMarkdownFiles();
-
-				for (let i = 0; i < files.length; i++) {
-					const File = this.app.create(filePath, "");
-
-					console.log("![[" + files[i].path + "]]");
-				}
+				createGlossary();
 			},
 		});
 
+		this.addCommand({
+			id: "create-index",
+			name: "Create an index with all files",
+			callback: () => {
+				createIndex();
+			},
+		});
 
+		this.addCommand({
+			id: "create-glossary-index",
+			name: "Create a glossary with an index of all files",
+			callback: () => {
+				createGlossaryIndex();
+			},
+		});
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new SampleSettingTab(this.app, this));
@@ -74,8 +137,6 @@ export default class MyPlugin extends Plugin {
 		);
 	}
 
-
-
 	onunload() {
 		console.log("Auto Glossary disabled");
 	}
@@ -91,7 +152,6 @@ export default class MyPlugin extends Plugin {
 	async saveSettings() {
 		await this.saveData(this.settings);
 	}
-	
 }
 
 class SampleSettingTab extends PluginSettingTab {
