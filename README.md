@@ -12,4 +12,4 @@ Right now in a very simple version
 - [ ] option to choose order of notes in the created file
 - [ ] file creation by right click on folder
 - [ ] option to create a file divided with sub-directories or tag
-- [ ] what happens if a file with the same name already exixsts?
+- [ ] what happens if a file with the same name already exists?
