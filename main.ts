@@ -1,3 +1,4 @@
+import { notStrictEqual } from "assert";
 import {
 	App,
 	Editor,
@@ -30,19 +31,24 @@ enum cases {
 }
 
 class GlossaryIndex {
-	notes: TFile[];
+	notes: string[] = [];
 	indexText: string;
 	glossaryText: string;
 
 	constructor(requestedFile: cases) {
-		this.notes = global.app.vault.getMarkdownFiles();
+		const notesTFile = global.app.vault.getMarkdownFiles();
+
+		for (let i = 0; i < notesTFile.length; i++) {
+			//console.log(i + notesTFile[i].path);
+			this.notes[i] = notesTFile[i].path;
+		}
 
 		const glossaryArray = [];
 		const indexArray = [];
 
 		for (let i = 0; i < this.notes.length; i++) {
 			// To obtain the note name in a 'linkable' format we have to remove the extension (aka the last 3 character)
-			const noteName = this.notes[i].path.slice(0, -3);
+			const noteName = this.notes[i].slice(0, -3);
 
 			// Array of strings that will show up as an index. If clicked, each entry takes to the point in the same document where the note is embedded
 			if (requestedFile == cases.gi) {
@@ -75,21 +81,25 @@ function createFile(requestedFile: cases) {
 	const gloInd = new GlossaryIndex(requestedFile);
 	let text = "";
 
-	if (!gloInd.notes.toString().contains("![[" + requestedFile + "]]\n")) {
+	if (!gloInd.notes.toString().contains(requestedFile)) {
 		switch (requestedFile) {
 			case cases.g:
 				text = gloInd.glossaryText;
 				break;
 			case cases.i:
 				text = gloInd.indexText;
+				break;
 			case cases.gi:
 				text = gloInd.indexText + "\n***\n\n" + gloInd.glossaryText;
+				break;
 			default:
 				break;
 		}
+
 		this.app.vault.create(requestedFile + ".md", text);
 	} else {
-		console.log("Already existing file");
+		//UNDERSTAND HOW TO SHOW ERROR
+		new Notice("Already existing file");
 	}
 }
 
