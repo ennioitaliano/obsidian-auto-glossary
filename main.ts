@@ -150,7 +150,7 @@ export default class autoGlossary extends Plugin {
 		ribbonIconEl.addClass("my-plugin-ribbon-class");*/
 
 		// ctrl+P commands
-		this.addCommand({
+		/*this.addCommand({
 			id: "create-glossary",
 			name: "Create a glossary with all files",
 			callback: () => {
@@ -172,10 +172,10 @@ export default class autoGlossary extends Plugin {
 			callback: () => {
 				createFile(cases.gi);
 			},
-		});
+		});*/
 
 		this.addCommand({
-			id: "display-modal",
+			id: "create-glossary",
 			name: "Create glossary",
 			callback: () => {
 				new ExampleModal(this.app, (option, fileName) => {
