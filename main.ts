@@ -12,6 +12,8 @@ import {
 	TFile,
 } from "obsidian";
 
+import { ExampleModal } from "./modal";
+
 var fs = require("fs");
 
 // Remember to rename these classes and interfaces!
@@ -77,7 +79,8 @@ class GlossaryIndex {
 	}
 }
 
-function createFile(requestedFile: cases) {
+// This takes in which type of file we want to create and an optional fileName
+function createFile(requestedFile: cases, filename?: string) {
 	const gloInd = new GlossaryIndex(requestedFile);
 	let text = "";
 
@@ -96,11 +99,35 @@ function createFile(requestedFile: cases) {
 				break;
 		}
 
-		this.app.vault.create(requestedFile + ".md", text);
+		if (filename) {
+			this.app.vault.create(filename + ".md", text);
+		} else {
+			this.app.vault.create(requestedFile + ".md", text);
+		}
 	} else {
 		//UNDERSTAND HOW TO SHOW ERROR
 		new Notice("Already existing file");
 	}
+}
+
+function getEnum(value: string) : cases{
+	let result : cases = cases.gi;
+
+	switch (value.toLowerCase()) {
+		case "glossary":
+			result = cases.g;
+			break;
+		case "index":
+			result = cases.i;
+			break;
+		case "glossaryindex":
+			result = cases.gi;
+			break;
+		default:
+			break;
+	}
+
+	return result;
 }
 
 export default class autoGlossary extends Plugin {
@@ -144,6 +171,18 @@ export default class autoGlossary extends Plugin {
 			name: "Create a glossary with an index of all files",
 			callback: () => {
 				createFile(cases.gi);
+			},
+		});
+
+		this.addCommand({
+			id: "display-modal",
+			name: "Create glossary",
+			callback: () => {
+				new ExampleModal(this.app, (option, fileName) => {
+					console.log(option);
+					createFile(getEnum(option), fileName);
+					new Notice(`${option} file created`);
+				}).open();
 			},
 		});
 
