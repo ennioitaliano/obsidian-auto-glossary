@@ -7,9 +7,12 @@ Obsidian plugin that allows user to create:
 Right now in a very simple version
 
 ## TO-DO
-- [x] option to choose file name + eventual default naming system
-- [x] modal with options for index, glossary or both
+- [ ] remove files created by the plugin from indexes and glossaries
+	- [ ] setting
 - [ ] option to choose order of notes in the created file
 - [ ] file creation by right click on folder
 - [ ] option to create a file divided with sub-directories or tag
-- [ ] what happens if a file with the same name already exists?
+***
+- [x] option to choose file name + eventual default naming system
+- [x] modal with options for index, glossary or both
+- [x] what happens if a file with the same name already exists?
