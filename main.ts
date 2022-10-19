@@ -1,9 +1,9 @@
-import { notStrictEqual } from "assert";
 import { Plugin } from "obsidian";
 
 import { CreateFileModal } from "./modal";
 import { createFile } from "./glossaryIndex";
 import { getEnum } from "./utils";
+import { cleanFiles } from "./utils";
 
 // Remember to rename these classes and interfaces!
 

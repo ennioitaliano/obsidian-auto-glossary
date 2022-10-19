@@ -1,4 +1,4 @@
-import { App, DropdownComponent, Modal, Setting } from "obsidian";
+import { App, Modal, Setting } from "obsidian";
 
 export class CreateFileModal extends Modal {
 	fileName: string;
