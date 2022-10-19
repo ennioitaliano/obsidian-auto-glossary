@@ -1,20 +1,9 @@
 import { notStrictEqual } from "assert";
-import {
-	App,
-	Editor,
-	getIcon,
-	MarkdownView,
-	Modal,
-	Notice,
-	Plugin,
-	PluginSettingTab,
-	Setting,
-	TFile,
-} from "obsidian";
+import { Plugin } from "obsidian";
 
-import { ExampleModal } from "./modal";
-
-var fs = require("fs");
+import { CreateFileModal } from "./modal";
+import { createFile } from "./glossaryIndex";
+import { getEnum } from "./utils";
 
 // Remember to rename these classes and interfaces!
 
@@ -25,110 +14,6 @@ interface AutoGlossarySettings {
 const DEFAULT_SETTINGS: AutoGlossarySettings = {
 	mySetting: "default",
 };
-
-enum cases {
-	i = "index",
-	g = "glossary",
-	gi = "glossaryIndex",
-}
-
-class GlossaryIndex {
-	notes: string[] = [];
-	indexText: string;
-	glossaryText: string;
-
-	constructor(requestedFile: cases) {
-		const notesTFile = global.app.vault.getMarkdownFiles();
-
-		for (let i = 0; i < notesTFile.length; i++) {
-			//console.log(i + notesTFile[i].path);
-			this.notes[i] = notesTFile[i].path;
-		}
-
-		const glossaryArray = [];
-		const indexArray = [];
-
-		for (let i = 0; i < this.notes.length; i++) {
-			// To obtain the note name in a 'linkable' format we have to remove the extension (aka the last 3 character)
-			const noteName = this.notes[i].slice(0, -3);
-
-			// Array of strings that will show up as an index. If clicked, each entry takes to the point in the same document where the note is embedded
-			if (requestedFile == cases.gi) {
-				indexArray[i] =
-					"- [[glossaryIndex#" + noteName + "|" + noteName + "]]\n";
-			} else {
-				indexArray[i] = "- [[" + noteName + "]]\n";
-			}
-
-			// Array of strings that will show up as embedded notes
-			glossaryArray[i] = "## ![[" + noteName + "]]\n";
-		}
-
-		// Removing glossary and index note if already created
-		indexArray.remove("[[glossaryIndex#glossary|glossary]]\n");
-		indexArray.remove("[[glossaryIndex#index|index]]\n");
-		indexArray.remove("[[glossary]]\n");
-		indexArray.remove("[[index]]\n");
-		glossaryArray.remove("## ![[glossary]]\n");
-		glossaryArray.remove("## ![[index]]\n");
-
-		// Arrays toString + remove all ','
-		this.indexText = "# Index\n" + indexArray.toString().replace(/,/g, "");
-		this.glossaryText =
-			"# Glossary\n" + glossaryArray.toString().replace(/,/g, "");
-	}
-}
-
-// This takes in which type of file we want to create and an optional fileName
-function createFile(requestedFile: cases, filename?: string) {
-	const gloInd = new GlossaryIndex(requestedFile);
-	let text = "";
-
-	if (!gloInd.notes.toString().contains(requestedFile)) {
-		switch (requestedFile) {
-			case cases.g:
-				text = gloInd.glossaryText;
-				break;
-			case cases.i:
-				text = gloInd.indexText;
-				break;
-			case cases.gi:
-				text = gloInd.indexText + "\n***\n\n" + gloInd.glossaryText;
-				break;
-			default:
-				break;
-		}
-
-		if (filename) {
-			this.app.vault.create(filename + ".md", text);
-		} else {
-			this.app.vault.create(requestedFile + ".md", text);
-		}
-	} else {
-		//UNDERSTAND HOW TO SHOW ERROR
-		new Notice("Already existing file");
-	}
-}
-
-function getEnum(value: string) : cases{
-	let result : cases = cases.gi;
-
-	switch (value.toLowerCase()) {
-		case "glossary":
-			result = cases.g;
-			break;
-		case "index":
-			result = cases.i;
-			break;
-		case "glossaryindex":
-			result = cases.gi;
-			break;
-		default:
-			break;
-	}
-
-	return result;
-}
 
 export default class autoGlossary extends Plugin {
 	// SETTINGS
@@ -178,10 +63,8 @@ export default class autoGlossary extends Plugin {
 			id: "create-glossary",
 			name: "Create glossary",
 			callback: () => {
-				new ExampleModal(this.app, (option, fileName) => {
-					console.log(option);
+				new CreateFileModal(this.app, (option, fileName) => {
 					createFile(getEnum(option), fileName);
-					new Notice(`${option} file created`);
 				}).open();
 			},
 		});

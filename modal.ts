@@ -1,6 +1,6 @@
 import { App, DropdownComponent, Modal, Setting } from "obsidian";
 
-export class ExampleModal extends Modal {
+export class CreateFileModal extends Modal {
 	fileName: string;
 	option: string;
 	onSubmit: (option: string, fileName?: string) => void;
@@ -24,17 +24,19 @@ export class ExampleModal extends Modal {
 			})
 		);
 
-		new Setting(contentEl).addDropdown((drop) => drop
-                .addOption("", "CHANGE ME")
-                .addOption("glossary", "Glossary")
-                .addOption("index", "Index")
-                .addOption("glossaryindex", "Both")
-                .onChange((chosen) => {
-                    this.option = chosen;
-                })
-        );
+		new Setting(contentEl).addDropdown((drop) =>
+			drop
+                // have to do this in order to get some value != undefined
+				.addOption("", "CHANGE ME")
+				.addOption("glossary", "Glossary")
+				.addOption("index", "Index")
+				.addOption("glossaryindex", "Both")
+				.onChange((chosen) => {
+					this.option = chosen;
+				})
+		);
 
-        new Setting(contentEl).addButton((btn) =>
+		new Setting(contentEl).addButton((btn) =>
 			btn
 				.setButtonText("Submit")
 				.setCta()
