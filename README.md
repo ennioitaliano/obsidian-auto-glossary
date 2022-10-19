@@ -4,7 +4,7 @@ Obsidian plugin that allows user to create:
 - an index (or MOC) of files (list of `[[link]]`)
 - a glossary with an index (two lists above concatenated)
 ## TO-DO
-- [ ] remove files created by the plugin from indexes and glossaries
+- [x] remove files created by the plugin from indexes and glossaries
 	- [ ] setting
 - [ ] option to choose order of notes in the created file
 - [ ] file creation by right click on folder
