@@ -1,4 +1,4 @@
-import { Plugin } from "obsidian";
+import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
 
 import { CreateFileModal } from "./modal";
 import { createFile } from "./glossaryIndex";
@@ -8,21 +8,21 @@ import { cleanFiles } from "./utils";
 // Remember to rename these classes and interfaces!
 
 interface AutoGlossarySettings {
-	mySetting: string;
+	fileInclusion: boolean;
 }
 
 const DEFAULT_SETTINGS: AutoGlossarySettings = {
-	mySetting: "default",
+	fileInclusion: false,
 };
 
 export default class autoGlossary extends Plugin {
 	// SETTINGS
-	//settings: AutoGlossarySettings
+	settings: AutoGlossarySettings;
 	async onload() {
 		console.log("Auto Glossary enabled");
 
 		//SETTINGS
-		// await this.loadSettings();
+		await this.loadSettings();
 
 		/* // This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon(
@@ -64,14 +64,18 @@ export default class autoGlossary extends Plugin {
 			name: "Create glossary",
 			callback: () => {
 				new CreateFileModal(this.app, (option, fileName) => {
-					createFile(getEnum(option), fileName);
+					createFile(
+						getEnum(option),
+						this.settings.fileInclusion,
+						fileName
+					);
 				}).open();
 			},
 		});
 
 		// SETTINGS
-		/*// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));*/
+		// This adds a settings tab so the user can configure various aspects of the plugin
+		this.addSettingTab(new SettingTab(this.app, this));
 
 		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
 		// Using this function will automatically remove the event listener when this plugin is disabled.
@@ -90,7 +94,7 @@ export default class autoGlossary extends Plugin {
 	}
 
 	// SETTINGS
-	/*async loadSettings() {
+	async loadSettings() {
 		this.settings = Object.assign(
 			{},
 			DEFAULT_SETTINGS,
@@ -100,37 +104,36 @@ export default class autoGlossary extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
-	}*/
+	}
 }
 
 // SETTINGS
-/*class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
+class SettingTab extends PluginSettingTab {
+	plugin: autoGlossary;
 
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: autoGlossary) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
 
-	 display(): void {
+	display(): void {
 		const { containerEl } = this;
 
 		containerEl.empty();
 
-		containerEl.createEl("h2", { text: "Settings for my awesome plugin." });
+		containerEl.createEl("h2", { text: "Auto Glossary Settings" });
 
 		new Setting(containerEl)
-			.setName("Setting #1")
-			.setDesc("It's a secret")
-			.addText((text) =>
-				text
-					.setPlaceholder("Enter your secret")
-					.setValue(this.plugin.settings.mySetting)
-					.onChange(async (value) => {
-						console.log("Secret: " + value);
-						this.plugin.settings.mySetting = value;
-						await this.plugin.saveSettings();
-					})
+			.setName("File inclusion")
+			.setDesc(
+				"Include previously generated files in glossaries and indexes"
+			)
+			.addToggle((toggle) =>
+				toggle.onChange(async (value) => {
+					console.log("fileInclusion switched to " + value);
+					this.plugin.settings.fileInclusion = value;
+					await this.plugin.saveSettings();
+				})
 			);
 	}
-}*/
+}

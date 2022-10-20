@@ -4,10 +4,20 @@ import { fileExists } from "./utils";
 
 var fs = require("fs");
 
-export async function getFiles(requestedFile: cases): Promise<string[]> {
+export async function getFiles(
+	requestedFile: cases,
+	fileInclusion: boolean
+): Promise<string[]> {
 	const notesTFile = global.app.vault.getMarkdownFiles();
+	let notes: string[] = [];
 
-	const notes = await cleanFiles(notesTFile);
+	if (fileInclusion) {
+		for (let i = 0; i < notesTFile.length; i++) {
+			notes[i] = notesTFile[i].path;
+		}
+	} else {
+		notes = await cleanFiles(notesTFile);
+	}
 
 	const glossaryArray = [];
 	const indexArray = [];
@@ -37,10 +47,17 @@ export async function getFiles(requestedFile: cases): Promise<string[]> {
 }
 
 // This takes in which type of file we want to create and an optional fileName
-export async function createFile(requestedFile: cases, filename?: string) {
+export async function createFile(
+	requestedFile: cases,
+	fileInclusion: boolean,
+	filename?: string
+) {
 	if (filename) {
 		if (!fileExists(filename)) {
-			this.app.vault.create(filename + ".md", await createText(requestedFile));
+			this.app.vault.create(
+				filename + ".md",
+				await createText(requestedFile, fileInclusion)
+			);
 			new Notice(`${filename} file created`);
 		} else {
 			new Notice("Already existing file");
@@ -50,7 +67,7 @@ export async function createFile(requestedFile: cases, filename?: string) {
 		if (!fileExists(requestedFile)) {
 			this.app.vault.create(
 				requestedFile + ".md",
-				await createText(requestedFile)
+				await createText(requestedFile, fileInclusion)
 			);
 			new Notice(`${requestedFile} file created`);
 		} else {
@@ -59,9 +76,12 @@ export async function createFile(requestedFile: cases, filename?: string) {
 	}
 }
 
-async function createText(requestedFile: cases): Promise<string> {
+async function createText(
+	requestedFile: cases,
+	fileInclusion: boolean
+): Promise<string> {
 	// This does not really modify myObj
-	let array = await getFiles(requestedFile);
+	let array = await getFiles(requestedFile, fileInclusion);
 	let text = "---\ntags: oag\n---\n";
 
 	switch (requestedFile) {
