@@ -54,51 +54,16 @@ export async function cleanFiles(notesTFiles: TFile[]): Promise<string[]> {
 		vault.getMarkdownFiles().map((file: any) => vault.cachedRead(file))
 	);
 
-	let i = 0, y = 0;
-	while (i < notesTFiles.length-1) {
+	let i = 0,
+		y = 0;
+	while (i < notesTFiles.length - 1) {
 		if (!fileContents[i].toString().contains("---\ntags: oag\n---\n")) {
 			cleanedNotes[y] = notesTFiles[i].path;
-			i++; y++
+			i++;
+			y++;
 		} else {
 			i++;
 		}
-		/*if (fileContents[i].toString().contains("---\ntags: oag\n---\n")) {
-			console.log(notesTFiles[i].path);
-		} else {
-			cleanedNotes[i] = notesTFiles[i].path;
-			i++;
-		}*/
 	}
-	/*for (let i = 0; i < notesTFiles.length; i++) {
-			if (!fileContents[i].toString().contains("---\ntags: oag\n---\n")) {
-			}
-			cleanedNotes[i] = notesTFiles[i].path;
-		}*/
-
 	return cleanedNotes;
 }
-
-/*export async function cleanFiles2(notesTFiles: TFile[]): Promise<string[]> {
-	const fileContents: string[] = await Promise.all(
-		this.app.vault.getMarkdownFiles().map((file: any) => {
-			vault.cachedRead(file);
-		})
-	);
-
-	let fileContents: string[] = [];
-	let cleanedNotes: string[] = [];
-    let prova : string = "";
-
-	for (let i = 0; i < notesTFiles.length; i++) {
-		fileContents = this.app.vault.cachedRead(notesTFiles[i]);
-		if (!fileContents.toString().contains("---\ntags: oag\n---\n")) {
-			cleanedNotes[i] = notesTFiles[i].path;
-            prova=(fileContents.toString());
-
-		}
-	}
-
-    console.log(prova);
-
-	return cleanedNotes;
-}*/
