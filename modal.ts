@@ -7,7 +7,7 @@ export class CreateFileModal extends Modal {
 
 	constructor(
 		app: App,
-		onSubmit: (option: string, fileName?: string) => void
+		onSubmit: (option: string, fileName: string) => void
 	) {
 		super(app);
 		this.onSubmit = onSubmit;
