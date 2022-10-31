@@ -3,7 +3,6 @@ import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
 import { CreateFileModal } from "./modal";
 import { createFile } from "./glossaryIndex";
 import { getEnum } from "./utils";
-import { cleanFiles } from "./utils";
 
 // Remember to rename these classes and interfaces!
 
@@ -33,31 +32,6 @@ export default class autoGlossary extends Plugin {
 		);
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass("my-plugin-ribbon-class");*/
-
-		// ctrl+P commands
-		/*this.addCommand({
-			id: "create-glossary",
-			name: "Create a glossary with all files",
-			callback: () => {
-				createFile(cases.g);
-			},
-		});
-
-		this.addCommand({
-			id: "create-index",
-			name: "Create an index with all files",
-			callback: () => {
-				createFile(cases.i);
-			},
-		});
-
-		this.addCommand({
-			id: "create-glossary-index",
-			name: "Create a glossary with an index of all files",
-			callback: () => {
-				createFile(cases.gi);
-			},
-		});*/
 
 		this.addCommand({
 			id: "create-glossary",
@@ -129,7 +103,9 @@ class SettingTab extends PluginSettingTab {
 				"Include previously generated files in glossaries and indexes"
 			)
 			.addToggle((toggle) =>
-				toggle.onChange(async (value) => {
+				toggle
+				.setValue(this.plugin.settings.fileInclusion)
+				.onChange(async (value) => {
 					console.log("fileInclusion switched to " + value);
 					this.plugin.settings.fileInclusion = value;
 					await this.plugin.saveSettings();
