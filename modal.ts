@@ -2,12 +2,21 @@ import { App, Modal, Setting } from "obsidian";
 
 export class CreateFileModal extends Modal {
 	fileName: string;
+	chosenFolder: string;
 	option: string;
-	onSubmit: (option: string, fileName?: string) => void;
+	onSubmit: (
+		option: string,
+		fileName?: string,
+		chosenFolder?: string
+	) => void;
 
 	constructor(
 		app: App,
-		onSubmit: (option: string, fileName: string) => void
+		onSubmit: (
+			option: string,
+			fileName: string,
+			chosenFolder: string
+		) => void
 	) {
 		super(app);
 		this.onSubmit = onSubmit;
@@ -16,7 +25,13 @@ export class CreateFileModal extends Modal {
 	onOpen() {
 		const { contentEl } = this;
 
-		contentEl.createEl("h1", { text: "Name your file" });
+		contentEl.createEl("h1", { text: "AutoGlossary" });
+
+		new Setting(contentEl).setName("Folder").addText((text) =>
+			text.onChange((value) => {
+				this.chosenFolder = value;
+			})
+		);
 
 		new Setting(contentEl).setName("File name").addText((text) =>
 			text.onChange((value) => {
@@ -26,8 +41,7 @@ export class CreateFileModal extends Modal {
 
 		new Setting(contentEl).addDropdown((drop) =>
 			drop
-                // have to do this in order to get some value != undefined
-				.addOption("", "CHANGE ME")
+				.addOption("", "File type") // have to do this in order to get some value != undefined
 				.addOption("glossary", "Glossary")
 				.addOption("index", "Index")
 				.addOption("glossaryindex", "Both")
@@ -42,7 +56,11 @@ export class CreateFileModal extends Modal {
 				.setCta()
 				.onClick(() => {
 					this.close();
-					this.onSubmit(this.option, this.fileName);
+					this.onSubmit(
+						this.option,
+						this.fileName,
+						this.chosenFolder
+					);
 				})
 		);
 	}

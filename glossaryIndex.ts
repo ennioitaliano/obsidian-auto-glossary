@@ -7,18 +7,22 @@ var fs = require("fs");
 export async function getFiles(
 	requestedFile: cases,
 	fileInclusion: boolean,
-	fileName: string
+	fileName: string,
+	chosenFolder: string
 ): Promise<string[]> {
-	const notesTFile = global.app.vault.getMarkdownFiles();
+	let notesTFile = global.app.vault.getMarkdownFiles();
 	let notes: string[] = [];
 
-	if (fileInclusion) {
-		for (let i = 0; i < notesTFile.length; i++) {
-			notes[i] = notesTFile[i].path;
-		}
-	} else {
-		notes = await cleanFiles(notesTFile);
+	if (!fileInclusion) {
+		notesTFile = await cleanFiles(notesTFile);
 	}
+
+	notesTFile.forEach((file) => {
+		if(file.path.includes(chosenFolder)) {
+			console.log(file.path);
+			notes.push(file.path);
+		}
+	});
 
 	const glossaryArray = [];
 	const indexArray = [];
@@ -51,13 +55,14 @@ export async function getFiles(
 export async function createFile(
 	requestedFile: cases,
 	fileInclusion: boolean,
-	fileName: string
+	fileName: string,
+	chosenFolder: string
 ) {
 	if (fileName) {
 		if (!fileExists(fileName)) {
 			this.app.vault.create(
 				fileName + ".md",
-				await createText(requestedFile, fileInclusion, fileName)
+				await createText(requestedFile, fileInclusion, fileName, chosenFolder)
 			);
 			new Notice(`${fileName} file created`);
 		} else {
@@ -69,7 +74,7 @@ export async function createFile(
 			fileName = requestedFile;
 			this.app.vault.create(
 				fileName + ".md",
-				await createText(requestedFile, fileInclusion, fileName)
+				await createText(requestedFile, fileInclusion, fileName, chosenFolder)
 			);
 			new Notice(`${requestedFile} file created`);
 		} else {
@@ -81,10 +86,11 @@ export async function createFile(
 async function createText(
 	requestedFile: cases,
 	fileInclusion: boolean,
-	fileName: string
+	fileName: string,
+	chosenFolder: string
 ): Promise<string> {
 	// This does not really modify myObj
-	let array = await getFiles(requestedFile, fileInclusion, fileName);
+	let array = await getFiles(requestedFile, fileInclusion, fileName, chosenFolder);
 	let text = "---\ntags: oag\n---\n";
 
 	switch (requestedFile) {

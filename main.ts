@@ -37,11 +37,11 @@ export default class autoGlossary extends Plugin {
 			id: "create-glossary",
 			name: "Create glossary",
 			callback: () => {
-				new CreateFileModal(this.app, (option, fileName) => {
+				new CreateFileModal(this.app, (option, fileName, chosenFolder) => {
 					createFile(
 						getEnum(option),
 						this.settings.fileInclusion,
-						fileName
+						fileName, chosenFolder
 					);
 				}).open();
 			},

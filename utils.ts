@@ -46,9 +46,9 @@ export function fileExists(fileName: string): boolean {
 	return result;
 }
 
-export async function cleanFiles(notesTFiles: TFile[]): Promise<string[]> {
+export async function cleanFiles(notesTFiles: TFile[]): Promise<TFile[]> {
 	const { vault } = this.app;
-	let cleanedNotes: string[] = [];
+	let cleanedNotes: TFile[] = [];
 
 	const fileContents: string[] = await Promise.all(
 		vault.getMarkdownFiles().map((file: any) => vault.cachedRead(file))
@@ -58,7 +58,7 @@ export async function cleanFiles(notesTFiles: TFile[]): Promise<string[]> {
 		y = 0;
 	while (i < notesTFiles.length - 1) {
 		if (!fileContents[i].toString().contains("---\ntags: oag\n---\n")) {
-			cleanedNotes[y] = notesTFiles[i].path;
+			cleanedNotes[y] = notesTFiles[i];
 			i++;
 			y++;
 		} else {
