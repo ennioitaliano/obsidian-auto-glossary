@@ -1,4 +1,4 @@
-import { TFile } from "obsidian";
+import { Notice, TFile } from "obsidian";
 import { cachedDataVersionTag } from "v8";
 
 export enum cases {
@@ -42,7 +42,9 @@ export function fileExists(fileName: string): boolean {
 	} else {
 		result = false;
 	}
-
+	if (result) {
+		new Notice("Already existing file");
+	}
 	return result;
 }
 

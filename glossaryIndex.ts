@@ -20,9 +20,9 @@ export async function getFiles(
 	notesTFile.forEach((file) => {
 		if (chosenFolder && file.path.includes(chosenFolder)) {
 			console.log(file.path);
-			notes.push(file.path);
+			notes.push(file.name);
 		} else if (!chosenFolder) {
-			notes.push(file.path);
+			notes.push(file.name);
 		}
 	});
 
@@ -62,6 +62,7 @@ export async function createFile(
 	chosenFolder?: string
 ) {
 	let completeFileName = "";
+
 	if (chosenFolder) {
 		if (fileName) {
 			completeFileName = chosenFolder + "/" + fileName;
@@ -72,37 +73,17 @@ export async function createFile(
 		completeFileName = requestedFile;
 	}
 
-	if (fileName) {
-		if (!fileExists(completeFileName)) {
-			this.app.vault.create(
-				completeFileName + ".md",
-				await createText(
-					requestedFile,
-					fileInclusion,
-					fileName,
-					chosenFolder
-				)
-			);
-			new Notice(`${completeFileName} file created`);
-		} else {
-			new Notice("Already existing file");
-		}
-	} else {
-		console.log("requestedFile");
-		if (!fileExists(requestedFile)) {
-			this.app.vault.create(
-				completeFileName + ".md",
-				await createText(
-					requestedFile,
-					fileInclusion,
-					completeFileName,
-					chosenFolder
-				)
-			);
-			new Notice(`${requestedFile} file created`);
-		} else {
-			new Notice("Already existing file");
-		}
+	if (!fileExists(completeFileName)) {
+		this.app.vault.create(
+			completeFileName + ".md",
+			await createText(
+				requestedFile,
+				fileInclusion,
+				fileName,
+				chosenFolder
+			)
+		);
+		new Notice(`${completeFileName} file created`);
 	}
 }
 

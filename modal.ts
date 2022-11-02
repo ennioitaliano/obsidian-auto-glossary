@@ -1,4 +1,5 @@
-import { App, Modal, Setting } from "obsidian";
+import { App, Modal, Notice, Setting } from "obsidian";
+import { fileExists } from "utils";
 
 export class CreateFileModal extends Modal {
 	fileName: string;
@@ -55,12 +56,18 @@ export class CreateFileModal extends Modal {
 				.setButtonText("Submit")
 				.setCta()
 				.onClick(() => {
-					this.close();
-					this.onSubmit(
-						this.option,
-						this.fileName,
-						this.chosenFolder
-					);
+					if (!this.fileName) {
+						this.fileName = this.option;
+					}
+
+					if (!fileExists(this.fileName)) {
+						this.close();
+						this.onSubmit(
+							this.option,
+							this.fileName,
+							this.chosenFolder
+						);
+					}
 				})
 		);
 	}

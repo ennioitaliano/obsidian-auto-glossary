@@ -35,54 +35,88 @@ export default class autoGlossary extends Plugin {
 
 		this.registerEvent(
 			this.app.workspace.on("file-menu", (menu, folder) => {
-			  menu.addItem((item) => {
-				item
-				  .setTitle("Create index file")
-				  .setIcon("list")
-				  .onClick(async () => {
-					createFile(getEnum("index"), this.settings.fileInclusion, folder.name+"_Index", folder.path);
-				  });
-			  });
+				menu.addItem((item) => {
+					item.setTitle("Create index file")
+						.setIcon("list")
+						.onClick(async () => {
+							if (folder.path.contains(".md")) {
+								new Notice(
+									"You need to select a folder to create the file."
+								);
+							} else {
+								createFile(
+									getEnum("index"),
+									this.settings.fileInclusion,
+									folder.name + "_Index",
+									folder.path
+								);
+							}
+						});
+				});
 			})
-		  );
+		);
 
-		  this.registerEvent(
+		this.registerEvent(
 			this.app.workspace.on("file-menu", (menu, folder) => {
-			  menu.addItem((item) => {
-				item
-				  .setTitle("Create glossary file")
-				  .setIcon("layout-list")
-				  .onClick(async () => {
-					createFile(getEnum("glossary"), this.settings.fileInclusion, folder.name+"_Glossary", folder.path);
-				  });
-			  });
+				menu.addItem((item) => {
+					item.setTitle("Create glossary file")
+						.setIcon("layout-list")
+						.onClick(async () => {
+							if (folder.path.contains(".md")) {
+								new Notice(
+									"You need to select a folder to create the file."
+								);
+							} else {
+								createFile(
+									getEnum("glossary"),
+									this.settings.fileInclusion,
+									folder.name + "_Glossary",
+									folder.path
+								);
+							}
+						});
+				});
 			})
-		  );
+		);
 
-		  this.registerEvent(
+		this.registerEvent(
 			this.app.workspace.on("file-menu", (menu, folder) => {
-			  menu.addItem((item) => {
-				item
-				  .setTitle("Create index+glossary file")
-				  .setIcon("list-ordered")
-				  .onClick(async () => {
-					createFile(getEnum("glossary"), this.settings.fileInclusion, folder.name+"_GlossaryIndex", folder.path);
-				  });
-			  });
+				menu.addItem((item) => {
+					item.setTitle("Create index+glossary file")
+						.setIcon("list-ordered")
+						.onClick(async () => {
+							if (folder.path.contains(".md")) {
+								new Notice(
+									"You need to select a folder to create the file."
+								);
+							} else {
+								createFile(
+									getEnum("glossaryIndex"),
+									this.settings.fileInclusion,
+									folder.name + "_GlossaryIndex",
+									folder.path
+								);
+							}
+						});
+				});
 			})
-		  );
+		);
 
 		this.addCommand({
 			id: "create-glossary",
 			name: "Create glossary",
 			callback: () => {
-				new CreateFileModal(this.app, (option, fileName, chosenFolder) => {
-					createFile(
-						getEnum(option),
-						this.settings.fileInclusion,
-						fileName, chosenFolder
-					);
-				}).open();
+				new CreateFileModal(
+					this.app,
+					(option, fileName, chosenFolder) => {
+						createFile(
+							getEnum(option),
+							this.settings.fileInclusion,
+							fileName,
+							chosenFolder
+						);
+					}
+				).open();
 			},
 		});
 
@@ -143,12 +177,12 @@ class SettingTab extends PluginSettingTab {
 			)
 			.addToggle((toggle) =>
 				toggle
-				.setValue(this.plugin.settings.fileInclusion)
-				.onChange(async (value) => {
-					console.log("fileInclusion switched to " + value);
-					this.plugin.settings.fileInclusion = value;
-					await this.plugin.saveSettings();
-				})
+					.setValue(this.plugin.settings.fileInclusion)
+					.onChange(async (value) => {
+						console.log("fileInclusion switched to " + value);
+						this.plugin.settings.fileInclusion = value;
+						await this.plugin.saveSettings();
+					})
 			);
 	}
 }
