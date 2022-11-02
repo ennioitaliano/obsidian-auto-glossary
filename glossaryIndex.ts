@@ -7,8 +7,8 @@ var fs = require("fs");
 export async function getFiles(
 	requestedFile: cases,
 	fileInclusion: boolean,
-	fileName: string,
-	chosenFolder: string
+	fileName?: string,
+	chosenFolder?: string
 ): Promise<string[]> {
 	let notesTFile = global.app.vault.getMarkdownFiles();
 	let notes: string[] = [];
@@ -18,8 +18,10 @@ export async function getFiles(
 	}
 
 	notesTFile.forEach((file) => {
-		if(file.path.includes(chosenFolder)) {
+		if (chosenFolder && file.path.includes(chosenFolder)) {
 			console.log(file.path);
+			notes.push(file.path);
+		} else if (!chosenFolder) {
 			notes.push(file.path);
 		}
 	});
@@ -40,6 +42,7 @@ export async function getFiles(
 		}
 
 		// Array of strings that will show up as embedded notes
+		// ## to make them findable as sections
 		glossaryArray[i] = "## ![[" + noteName + "]]\n";
 	}
 
@@ -56,25 +59,45 @@ export async function createFile(
 	requestedFile: cases,
 	fileInclusion: boolean,
 	fileName: string,
-	chosenFolder: string
+	chosenFolder?: string
 ) {
+	let completeFileName = "";
+	if (chosenFolder) {
+		if (fileName) {
+			completeFileName = chosenFolder + "/" + fileName;
+		} else {
+			completeFileName = chosenFolder + "/" + requestedFile;
+		}
+	} else {
+		completeFileName = requestedFile;
+	}
+
 	if (fileName) {
-		if (!fileExists(fileName)) {
+		if (!fileExists(completeFileName)) {
 			this.app.vault.create(
-				fileName + ".md",
-				await createText(requestedFile, fileInclusion, fileName, chosenFolder)
+				completeFileName + ".md",
+				await createText(
+					requestedFile,
+					fileInclusion,
+					fileName,
+					chosenFolder
+				)
 			);
-			new Notice(`${fileName} file created`);
+			new Notice(`${completeFileName} file created`);
 		} else {
 			new Notice("Already existing file");
 		}
 	} else {
 		console.log("requestedFile");
 		if (!fileExists(requestedFile)) {
-			fileName = requestedFile;
 			this.app.vault.create(
-				fileName + ".md",
-				await createText(requestedFile, fileInclusion, fileName, chosenFolder)
+				completeFileName + ".md",
+				await createText(
+					requestedFile,
+					fileInclusion,
+					completeFileName,
+					chosenFolder
+				)
 			);
 			new Notice(`${requestedFile} file created`);
 		} else {
@@ -86,11 +109,15 @@ export async function createFile(
 async function createText(
 	requestedFile: cases,
 	fileInclusion: boolean,
-	fileName: string,
-	chosenFolder: string
+	fileName?: string,
+	chosenFolder?: string
 ): Promise<string> {
-	// This does not really modify myObj
-	let array = await getFiles(requestedFile, fileInclusion, fileName, chosenFolder);
+	let array = await getFiles(
+		requestedFile,
+		fileInclusion,
+		fileName,
+		chosenFolder
+	);
 	let text = "---\ntags: oag\n---\n";
 
 	switch (requestedFile) {
