@@ -42,14 +42,14 @@ export async function getFiles(
 		}
 
 		// Array of strings that will show up as embedded notes
-		// ## to make them findable as sections
-		glossaryArray[i] = "## ![[" + noteName + "]]\n";
+		// ### to make them findable as sections
+		glossaryArray[i] = "#### ![[" + noteName + "]]\n";
 	}
 
 	// Arrays toString + remove all ','
-	const indexText = "# Index\n" + indexArray.toString().replace(/,/g, "");
+	const indexText = "## Index\n" + indexArray.toString().replace(/,/g, "");
 	const glossaryText =
-		"# Glossary\n" + glossaryArray.toString().replace(/,/g, "");
+		"## Glossary\n" + glossaryArray.toString().replace(/,/g, "");
 
 	return [indexText, glossaryText];
 }

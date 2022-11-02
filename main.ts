@@ -1,4 +1,4 @@
-import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
+import { App, Notice, Plugin, PluginSettingTab, Setting } from "obsidian";
 
 import { CreateFileModal } from "./modal";
 import { createFile } from "./glossaryIndex";
@@ -32,6 +32,45 @@ export default class autoGlossary extends Plugin {
 		);
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass("my-plugin-ribbon-class");*/
+
+		this.registerEvent(
+			this.app.workspace.on("file-menu", (menu, folder) => {
+			  menu.addItem((item) => {
+				item
+				  .setTitle("Create index file")
+				  .setIcon("list")
+				  .onClick(async () => {
+					createFile(getEnum("index"), this.settings.fileInclusion, folder.name+"_Index", folder.path);
+				  });
+			  });
+			})
+		  );
+
+		  this.registerEvent(
+			this.app.workspace.on("file-menu", (menu, folder) => {
+			  menu.addItem((item) => {
+				item
+				  .setTitle("Create glossary file")
+				  .setIcon("layout-list")
+				  .onClick(async () => {
+					createFile(getEnum("glossary"), this.settings.fileInclusion, folder.name+"_Glossary", folder.path);
+				  });
+			  });
+			})
+		  );
+
+		  this.registerEvent(
+			this.app.workspace.on("file-menu", (menu, folder) => {
+			  menu.addItem((item) => {
+				item
+				  .setTitle("Create index+glossary file")
+				  .setIcon("list-ordered")
+				  .onClick(async () => {
+					createFile(getEnum("glossary"), this.settings.fileInclusion, folder.name+"_GlossaryIndex", folder.path);
+				  });
+			  });
+			})
+		  );
 
 		this.addCommand({
 			id: "create-glossary",

@@ -4,12 +4,14 @@ Obsidian plugin that allows user to create:
 - an index (or MOC) of files (list of `[[link]]`)
 - a glossary with an index (two lists above concatenated)
 ## TO-DO
+- [ ] better differentiation and use of fileName vs completeFileName (remember the existence of file.name)
 - [ ] choose the directory of files I want in the glossary
 	- [x] same as destination folder?
 	- [ ] what about sub-directories?
-		- [ ] option to create a file divided with sub-directories or tag 
+		- [ ] option to create a file divided with sub-directories or tag
 - [ ] option to choose order of notes in the created file
-- [ ] file creation by right click on folder
+- [x] file creation by right click on folder
+	- [ ] control wether is a file or folder
 ***
 - [x] option to choose file name + eventual default naming system
 - [x] modal with options for index, glossary or both
