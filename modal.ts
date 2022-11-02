@@ -8,19 +8,28 @@ export class CreateFileModal extends Modal {
 	onSubmit: (
 		option: string,
 		fileName?: string,
-		chosenFolder?: string
+		chosenFolder?: string,
+		fileOrder?: string
 	) => void;
+	fileOrder: string;
 
 	constructor(
 		app: App,
 		onSubmit: (
 			option: string,
 			fileName: string,
-			chosenFolder: string
-		) => void
+			chosenFolder: string,
+			fileOrder: string
+		) => void,
+		passedFolder?: string,
+		passedName?: string,
+		passedOption?: string
 	) {
 		super(app);
 		this.onSubmit = onSubmit;
+		this.chosenFolder = passedFolder ? passedFolder : "";
+		this.fileName = passedName ? passedName : "";
+		this.option = passedOption ? passedOption : "";
 	}
 
 	onOpen() {
@@ -29,15 +38,34 @@ export class CreateFileModal extends Modal {
 		contentEl.createEl("h1", { text: "AutoGlossary" });
 
 		new Setting(contentEl).setName("Folder").addText((text) =>
-			text.onChange((value) => {
-				this.chosenFolder = value;
-			})
+			text
+				.onChange((value) => {
+					this.chosenFolder = value;
+				})
+				.setValue(this.chosenFolder)
 		);
 
 		new Setting(contentEl).setName("File name").addText((text) =>
-			text.onChange((value) => {
-				this.fileName = value;
-			})
+			text
+				.onChange((value) => {
+					this.fileName = value;
+				})
+				.setValue(this.fileName)
+		);
+
+		new Setting(contentEl).addDropdown((drop) =>
+			drop
+				.addOption("", "File order")
+				.addOption("default", "Default")
+				.addOption("mtime_new", "Modification time - Newest to oldest")
+				.addOption("mtime_old", "Modification time - Oldest to newest")
+				.addOption("ctime_new", "Creation time - Newest to oldest")
+				.addOption("ctime_old", "Creation time - Oldest to newest")
+				.addOption("alphabetical", "Alphabetical")
+				.addOption("alphabetical_rev", "Alphabetical - Reverse")
+				.onChange((chosen) => {
+					this.fileOrder = chosen;
+				})
 		);
 
 		new Setting(contentEl).addDropdown((drop) =>
@@ -49,6 +77,7 @@ export class CreateFileModal extends Modal {
 				.onChange((chosen) => {
 					this.option = chosen;
 				})
+				.setValue(this.option)
 		);
 
 		new Setting(contentEl).addButton((btn) =>
@@ -65,7 +94,8 @@ export class CreateFileModal extends Modal {
 						this.onSubmit(
 							this.option,
 							this.fileName,
-							this.chosenFolder
+							this.chosenFolder,
+							this.fileOrder
 						);
 					}
 				})

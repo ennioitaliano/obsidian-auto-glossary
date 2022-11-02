@@ -44,12 +44,26 @@ export default class autoGlossary extends Plugin {
 									"You need to select a folder to create the file."
 								);
 							} else {
-								createFile(
-									getEnum("index"),
-									this.settings.fileInclusion,
-									folder.name + "_Index",
-									folder.path
-								);
+								new CreateFileModal(
+									this.app,
+									(
+										option,
+										fileName,
+										chosenFolder,
+										fileOrder
+									) => {
+										createFile(
+											getEnum(option),
+											this.settings.fileInclusion,
+											fileName,
+											chosenFolder,
+											fileOrder
+										);
+									},
+									folder.path,
+									folder.name+"_Index",
+									"index"
+								).open();
 							}
 						});
 				});
@@ -67,12 +81,26 @@ export default class autoGlossary extends Plugin {
 									"You need to select a folder to create the file."
 								);
 							} else {
-								createFile(
-									getEnum("glossary"),
-									this.settings.fileInclusion,
-									folder.name + "_Glossary",
-									folder.path
-								);
+								new CreateFileModal(
+									this.app,
+									(
+										option,
+										fileName,
+										chosenFolder,
+										fileOrder
+									) => {
+										createFile(
+											getEnum(option),
+											this.settings.fileInclusion,
+											fileName,
+											chosenFolder,
+											fileOrder
+										);
+									},
+									folder.path,
+									folder.name+"_Glossary",
+									"glossary"
+								).open();
 							}
 						});
 				});
@@ -90,12 +118,26 @@ export default class autoGlossary extends Plugin {
 									"You need to select a folder to create the file."
 								);
 							} else {
-								createFile(
-									getEnum("glossaryIndex"),
-									this.settings.fileInclusion,
-									folder.name + "_GlossaryIndex",
-									folder.path
-								);
+								new CreateFileModal(
+									this.app,
+									(
+										option,
+										fileName,
+										chosenFolder,
+										fileOrder
+									) => {
+										createFile(
+											getEnum(option),
+											this.settings.fileInclusion,
+											fileName,
+											chosenFolder,
+											fileOrder
+										);
+									},
+									folder.path,
+									folder.name+"_GlossaryIndex",
+									"glossaryindex"
+								).open();
 							}
 						});
 				});
@@ -108,12 +150,13 @@ export default class autoGlossary extends Plugin {
 			callback: () => {
 				new CreateFileModal(
 					this.app,
-					(option, fileName, chosenFolder) => {
+					(option, fileName, chosenFolder, fileOrder) => {
 						createFile(
 							getEnum(option),
 							this.settings.fileInclusion,
 							fileName,
-							chosenFolder
+							chosenFolder,
+							fileOrder
 						);
 					}
 				).open();

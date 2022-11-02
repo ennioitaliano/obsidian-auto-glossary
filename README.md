@@ -9,7 +9,7 @@ Obsidian plugin that allows user to create:
 	- [x] same as destination folder?
 	- [ ] what about sub-directories?
 		- [ ] option to create a file divided with sub-directories or tag
-- [ ] option to choose order of notes in the created file
+- [x] option to choose order of notes in the created file
 - [x] file creation by right click on folder
 	- [x] control wether is a file or folder
 ***

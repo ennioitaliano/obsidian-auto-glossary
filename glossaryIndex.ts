@@ -8,7 +8,8 @@ export async function getFiles(
 	requestedFile: cases,
 	fileInclusion: boolean,
 	fileName?: string,
-	chosenFolder?: string
+	chosenFolder?: string,
+	fileOrder?: string
 ): Promise<string[]> {
 	let notesTFile = global.app.vault.getMarkdownFiles();
 	let notes: string[] = [];
@@ -16,10 +17,60 @@ export async function getFiles(
 	if (!fileInclusion) {
 		notesTFile = await cleanFiles(notesTFile);
 	}
+	console.log(fileOrder);
+	switch (fileOrder) {
+		case "ctime_new":
+			notesTFile.sort((a, b) => b.stat.ctime - a.stat.ctime);
+			break;
+		case "ctime_old":
+			notesTFile.sort((a, b) => a.stat.ctime - b.stat.ctime);
+			break;
+		case "mtime_new":
+			notesTFile.sort((a, b) => b.stat.mtime - a.stat.mtime);
+			break;
+		case "mtime_old":
+			notesTFile.sort((a, b) => a.stat.mtime - b.stat.mtime);
+			break;
+		case "alphabetical":
+			notesTFile.sort((a, b) => {
+				const nameA = a.name.toUpperCase(); // ignore upper and lowercase
+				const nameB = b.name.toUpperCase(); // ignore upper and lowercase
+				if (nameA < nameB) {
+					return -1;
+				}
+				if (nameA > nameB) {
+					return 1;
+				}
+
+				// names must be equal
+				return 0;
+			});
+			break;
+		case "alphabetical_rev":
+			notesTFile.sort((a, b) => {
+				const nameA = a.name.toUpperCase(); // ignore upper and lowercase
+				const nameB = b.name.toUpperCase(); // ignore upper and lowercase
+				if (nameA > nameB) {
+					return -1;
+				}
+				if (nameA < nameB) {
+					return 1;
+				}
+
+				// names must be equal
+				return 0;
+			});
+			break;
+		case "default":
+		default:
+			break;
+	}
 
 	notesTFile.forEach((file) => {
+		//console.log(file.stat.ctime);
+
 		if (chosenFolder && file.path.includes(chosenFolder)) {
-			console.log(file.path);
+			//console.log(file.path);
 			notes.push(file.name);
 		} else if (!chosenFolder) {
 			notes.push(file.name);
@@ -59,7 +110,8 @@ export async function createFile(
 	requestedFile: cases,
 	fileInclusion: boolean,
 	fileName: string,
-	chosenFolder?: string
+	chosenFolder?: string,
+	fileOrder?: string
 ) {
 	let completeFileName = "";
 
@@ -80,7 +132,8 @@ export async function createFile(
 				requestedFile,
 				fileInclusion,
 				fileName,
-				chosenFolder
+				chosenFolder,
+				fileOrder
 			)
 		);
 		new Notice(`${completeFileName} file created`);
@@ -91,13 +144,15 @@ async function createText(
 	requestedFile: cases,
 	fileInclusion: boolean,
 	fileName?: string,
-	chosenFolder?: string
+	chosenFolder?: string,
+	fileOrder?: string
 ): Promise<string> {
 	let array = await getFiles(
 		requestedFile,
 		fileInclusion,
 		fileName,
-		chosenFolder
+		chosenFolder,
+		fileOrder
 	);
 	let text = "---\ntags: oag\n---\n";
 
