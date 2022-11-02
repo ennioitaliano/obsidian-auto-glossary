@@ -9,9 +9,11 @@ export class CreateFileModal extends Modal {
 		option: string,
 		fileName?: string,
 		chosenFolder?: string,
-		fileOrder?: string
+		fileOrder?: string,
+		destFolder?: string
 	) => void;
 	fileOrder: string;
+	destFolder: string;
 
 	constructor(
 		app: App,
@@ -19,17 +21,20 @@ export class CreateFileModal extends Modal {
 			option: string,
 			fileName: string,
 			chosenFolder: string,
-			fileOrder: string
+			fileOrder: string,
+			destFolder: string
 		) => void,
 		passedFolder?: string,
 		passedName?: string,
-		passedOption?: string
+		passedOption?: string,
+		passedDestFolder?: string
 	) {
 		super(app);
 		this.onSubmit = onSubmit;
 		this.chosenFolder = passedFolder ? passedFolder : "";
 		this.fileName = passedName ? passedName : "";
 		this.option = passedOption ? passedOption : "";
+		this.destFolder = passedDestFolder ? passedDestFolder : "";
 	}
 
 	onOpen() {
@@ -45,6 +50,25 @@ export class CreateFileModal extends Modal {
 				.setValue(this.chosenFolder)
 		);
 
+		new Setting(contentEl).setName("Same destination").addToggle((toggle) =>
+			toggle.setValue(true).onChange((value) => {
+				destination.settingEl.toggleVisibility(!value);
+			})
+		);
+
+		let destination = new Setting(contentEl);
+
+		destination
+			.setName("Destination")
+			.addText((text) =>
+				text
+					.onChange((value) => {
+						this.destFolder = value;
+					})
+					.setValue(this.destFolder)
+			)
+			.settingEl.toggleVisibility(false);
+
 		new Setting(contentEl).setName("File name").addText((text) =>
 			text
 				.onChange((value) => {
@@ -53,7 +77,7 @@ export class CreateFileModal extends Modal {
 				.setValue(this.fileName)
 		);
 
-		new Setting(contentEl).addDropdown((drop) =>
+		new Setting(contentEl).setName("File order").addDropdown((drop) =>
 			drop
 				.addOption("", "File order")
 				.addOption("default", "Default")
@@ -68,7 +92,7 @@ export class CreateFileModal extends Modal {
 				})
 		);
 
-		new Setting(contentEl).addDropdown((drop) =>
+		new Setting(contentEl).setName("File type").addDropdown((drop) =>
 			drop
 				.addOption("", "File type") // have to do this in order to get some value != undefined
 				.addOption("glossary", "Glossary")
