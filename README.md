@@ -5,7 +5,7 @@ Obsidian plugin that allows user to create:
 - a glossary with an index (two lists above concatenated)
 ## TO-DO
 - [ ] choose the directory of files I want in the glossary
-	- [ ] same as destination folder?
+	- [x] same as destination folder?
 	- [ ] what about sub-directories?
 - [ ] option to choose order of notes in the created file
 - [ ] file creation by right click on folder
