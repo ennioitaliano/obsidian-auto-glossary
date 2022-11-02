@@ -7,9 +7,9 @@ Obsidian plugin that allows user to create:
 - [ ] choose the directory of files I want in the glossary
 	- [x] same as destination folder?
 	- [ ] what about sub-directories?
+		- [ ] option to create a file divided with sub-directories or tag 
 - [ ] option to choose order of notes in the created file
 - [ ] file creation by right click on folder
-- [ ] option to create a file divided with sub-directories or tag
 ***
 - [x] option to choose file name + eventual default naming system
 - [x] modal with options for index, glossary or both
