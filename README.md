@@ -1,21 +1,16 @@
-# obsidian-auto-glossary
-Obsidian plugin that allows user to create:
-- a glossary of files (list of `![[link]]`)
-- an index (or MOC) of files (list of `[[link]]`)
-- a glossary with an index (two lists above concatenated)
-## TO-DO
-- [ ] General code refactoring
+# Obsidian Auto Glossary
+Auto Glossary is an Obsidian plugin to create a glossary, an index or a glossary with an index from the files you want.
+
+## Features
+- create a glossary of files (list of `![[link]]`)
+- create an index (or MOC) of files (list of `[[link]]`)
+- create a glossary with an index (the two lists above concatenated)
+
+## Demo
+
+## Contribute
+You can contribute to the code of this plugin, since there are more features to be implemented. You can also share feedback, issues, and ideas here on GitHub.
+### TO-DO
+- [ ] Eventual code refactoring
 - [ ] Option to exclude more tags from new files
 - [ ] Handle sub-directories
-***
-- [x] choose the directory of files I want in the glossary
-	- [x] same as destination folder?
-- [x] option to choose order of notes in the created file
-- [x] better differentiation and use of fileName vs completeFileName (remember the existence of file.name)
-- [x] file creation by right click on folder
-	- [x] control wether is a file or folder
-- [x] option to choose file name + eventual default naming system
-- [x] modal with options for index, glossary or both
-- [x] what happens if a file with the same name already exists?
-- [x] remove files created by the plugin from indexes and glossaries
-	- [x] setting
