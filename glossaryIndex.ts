@@ -9,8 +9,7 @@ export async function getFiles(
 	fileInclusion: boolean,
 	fileName?: string,
 	chosenFolder?: string,
-	fileOrder?: string,
-	destFolder?: string
+	fileOrder?: string
 ): Promise<string[]> {
 	let notesTFile = global.app.vault.getMarkdownFiles();
 	let notes: string[] = [];
@@ -68,10 +67,11 @@ export async function getFiles(
 	}
 
 	notesTFile.forEach((file) => {
-		//console.log(file.stat.ctime);
-
 		if (chosenFolder && file.path.includes(chosenFolder)) {
-			//console.log(file.path);
+			if (file.path.replace(chosenFolder + "/", "").includes("/")) {
+				console.log(file.path.replace(chosenFolder + "/", ""));
+			}
+
 			notes.push(file.name);
 		} else if (!chosenFolder) {
 			notes.push(file.name);
@@ -87,7 +87,7 @@ export async function getFiles(
 
 		// Array of strings that will show up as an index. If clicked, each entry takes to the point in the same document where the note is embedded
 		if (requestedFile == cases.gi) {
-					indexArray.push(
+			indexArray.push(
 				"- [[" + fileName + "#" + noteName + "|" + noteName + "]]\n"
 			);
 		} else {

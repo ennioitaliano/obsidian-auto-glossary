@@ -63,7 +63,7 @@ export default class autoGlossary extends Plugin {
 										);
 									},
 									folder.path,
-									folder.name+"_Index",
+									folder.name + "_Index",
 									"index"
 								).open();
 							}
@@ -102,7 +102,7 @@ export default class autoGlossary extends Plugin {
 										);
 									},
 									folder.path,
-									folder.name+"_Glossary",
+									folder.name + "_Glossary",
 									"glossary"
 								).open();
 							}
@@ -141,7 +141,7 @@ export default class autoGlossary extends Plugin {
 										);
 									},
 									folder.path,
-									folder.name+"_GlossaryIndex",
+									folder.name + "_GlossaryIndex",
 									"glossaryindex"
 								).open();
 							}
