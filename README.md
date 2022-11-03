@@ -7,7 +7,6 @@ Obsidian plugin that allows user to create:
 - [ ] General code refactoring
 - [ ] Option to exclude more tags from new files
 - [ ] Handle sub-directories
-	- [ ] option to create a file divided with sub-directories or tag
 ***
 - [x] choose the directory of files I want in the glossary
 	- [x] same as destination folder?

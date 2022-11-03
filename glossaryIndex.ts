@@ -66,9 +66,11 @@ export async function getFiles(
 			break;
 	}
 
+	/*
 	notesTFile.forEach((file) => {
 		if (chosenFolder && file.path.includes(chosenFolder)) {
 			if (file.path.replace(chosenFolder + "/", "").includes("/")) {
+				file.path.replace(chosenFolder + "/", "").indexOf("/");
 				console.log(file.path.replace(chosenFolder + "/", ""));
 			}
 
@@ -76,7 +78,7 @@ export async function getFiles(
 		} else if (!chosenFolder) {
 			notes.push(file.name);
 		}
-	});
+	});*/
 
 	const glossaryArray: string[] = [];
 	const indexArray: string[] = [];
@@ -117,7 +119,6 @@ export async function createFile(
 	destFolder?: string
 ) {
 	let completeFileName = "";
-	console.log(destFolder);
 
 	if (destFolder) {
 		if (fileName) {
