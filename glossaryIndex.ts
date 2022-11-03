@@ -7,42 +7,102 @@ var fs = require("fs");
 export async function getFiles(
 	requestedFile: cases,
 	fileInclusion: boolean,
-	fileName: string
+	fileName?: string,
+	chosenFolder?: string,
+	fileOrder?: string,
+	destFolder?: string
 ): Promise<string[]> {
-	const notesTFile = global.app.vault.getMarkdownFiles();
+	let notesTFile = global.app.vault.getMarkdownFiles();
 	let notes: string[] = [];
 
-	if (fileInclusion) {
-		for (let i = 0; i < notesTFile.length; i++) {
-			notes[i] = notesTFile[i].path;
-		}
-	} else {
-		notes = await cleanFiles(notesTFile);
+	if (!fileInclusion) {
+		notesTFile = await cleanFiles(notesTFile);
 	}
 
-	const glossaryArray = [];
-	const indexArray = [];
+	switch (fileOrder) {
+		case "ctime_new":
+			notesTFile.sort((a, b) => b.stat.ctime - a.stat.ctime);
+			break;
+		case "ctime_old":
+			notesTFile.sort((a, b) => a.stat.ctime - b.stat.ctime);
+			break;
+		case "mtime_new":
+			notesTFile.sort((a, b) => b.stat.mtime - a.stat.mtime);
+			break;
+		case "mtime_old":
+			notesTFile.sort((a, b) => a.stat.mtime - b.stat.mtime);
+			break;
+		case "alphabetical":
+			notesTFile.sort((a, b) => {
+				const nameA = a.name.toUpperCase(); // ignore upper and lowercase
+				const nameB = b.name.toUpperCase(); // ignore upper and lowercase
+				if (nameA < nameB) {
+					return -1;
+				}
+				if (nameA > nameB) {
+					return 1;
+				}
 
-	for (let i = 0; i < notes.length; i++) {
+				// names must be equal
+				return 0;
+			});
+			break;
+		case "alphabetical_rev":
+			notesTFile.sort((a, b) => {
+				const nameA = a.name.toUpperCase(); // ignore upper and lowercase
+				const nameB = b.name.toUpperCase(); // ignore upper and lowercase
+				if (nameA > nameB) {
+					return -1;
+				}
+				if (nameA < nameB) {
+					return 1;
+				}
+
+				// names must be equal
+				return 0;
+			});
+			break;
+		case "default":
+		default:
+			break;
+	}
+
+	notesTFile.forEach((file) => {
+		//console.log(file.stat.ctime);
+
+		if (chosenFolder && file.path.includes(chosenFolder)) {
+			//console.log(file.path);
+			notes.push(file.name);
+		} else if (!chosenFolder) {
+			notes.push(file.name);
+		}
+	});
+
+	const glossaryArray: string[] = [];
+	const indexArray: string[] = [];
+
+	notes.forEach((note) => {
 		// To obtain the note name in a 'linkable' format we have to remove the extension (aka the last 3 character)
-		const noteName = notes[i].slice(0, -3);
+		const noteName = note.slice(0, -3);
 
 		// Array of strings that will show up as an index. If clicked, each entry takes to the point in the same document where the note is embedded
 		if (requestedFile == cases.gi) {
-			indexArray[i] =
-				"- [[" + fileName + "#" + noteName + "|" + noteName + "]]\n";
+					indexArray.push(
+				"- [[" + fileName + "#" + noteName + "|" + noteName + "]]\n"
+			);
 		} else {
-			indexArray[i] = "- [[" + noteName + "]]\n";
+			indexArray.push("- [[" + noteName + "]]\n");
 		}
 
 		// Array of strings that will show up as embedded notes
-		glossaryArray[i] = "## ![[" + noteName + "]]\n";
-	}
+		// #### to make them findable as sections
+		glossaryArray.push("#### ![[" + noteName + "]]\n\n***\n\n");
+	});
 
 	// Arrays toString + remove all ','
-	const indexText = "# Index\n" + indexArray.toString().replace(/,/g, "");
+	const indexText = "## Index\n" + indexArray.toString().replace(/,/g, "");
 	const glossaryText =
-		"# Glossary\n" + glossaryArray.toString().replace(/,/g, "");
+		"## Glossary\n" + glossaryArray.toString().replace(/,/g, "");
 
 	return [indexText, glossaryText];
 }
@@ -51,41 +111,60 @@ export async function getFiles(
 export async function createFile(
 	requestedFile: cases,
 	fileInclusion: boolean,
-	fileName: string
+	fileName: string,
+	chosenFolder?: string,
+	fileOrder?: string,
+	destFolder?: string
 ) {
-	if (fileName) {
-		if (!fileExists(fileName)) {
-			this.app.vault.create(
-				fileName + ".md",
-				await createText(requestedFile, fileInclusion, fileName)
-			);
-			new Notice(`${fileName} file created`);
+	let completeFileName = "";
+	console.log(destFolder);
+
+	if (destFolder) {
+		if (fileName) {
+			completeFileName = destFolder + "/" + fileName;
 		} else {
-			new Notice("Already existing file");
+			completeFileName = destFolder + "/" + requestedFile;
+		}
+	} else if (chosenFolder) {
+		if (fileName) {
+			completeFileName = chosenFolder + "/" + fileName;
+		} else {
+			completeFileName = chosenFolder + "/" + requestedFile;
 		}
 	} else {
-		console.log("requestedFile");
-		if (!fileExists(requestedFile)) {
-			fileName = requestedFile;
-			this.app.vault.create(
-				fileName + ".md",
-				await createText(requestedFile, fileInclusion, fileName)
-			);
-			new Notice(`${requestedFile} file created`);
-		} else {
-			new Notice("Already existing file");
-		}
+		completeFileName = requestedFile;
+	}
+
+	if (!fileExists(completeFileName)) {
+		this.app.vault.create(
+			completeFileName + ".md",
+			await createText(
+				requestedFile,
+				fileInclusion,
+				fileName,
+				chosenFolder,
+				fileOrder
+			)
+		);
+		new Notice(`${completeFileName} file created`);
 	}
 }
 
 async function createText(
 	requestedFile: cases,
 	fileInclusion: boolean,
-	fileName: string
+	fileName?: string,
+	chosenFolder?: string,
+	fileOrder?: string
 ): Promise<string> {
-	// This does not really modify myObj
-	let array = await getFiles(requestedFile, fileInclusion, fileName);
-	let text = "---\ntags: oag\n---\n";
+	let array = await getFiles(
+		requestedFile,
+		fileInclusion,
+		fileName,
+		chosenFolder,
+		fileOrder
+	);
+	let text = "---\ntags: obsidian-auto-glossary\n---\n";
 
 	switch (requestedFile) {
 		case cases.g:

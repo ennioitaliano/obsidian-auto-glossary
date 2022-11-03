@@ -1,4 +1,4 @@
-import { TFile } from "obsidian";
+import { Notice, TFile } from "obsidian";
 import { cachedDataVersionTag } from "v8";
 
 export enum cases {
@@ -42,13 +42,15 @@ export function fileExists(fileName: string): boolean {
 	} else {
 		result = false;
 	}
-
+	if (result) {
+		new Notice("Already existing file" + fileName + ".md");
+	}
 	return result;
 }
 
-export async function cleanFiles(notesTFiles: TFile[]): Promise<string[]> {
+export async function cleanFiles(notesTFiles: TFile[]): Promise<TFile[]> {
 	const { vault } = this.app;
-	let cleanedNotes: string[] = [];
+	let cleanedNotes: TFile[] = [];
 
 	const fileContents: string[] = await Promise.all(
 		vault.getMarkdownFiles().map((file: any) => vault.cachedRead(file))
@@ -57,8 +59,8 @@ export async function cleanFiles(notesTFiles: TFile[]): Promise<string[]> {
 	let i = 0,
 		y = 0;
 	while (i < notesTFiles.length - 1) {
-		if (!fileContents[i].toString().contains("---\ntags: oag\n---\n")) {
-			cleanedNotes[y] = notesTFiles[i].path;
+		if (!fileContents[i].toString().contains("---\ntags: obsidian-auto-glossary\n---\n")) {
+			cleanedNotes[y] = notesTFiles[i];
 			i++;
 			y++;
 		} else {

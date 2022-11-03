@@ -1,4 +1,4 @@
-import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
+import { App, Notice, Plugin, PluginSettingTab, Setting } from "obsidian";
 
 import { CreateFileModal } from "./modal";
 import { createFile } from "./glossaryIndex";
@@ -33,17 +33,140 @@ export default class autoGlossary extends Plugin {
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass("my-plugin-ribbon-class");*/
 
+		this.registerEvent(
+			this.app.workspace.on("file-menu", (menu, folder) => {
+				menu.addItem((item) => {
+					item.setTitle("Create index file")
+						.setIcon("list")
+						.onClick(async () => {
+							if (folder.path.contains(".md")) {
+								new Notice(
+									"You need to select a folder to create the file."
+								);
+							} else {
+								new CreateFileModal(
+									this.app,
+									(
+										option,
+										fileName,
+										chosenFolder,
+										fileOrder,
+										destFolder
+									) => {
+										createFile(
+											getEnum(option),
+											this.settings.fileInclusion,
+											fileName,
+											chosenFolder,
+											fileOrder,
+											destFolder
+										);
+									},
+									folder.path,
+									folder.name+"_Index",
+									"index"
+								).open();
+							}
+						});
+				});
+			})
+		);
+
+		this.registerEvent(
+			this.app.workspace.on("file-menu", (menu, folder) => {
+				menu.addItem((item) => {
+					item.setTitle("Create glossary file")
+						.setIcon("layout-list")
+						.onClick(async () => {
+							if (folder.path.contains(".md")) {
+								new Notice(
+									"You need to select a folder to create the file."
+								);
+							} else {
+								new CreateFileModal(
+									this.app,
+									(
+										option,
+										fileName,
+										chosenFolder,
+										fileOrder,
+										destFolder
+									) => {
+										createFile(
+											getEnum(option),
+											this.settings.fileInclusion,
+											fileName,
+											chosenFolder,
+											fileOrder,
+											destFolder
+										);
+									},
+									folder.path,
+									folder.name+"_Glossary",
+									"glossary"
+								).open();
+							}
+						});
+				});
+			})
+		);
+
+		this.registerEvent(
+			this.app.workspace.on("file-menu", (menu, folder) => {
+				menu.addItem((item) => {
+					item.setTitle("Create index+glossary file")
+						.setIcon("list-ordered")
+						.onClick(async () => {
+							if (folder.path.contains(".md")) {
+								new Notice(
+									"You need to select a folder to create the file."
+								);
+							} else {
+								new CreateFileModal(
+									this.app,
+									(
+										option,
+										fileName,
+										chosenFolder,
+										fileOrder,
+										destFolder
+									) => {
+										createFile(
+											getEnum(option),
+											this.settings.fileInclusion,
+											fileName,
+											chosenFolder,
+											fileOrder,
+											destFolder
+										);
+									},
+									folder.path,
+									folder.name+"_GlossaryIndex",
+									"glossaryindex"
+								).open();
+							}
+						});
+				});
+			})
+		);
+
 		this.addCommand({
 			id: "create-glossary",
 			name: "Create glossary",
 			callback: () => {
-				new CreateFileModal(this.app, (option, fileName) => {
-					createFile(
-						getEnum(option),
-						this.settings.fileInclusion,
-						fileName
-					);
-				}).open();
+				new CreateFileModal(
+					this.app,
+					(option, fileName, chosenFolder, fileOrder, destFolder) => {
+						createFile(
+							getEnum(option),
+							this.settings.fileInclusion,
+							fileName,
+							chosenFolder,
+							fileOrder,
+							destFolder
+						);
+					}
+				).open();
 			},
 		});
 
@@ -104,12 +227,12 @@ class SettingTab extends PluginSettingTab {
 			)
 			.addToggle((toggle) =>
 				toggle
-				.setValue(this.plugin.settings.fileInclusion)
-				.onChange(async (value) => {
-					console.log("fileInclusion switched to " + value);
-					this.plugin.settings.fileInclusion = value;
-					await this.plugin.saveSettings();
-				})
+					.setValue(this.plugin.settings.fileInclusion)
+					.onChange(async (value) => {
+						console.log("fileInclusion switched to " + value);
+						this.plugin.settings.fileInclusion = value;
+						await this.plugin.saveSettings();
+					})
 			);
 	}
 }
