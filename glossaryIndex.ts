@@ -78,25 +78,26 @@ export async function getFiles(
 		}
 	});
 
-	const glossaryArray = [];
-	const indexArray = [];
+	const glossaryArray: string[] = [];
+	const indexArray: string[] = [];
 
-	for (let i = 0; i < notes.length; i++) {
+	notes.forEach((note) => {
 		// To obtain the note name in a 'linkable' format we have to remove the extension (aka the last 3 character)
-		const noteName = notes[i].slice(0, -3);
+		const noteName = note.slice(0, -3);
 
 		// Array of strings that will show up as an index. If clicked, each entry takes to the point in the same document where the note is embedded
 		if (requestedFile == cases.gi) {
-			indexArray[i] =
-				"- [[" + fileName + "#" + noteName + "|" + noteName + "]]\n";
+					indexArray.push(
+				"- [[" + fileName + "#" + noteName + "|" + noteName + "]]\n"
+			);
 		} else {
-			indexArray[i] = "- [[" + noteName + "]]\n";
+			indexArray.push("- [[" + noteName + "]]\n");
 		}
 
 		// Array of strings that will show up as embedded notes
-		// ### to make them findable as sections
-		glossaryArray[i] = "#### ![[" + noteName + "]]\n\n***\n\n";
-	}
+		// #### to make them findable as sections
+		glossaryArray.push("#### ![[" + noteName + "]]\n\n***\n\n");
+	});
 
 	// Arrays toString + remove all ','
 	const indexText = "## Index\n" + indexArray.toString().replace(/,/g, "");
