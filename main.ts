@@ -50,14 +50,16 @@ export default class autoGlossary extends Plugin {
 										option,
 										fileName,
 										chosenFolder,
-										fileOrder
+										fileOrder,
+										destFolder
 									) => {
 										createFile(
 											getEnum(option),
 											this.settings.fileInclusion,
 											fileName,
 											chosenFolder,
-											fileOrder
+											fileOrder,
+											destFolder
 										);
 									},
 									folder.path,
@@ -87,14 +89,16 @@ export default class autoGlossary extends Plugin {
 										option,
 										fileName,
 										chosenFolder,
-										fileOrder
+										fileOrder,
+										destFolder
 									) => {
 										createFile(
 											getEnum(option),
 											this.settings.fileInclusion,
 											fileName,
 											chosenFolder,
-											fileOrder
+											fileOrder,
+											destFolder
 										);
 									},
 									folder.path,
@@ -124,14 +128,16 @@ export default class autoGlossary extends Plugin {
 										option,
 										fileName,
 										chosenFolder,
-										fileOrder
+										fileOrder,
+										destFolder
 									) => {
 										createFile(
 											getEnum(option),
 											this.settings.fileInclusion,
 											fileName,
 											chosenFolder,
-											fileOrder
+											fileOrder,
+											destFolder
 										);
 									},
 									folder.path,
@@ -150,13 +156,14 @@ export default class autoGlossary extends Plugin {
 			callback: () => {
 				new CreateFileModal(
 					this.app,
-					(option, fileName, chosenFolder, fileOrder) => {
+					(option, fileName, chosenFolder, fileOrder, destFolder) => {
 						createFile(
 							getEnum(option),
 							this.settings.fileInclusion,
 							fileName,
 							chosenFolder,
-							fileOrder
+							fileOrder,
+							destFolder
 						);
 					}
 				).open();

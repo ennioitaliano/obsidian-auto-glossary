@@ -9,7 +9,8 @@ export async function getFiles(
 	fileInclusion: boolean,
 	fileName?: string,
 	chosenFolder?: string,
-	fileOrder?: string
+	fileOrder?: string,
+	destFolder?: string
 ): Promise<string[]> {
 	let notesTFile = global.app.vault.getMarkdownFiles();
 	let notes: string[] = [];
@@ -17,7 +18,7 @@ export async function getFiles(
 	if (!fileInclusion) {
 		notesTFile = await cleanFiles(notesTFile);
 	}
-	console.log(fileOrder);
+
 	switch (fileOrder) {
 		case "ctime_new":
 			notesTFile.sort((a, b) => b.stat.ctime - a.stat.ctime);
@@ -94,7 +95,7 @@ export async function getFiles(
 
 		// Array of strings that will show up as embedded notes
 		// ### to make them findable as sections
-		glossaryArray[i] = "#### ![[" + noteName + "]]\n";
+		glossaryArray[i] = "#### ![[" + noteName + "]]\n\n***\n\n";
 	}
 
 	// Arrays toString + remove all ','
@@ -111,11 +112,19 @@ export async function createFile(
 	fileInclusion: boolean,
 	fileName: string,
 	chosenFolder?: string,
-	fileOrder?: string
+	fileOrder?: string,
+	destFolder?: string
 ) {
 	let completeFileName = "";
+	console.log(destFolder);
 
-	if (chosenFolder) {
+	if (destFolder) {
+		if (fileName) {
+			completeFileName = destFolder + "/" + fileName;
+		} else {
+			completeFileName = destFolder + "/" + requestedFile;
+		}
+	} else if (chosenFolder) {
 		if (fileName) {
 			completeFileName = chosenFolder + "/" + fileName;
 		} else {
@@ -154,7 +163,7 @@ async function createText(
 		chosenFolder,
 		fileOrder
 	);
-	let text = "---\ntags: oag\n---\n";
+	let text = "---\ntags: obsidian-auto-glossary\n---\n";
 
 	switch (requestedFile) {
 		case cases.g:

@@ -27,14 +27,12 @@ export class CreateFileModal extends Modal {
 		passedFolder?: string,
 		passedName?: string,
 		passedOption?: string,
-		passedDestFolder?: string
 	) {
 		super(app);
 		this.onSubmit = onSubmit;
 		this.chosenFolder = passedFolder ? passedFolder : "";
 		this.fileName = passedName ? passedName : "";
 		this.option = passedOption ? passedOption : "";
-		this.destFolder = passedDestFolder ? passedDestFolder : "";
 	}
 
 	onOpen() {
@@ -53,6 +51,9 @@ export class CreateFileModal extends Modal {
 		new Setting(contentEl).setName("Same destination").addToggle((toggle) =>
 			toggle.setValue(true).onChange((value) => {
 				destination.settingEl.toggleVisibility(!value);
+				if(value) {
+					this.destFolder = this.chosenFolder;
+				}
 			})
 		);
 
@@ -119,7 +120,8 @@ export class CreateFileModal extends Modal {
 							this.option,
 							this.fileName,
 							this.chosenFolder,
-							this.fileOrder
+							this.fileOrder,
+							this.destFolder
 						);
 					}
 				})

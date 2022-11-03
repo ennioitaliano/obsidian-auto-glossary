@@ -4,7 +4,7 @@ Obsidian plugin that allows user to create:
 - an index (or MOC) of files (list of `[[link]]`)
 - a glossary with an index (two lists above concatenated)
 ## TO-DO
-- [ ] choose the directory of files I want in the glossary
+- [x] choose the directory of files I want in the glossary
 	- [x] same as destination folder?
 	- [ ] what about sub-directories?
 		- [ ] option to create a file divided with sub-directories or tag

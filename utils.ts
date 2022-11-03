@@ -43,7 +43,7 @@ export function fileExists(fileName: string): boolean {
 		result = false;
 	}
 	if (result) {
-		new Notice("Already existing file");
+		new Notice("Already existing file" + fileName + ".md");
 	}
 	return result;
 }
@@ -59,7 +59,7 @@ export async function cleanFiles(notesTFiles: TFile[]): Promise<TFile[]> {
 	let i = 0,
 		y = 0;
 	while (i < notesTFiles.length - 1) {
-		if (!fileContents[i].toString().contains("---\ntags: oag\n---\n")) {
+		if (!fileContents[i].toString().contains("---\ntags: obsidian-auto-glossary\n---\n")) {
 			cleanedNotes[y] = notesTFiles[i];
 			i++;
 			y++;
