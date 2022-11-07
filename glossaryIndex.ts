@@ -2,8 +2,6 @@ import { Notice } from "obsidian";
 import { cases, cleanFiles } from "./utils";
 import { fileExists } from "./utils";
 
-var fs = require("fs");
-
 export async function getFiles(
 	requestedFile: cases,
 	fileInclusion: boolean,

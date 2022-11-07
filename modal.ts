@@ -2,9 +2,11 @@ import { App, Modal, Notice, Setting } from "obsidian";
 import { fileExists } from "utils";
 
 export class CreateFileModal extends Modal {
+	option: string;
 	fileName: string;
 	chosenFolder: string;
-	option: string;
+	fileOrder: string;
+	destFolder: string;
 	onSubmit: (
 		option: string,
 		fileName?: string,
@@ -12,8 +14,6 @@ export class CreateFileModal extends Modal {
 		fileOrder?: string,
 		destFolder?: string
 	) => void;
-	fileOrder: string;
-	destFolder: string;
 
 	constructor(
 		app: App,
@@ -26,7 +26,7 @@ export class CreateFileModal extends Modal {
 		) => void,
 		passedFolder?: string,
 		passedName?: string,
-		passedOption?: string,
+		passedOption?: string
 	) {
 		super(app);
 		this.onSubmit = onSubmit;
@@ -40,7 +40,7 @@ export class CreateFileModal extends Modal {
 
 		contentEl.createEl("h1", { text: "AutoGlossary" });
 
-		new Setting(contentEl).setName("Folder").addText((text) =>
+		new Setting(contentEl).setName("Folder").setDesc("The folder to get the files indexed from.").addText((text) =>
 			text
 				.onChange((value) => {
 					this.chosenFolder = value;
@@ -48,10 +48,10 @@ export class CreateFileModal extends Modal {
 				.setValue(this.chosenFolder)
 		);
 
-		new Setting(contentEl).setName("Same destination").addToggle((toggle) =>
+		new Setting(contentEl).setName("Same destination as folder").setDesc("If on, the file will be created in the same folder specified above and the 'Destination' field will be disabled.").addToggle((toggle) =>
 			toggle.setValue(true).onChange((value) => {
-				destination.settingEl.toggleVisibility(!value);
-				if(value) {
+				destination.setDisabled(value);
+				if (value) {
 					this.destFolder = this.chosenFolder;
 				}
 			})
@@ -61,16 +61,18 @@ export class CreateFileModal extends Modal {
 
 		destination
 			.setName("Destination")
+			.setDesc("If the toggle above is on, specify here the destination folder for the file created.")
 			.addText((text) =>
 				text
 					.onChange((value) => {
 						this.destFolder = value;
 					})
 					.setValue(this.destFolder)
+					.setDisabled(true)
 			)
-			.settingEl.toggleVisibility(false);
+			.setDisabled(true);
 
-		new Setting(contentEl).setName("File name").addText((text) =>
+		new Setting(contentEl).setName("File name").setDesc("The name of the created file.").addText((text) =>
 			text
 				.onChange((value) => {
 					this.fileName = value;
@@ -78,9 +80,8 @@ export class CreateFileModal extends Modal {
 				.setValue(this.fileName)
 		);
 
-		new Setting(contentEl).setName("File order").addDropdown((drop) =>
+		new Setting(contentEl).setName("File order").setDesc("The order for the files to be indexed.").addDropdown((drop) =>
 			drop
-				.addOption("", "File order")
 				.addOption("default", "Default")
 				.addOption("mtime_new", "Modification time - Newest to oldest")
 				.addOption("mtime_old", "Modification time - Oldest to newest")
@@ -88,21 +89,21 @@ export class CreateFileModal extends Modal {
 				.addOption("ctime_old", "Creation time - Oldest to newest")
 				.addOption("alphabetical", "Alphabetical")
 				.addOption("alphabetical_rev", "Alphabetical - Reverse")
+				.setValue("default")
 				.onChange((chosen) => {
 					this.fileOrder = chosen;
 				})
 		);
 
-		new Setting(contentEl).setName("File type").addDropdown((drop) =>
+		new Setting(contentEl).setName("File type").setDesc("Choose between index, glossary or both.").addDropdown((drop) =>
 			drop
-				.addOption("", "File type") // have to do this in order to get some value != undefined
 				.addOption("glossary", "Glossary")
 				.addOption("index", "Index")
-				.addOption("glossaryindex", "Both")
+				.addOption("glossaryindex", "Glossary with index")
 				.onChange((chosen) => {
 					this.option = chosen;
 				})
-				.setValue(this.option)
+				.setValue(this.option ? this.option : "index")
 		);
 
 		new Setting(contentEl).addButton((btn) =>
