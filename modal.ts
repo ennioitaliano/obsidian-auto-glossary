@@ -7,14 +7,12 @@ export class CreateFileModal extends Modal {
 	chosenFolder: string;
 	fileOrder: string;
 	destFolder: string;
-	dvField: string;
 	onSubmit: (
 		option: string,
 		fileName?: string,
 		chosenFolder?: string,
 		fileOrder?: string,
-		destFolder?: string,
-		dvField?: string
+		destFolder?: string
 	) => void;
 
 	constructor(
@@ -24,8 +22,7 @@ export class CreateFileModal extends Modal {
 			fileName: string,
 			chosenFolder: string,
 			fileOrder: string,
-			destFolder: string,
-			dvField: string
+			destFolder: string
 		) => void,
 		passedFolder?: string,
 		passedName?: string,
@@ -110,25 +107,6 @@ export class CreateFileModal extends Modal {
 				})
 				.setValue(this.option)
 		);
-
-		new Setting(contentEl).setName("Dataview").setDesc("If on, you can create the file using Dataview queries.").addToggle((toggle) =>
-			toggle.setValue(false).onChange((value) => {
-				dvfield.setDisabled(!value);
-			})
-		);
-
-		let dvfield = new Setting(contentEl);
-
-		dvfield
-			.setName("Dataview field")
-			.addText((text) =>
-				text
-					.onChange((value) => {
-						this.dvField = value;
-					})
-					.setValue(this.dvField)
-			)
-			.setDisabled(true);
 
 		new Setting(contentEl).addButton((btn) =>
 			btn
