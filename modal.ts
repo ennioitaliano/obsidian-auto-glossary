@@ -82,7 +82,6 @@ export class CreateFileModal extends Modal {
 
 		new Setting(contentEl).setName("File order").setDesc("The order for the files to be indexed.").addDropdown((drop) =>
 			drop
-				.addOption("", "File order")
 				.addOption("default", "Default")
 				.addOption("mtime_new", "Modification time - Newest to oldest")
 				.addOption("mtime_old", "Modification time - Oldest to newest")
@@ -98,14 +97,13 @@ export class CreateFileModal extends Modal {
 
 		new Setting(contentEl).setName("File type").setDesc("Choose between index, glossary or both.").addDropdown((drop) =>
 			drop
-				.addOption("", "File type") // have to do this in order to get some value != undefined
 				.addOption("glossary", "Glossary")
 				.addOption("index", "Index")
-				.addOption("glossaryindex", "Both")
+				.addOption("glossaryindex", "Glossary with index")
 				.onChange((chosen) => {
 					this.option = chosen;
 				})
-				.setValue(this.option)
+				.setValue(this.option ? this.option : "index")
 		);
 
 		new Setting(contentEl).addButton((btn) =>
