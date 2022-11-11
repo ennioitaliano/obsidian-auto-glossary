@@ -57,35 +57,14 @@ export async function cleanFiles(notesTFiles: TFile[]): Promise<TFile[]> {
 	const { vault } = this.app;
 	let cleanedNotes: TFile[] = [];
 
-	/*const fileContents: string[] = await Promise.all(
-		vault.getMarkdownFiles().map((file: any) => vault.cachedRead(file))
-	);
-
-	let i = 0,
-		y = 0;
-	while (i < notesTFiles.length - 1) {
+	notesTFiles.forEach(async (file: TFile) => {
+		const fileContent = await vault.cachedRead(file);
 		if (
-			!fileContents[i]
+			!fileContent
 				.toString()
 				.contains("---\ntags: obsidian-auto-glossary\n---\n")
 		) {
-			cleanedNotes[y] = notesTFiles[i];
-			i++;
-			y++;
-		} else {
-			i++;
-		}
-	} */
-
-	vault.getMarkdownFiles().forEach((file: TFile) => {
-		const fileContents = vault.cachedRead(file);
-		if (
-			!fileContents.toString().contains("---\ntags: obsidian-auto-glossary\n---\n")
-		) {
 			cleanedNotes.push(file);
-			console.log("FILE PULITO" + file.name);
-		} else {
-			console.log(file.name);
 		}
 	});
 
