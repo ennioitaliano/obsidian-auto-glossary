@@ -1,5 +1,5 @@
 import { App, Modal, Notice, Setting } from "obsidian";
-import { fileExists } from "utils";
+import { fileExists } from "./utils";
 
 export class CreateFileModal extends Modal {
 	option: string;
