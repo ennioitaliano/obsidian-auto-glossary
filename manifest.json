@@ -1,10 +1,10 @@
 {
-	"id": "obsidian-auto-glossary",
+	"id": "auto-glossary",
 	"name": "Auto Glossary",
-	"version": "0.8.6",
+	"version": "0.8.7",
 	"minAppVersion": "0.15.0",
 	"description": "Obsidian plugin to automatically create a file with an index (MOC), a glossary or both.",
 	"author": "Ennio Italiano",
-	"authorUrl": "http://ennioitaliano.rf.gd",
+	"authorUrl": "https://ennioitaliano.github.io",
 	"isDesktopOnly": true
 }
