@@ -11,8 +11,6 @@ import { CreateFileModal } from "./modal";
 import { createFile } from "./glossaryIndex";
 import { getEnum } from "./utils";
 
-// Remember to rename these classes and interfaces!
-
 interface AutoGlossarySettings {
 	fileInclusion: boolean;
 }
