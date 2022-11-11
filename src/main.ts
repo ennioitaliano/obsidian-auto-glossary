@@ -1,4 +1,11 @@
-import { App, Notice, Plugin, PluginSettingTab, Setting } from "obsidian";
+import {
+	App,
+	Notice,
+	Plugin,
+	PluginSettingTab,
+	Setting,
+	TFolder,
+} from "obsidian";
 
 import { CreateFileModal } from "./modal";
 import { createFile } from "./glossaryIndex";
@@ -35,15 +42,11 @@ export default class autoGlossary extends Plugin {
 
 		this.registerEvent(
 			this.app.workspace.on("file-menu", (menu, folder) => {
-				menu.addItem((item) => {
-					item.setTitle("Create index file")
-						.setIcon("list")
-						.onClick(async () => {
-							if (folder.path.contains(".md")) {
-								new Notice(
-									"You need to select a folder to create the file."
-								);
-							} else {
+				if (folder instanceof TFolder) {
+					menu.addItem((item) => {
+						item.setTitle("Create index file")
+							.setIcon("list")
+							.onClick(async () => {
 								new CreateFileModal(
 									this.app,
 									(
@@ -66,23 +69,19 @@ export default class autoGlossary extends Plugin {
 									folder.name + "_Index",
 									"index"
 								).open();
-							}
-						});
-				});
+							});
+					});
+				}
 			})
 		);
 
 		this.registerEvent(
 			this.app.workspace.on("file-menu", (menu, folder) => {
-				menu.addItem((item) => {
-					item.setTitle("Create glossary file")
-						.setIcon("layout-list")
-						.onClick(async () => {
-							if (folder.path.contains(".md")) {
-								new Notice(
-									"You need to select a folder to create the file."
-								);
-							} else {
+				if (folder instanceof TFolder) {
+					menu.addItem((item) => {
+						item.setTitle("Create glossary file")
+							.setIcon("layout-list")
+							.onClick(async () => {
 								new CreateFileModal(
 									this.app,
 									(
@@ -105,23 +104,19 @@ export default class autoGlossary extends Plugin {
 									folder.name + "_Glossary",
 									"glossary"
 								).open();
-							}
-						});
-				});
+							});
+					});
+				}
 			})
 		);
 
 		this.registerEvent(
 			this.app.workspace.on("file-menu", (menu, folder) => {
-				menu.addItem((item) => {
-					item.setTitle("Create index+glossary file")
-						.setIcon("list-ordered")
-						.onClick(async () => {
-							if (folder.path.contains(".md")) {
-								new Notice(
-									"You need to select a folder to create the file."
-								);
-							} else {
+				if (folder instanceof TFolder) {
+					menu.addItem((item) => {
+						item.setTitle("Create index+glossary file")
+							.setIcon("list-ordered")
+							.onClick(async () => {
 								new CreateFileModal(
 									this.app,
 									(
@@ -144,9 +139,9 @@ export default class autoGlossary extends Plugin {
 									folder.name + "_GlossaryIndex",
 									"glossaryindex"
 								).open();
-							}
-						});
-				});
+							});
+					});
+				}
 			})
 		);
 
@@ -173,17 +168,6 @@ export default class autoGlossary extends Plugin {
 		// SETTINGS
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new SettingTab(this.app, this));
-
-		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-		// Using this function will automatically remove the event listener when this plugin is disabled.
-		this.registerDomEvent(document, "click", (evt: MouseEvent) => {
-			console.log("click", evt);
-		});
-
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(
-			window.setInterval(() => console.log("setInterval"), 5 * 60 * 1000)
-		);
 	}
 
 	onunload() {

@@ -29,8 +29,9 @@ export function getEnum(value: string): cases {
 
 export function fileExists(fileName: string): boolean {
 	const notesTFiles = global.app.vault.getMarkdownFiles();
-	let notes: string[] = [];
 	let result: boolean;
+
+	/*let notes: string[] = [];
 
 	for (let i = 0; i < notesTFiles.length; i++) {
 		//console.log(i + notesTFile[i].path);
@@ -41,10 +42,14 @@ export function fileExists(fileName: string): boolean {
 		result = true;
 	} else {
 		result = false;
-	}
+	}*/
+
+	result = notesTFiles.some((file) => file.name.contains(fileName));
+
 	if (result) {
 		new Notice("Already existing file" + fileName + ".md");
 	}
+
 	return result;
 }
 
@@ -52,20 +57,16 @@ export async function cleanFiles(notesTFiles: TFile[]): Promise<TFile[]> {
 	const { vault } = this.app;
 	let cleanedNotes: TFile[] = [];
 
-	const fileContents: string[] = await Promise.all(
-		vault.getMarkdownFiles().map((file: any) => vault.cachedRead(file))
-	);
-
-	let i = 0,
-		y = 0;
-	while (i < notesTFiles.length - 1) {
-		if (!fileContents[i].toString().contains("---\ntags: obsidian-auto-glossary\n---\n")) {
-			cleanedNotes[y] = notesTFiles[i];
-			i++;
-			y++;
-		} else {
-			i++;
+	notesTFiles.forEach(async (file: TFile) => {
+		const fileContent = await vault.cachedRead(file);
+		if (
+			!fileContent
+				.toString()
+				.contains("---\ntags: obsidian-auto-glossary\n---\n")
+		) {
+			cleanedNotes.push(file);
 		}
-	}
+	});
+
 	return cleanedNotes;
 }
