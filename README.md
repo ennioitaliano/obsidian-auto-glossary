@@ -15,3 +15,4 @@ You can contribute to the code of this plugin, since there are more features to 
 - [ ] Eventual code refactoring
 - [ ] Option to exclude more tags from new files
 - [ ] Handle sub-directories
+- [ ] Possibility to update existing files
