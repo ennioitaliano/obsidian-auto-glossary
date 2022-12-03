@@ -1,4 +1,4 @@
-import { Notice, TFile } from "obsidian";
+import { DataAdapter, normalizePath, Notice, TFile } from "obsidian";
 import { cachedDataVersionTag } from "v8";
 
 export enum cases {
@@ -27,27 +27,18 @@ export function getEnum(value: string): cases {
 	return result;
 }
 
-export function fileExists(fileName: string): boolean {
-	const notesTFiles = global.app.vault.getMarkdownFiles();
+export async function fileExists(fileName: string): Promise<boolean> {
+	//const notesTFiles = app.vault.getMarkdownFiles();
 	let result: boolean;
+	const adapter: DataAdapter = app.vault.adapter;
 
-	/*let notes: string[] = [];
-
-	for (let i = 0; i < notesTFiles.length; i++) {
-		//console.log(i + notesTFile[i].path);
-		notes[i] = notesTFiles[i].path;
-	}
-
-	if (notes.contains(fileName + ".md")) {
-		result = true;
-	} else {
-		result = false;
-	}*/
-
-	result = notesTFiles.some((file) => file.name.contains(fileName));
+	//result = notesTFiles.some((file) => file.name.contains(fileName));
+	console.log(fileName);
+	result = await adapter.exists(fileName + ".md").then((value) => value);
+	console.log(result);
 
 	if (result) {
-		new Notice("Already existing file" + fileName + ".md");
+		new Notice("Already existing file " + fileName + ".md");
 	}
 
 	return result;

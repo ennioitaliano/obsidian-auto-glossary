@@ -1,4 +1,5 @@
-import { Notice } from "obsidian";
+import { exists } from "fs";
+import { DataAdapter, normalizePath, Notice } from "obsidian";
 import { cases, cleanFiles } from "./utils";
 import { fileExists } from "./utils";
 
@@ -9,7 +10,7 @@ export async function getFiles(
 	chosenFolder?: string,
 	fileOrder?: string
 ): Promise<string[]> {
-	let notesTFile = global.app.vault.getMarkdownFiles();
+	let notesTFile = app.vault.getMarkdownFiles();
 	let notes: string[] = [];
 
 	if (!fileInclusion) {
@@ -63,7 +64,6 @@ export async function getFiles(
 		default:
 			break;
 	}
-
 
 	notesTFile.forEach((file) => {
 		if (chosenFolder && file.path.includes(chosenFolder)) {
@@ -120,22 +120,26 @@ export async function createFile(
 
 	if (destFolder) {
 		if (fileName) {
-			completeFileName = destFolder + "/" + fileName;
+			completeFileName = normalizePath(destFolder + "/" + fileName);
 		} else {
-			completeFileName = destFolder + "/" + requestedFile;
+			completeFileName = normalizePath(destFolder + "/" + requestedFile);
 		}
 	} else if (chosenFolder) {
 		if (fileName) {
-			completeFileName = chosenFolder + "/" + fileName;
+			completeFileName = normalizePath(chosenFolder + "/" + fileName);
 		} else {
-			completeFileName = chosenFolder + "/" + requestedFile;
+			completeFileName = normalizePath(
+				chosenFolder + "/" + requestedFile
+			);
 		}
 	} else {
-		completeFileName = requestedFile;
+		completeFileName = normalizePath(requestedFile);
 	}
 
-	if (!fileExists(completeFileName)) {
-		this.app.vault.create(
+	const fileExistsBool = await fileExists(completeFileName);
+
+	if (!fileExistsBool) {
+		app.vault.create(
 			completeFileName + ".md",
 			await createText(
 				requestedFile,
