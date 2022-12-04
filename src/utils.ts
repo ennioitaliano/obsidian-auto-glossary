@@ -1,5 +1,4 @@
-import { DataAdapter, normalizePath, Notice, TFile } from "obsidian";
-import { cachedDataVersionTag } from "v8";
+import { App, DataAdapter, Notice, TFile } from "obsidian";
 
 export enum cases {
 	i = "index",
@@ -27,7 +26,7 @@ export function getEnum(value: string): cases {
 	return result;
 }
 
-export async function fileExists(fileName: string): Promise<boolean> {
+export async function fileExists(app: App, fileName: string): Promise<boolean> {
 	//const notesTFiles = app.vault.getMarkdownFiles();
 	let result: boolean;
 	const adapter: DataAdapter = app.vault.adapter;
@@ -44,8 +43,11 @@ export async function fileExists(fileName: string): Promise<boolean> {
 	return result;
 }
 
-export async function cleanFiles(notesTFiles: TFile[]): Promise<TFile[]> {
-	const { vault } = this.app;
+export async function cleanFiles(
+	app: App,
+	notesTFiles: TFile[]
+): Promise<TFile[]> {
+	const { vault } = app;
 	let cleanedNotes: TFile[] = [];
 
 	notesTFiles.forEach(async (file: TFile) => {

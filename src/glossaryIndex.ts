@@ -1,9 +1,9 @@
-import { exists } from "fs";
-import { DataAdapter, normalizePath, Notice } from "obsidian";
+import { App, normalizePath, Notice } from "obsidian";
 import { cases, cleanFiles } from "./utils";
 import { fileExists } from "./utils";
 
 export async function getFiles(
+	app: App,
 	requestedFile: cases,
 	fileInclusion: boolean,
 	fileName?: string,
@@ -14,7 +14,7 @@ export async function getFiles(
 	let notes: string[] = [];
 
 	if (!fileInclusion) {
-		notesTFile = await cleanFiles(notesTFile);
+		notesTFile = await cleanFiles(app, notesTFile);
 	}
 
 	switch (fileOrder) {
@@ -109,6 +109,7 @@ export async function getFiles(
 
 // This takes in which type of file we want to create and an optional fileName
 export async function createFile(
+	app: App,
 	requestedFile: cases,
 	fileInclusion: boolean,
 	fileName: string,
@@ -136,12 +137,13 @@ export async function createFile(
 		completeFileName = normalizePath(requestedFile);
 	}
 
-	const fileExistsBool = await fileExists(completeFileName);
+	const fileExistsBool = await fileExists(app, completeFileName);
 
 	if (!fileExistsBool) {
 		app.vault.create(
 			completeFileName + ".md",
 			await createText(
+				app,
 				requestedFile,
 				fileInclusion,
 				fileName,
@@ -154,6 +156,7 @@ export async function createFile(
 }
 
 async function createText(
+	app: App,
 	requestedFile: cases,
 	fileInclusion: boolean,
 	fileName?: string,
@@ -161,6 +164,7 @@ async function createText(
 	fileOrder?: string
 ): Promise<string> {
 	let array = await getFiles(
+		app,
 		requestedFile,
 		fileInclusion,
 		fileName,

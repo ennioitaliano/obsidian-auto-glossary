@@ -55,6 +55,7 @@ export default class autoGlossary extends Plugin {
 										destFolder
 									) => {
 										createFile(
+											this.app,
 											getEnum(option),
 											this.settings.fileInclusion,
 											fileName,
@@ -90,6 +91,7 @@ export default class autoGlossary extends Plugin {
 										destFolder
 									) => {
 										createFile(
+											this.app,
 											getEnum(option),
 											this.settings.fileInclusion,
 											fileName,
@@ -125,6 +127,7 @@ export default class autoGlossary extends Plugin {
 										destFolder
 									) => {
 										createFile(
+											this.app,
 											getEnum(option),
 											this.settings.fileInclusion,
 											fileName,
@@ -151,6 +154,7 @@ export default class autoGlossary extends Plugin {
 					this.app,
 					(option, fileName, chosenFolder, fileOrder, destFolder) => {
 						createFile(
+							this.app,
 							getEnum(option),
 							this.settings.fileInclusion,
 							fileName,
