@@ -1,11 +1,4 @@
-import {
-	App,
-	Notice,
-	Plugin,
-	PluginSettingTab,
-	Setting,
-	TFolder,
-} from "obsidian";
+import { App, Plugin, PluginSettingTab, Setting, TFolder } from "obsidian";
 
 import { CreateFileModal } from "./modal";
 import { createFile } from "./glossaryIndex";

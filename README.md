@@ -16,8 +16,3 @@ The plugin is available in the Community Plugins section inside Obsidian, or you
 
 ## Contribute
 You can contribute to the code of this plugin, since there are more features to be implemented. You can also share feedback, issues, and ideas here on GitHub.
-### TO-DO
-- [ ] Eventual code refactoring
-- [ ] Option to exclude more tags from new files
-- [ ] Handle sub-directories
-- [ ] Possibility to update existing files

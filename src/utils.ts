@@ -28,12 +28,11 @@ export function getEnum(value: string): cases {
 
 export async function fileExists(app: App, fileName: string): Promise<boolean> {
 	//const notesTFiles = app.vault.getMarkdownFiles();
-	let result: boolean;
 	const adapter: DataAdapter = app.vault.adapter;
 
 	//result = notesTFiles.some((file) => file.name.contains(fileName));
 	console.log(fileName);
-	result = await adapter.exists(fileName + ".md").then((value) => value);
+	const result = await adapter.exists(fileName + ".md").then((value) => value);
 	console.log(result);
 
 	if (result) {
@@ -48,7 +47,7 @@ export async function cleanFiles(
 	notesTFiles: TFile[]
 ): Promise<TFile[]> {
 	const { vault } = app;
-	let cleanedNotes: TFile[] = [];
+	const cleanedNotes: TFile[] = [];
 
 	notesTFiles.forEach(async (file: TFile) => {
 		const fileContent = await vault.cachedRead(file);

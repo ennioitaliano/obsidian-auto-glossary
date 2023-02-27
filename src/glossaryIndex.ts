@@ -11,7 +11,7 @@ export async function getFiles(
 	fileOrder?: string
 ): Promise<string[]> {
 	let notesTFile = app.vault.getMarkdownFiles();
-	let notes: string[] = [];
+	const notes: string[] = [];
 
 	if (!fileInclusion) {
 		notesTFile = await cleanFiles(app, notesTFile);
@@ -163,7 +163,7 @@ async function createText(
 	chosenFolder?: string,
 	fileOrder?: string
 ): Promise<string> {
-	let array = await getFiles(
+	const array = await getFiles(
 		app,
 		requestedFile,
 		fileInclusion,

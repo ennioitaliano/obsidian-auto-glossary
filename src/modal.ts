@@ -64,7 +64,7 @@ export class CreateFileModal extends Modal {
 				})
 			);
 
-		let destination = new Setting(contentEl);
+		const destination = new Setting(contentEl);
 
 		destination
 			.setName("Destination")
@@ -164,7 +164,7 @@ export class CreateFileModal extends Modal {
 	}
 
 	onClose() {
-		let { contentEl } = this;
+		const { contentEl } = this;
 		contentEl.empty();
 	}
 }
