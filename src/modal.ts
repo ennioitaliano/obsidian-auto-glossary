@@ -1,4 +1,5 @@
 import { App, Modal, Setting } from "obsidian";
+import { cases } from "utils";
 
 export class CreateFileModal extends Modal {
 	option: string;
@@ -69,7 +70,7 @@ export class CreateFileModal extends Modal {
 		destination
 			.setName("Destination")
 			.setDesc(
-				"If the toggle above is on, specify here the destination folder for the file created."
+				"If the above toggle is off, specify here the destination folder for the file created."
 			)
 			.addText((text) =>
 				text
@@ -121,13 +122,13 @@ export class CreateFileModal extends Modal {
 			.setDesc("Choose between index, glossary or both.")
 			.addDropdown((drop) =>
 				drop
-					.addOption("glossary", "Glossary")
-					.addOption("index", "Index")
-					.addOption("glossaryindex", "Glossary with index")
+					.addOption(cases.g, "Glossary")
+					.addOption(cases.i, "Index")
+					.addOption(cases.gi, "Glossary with index")
 					.onChange((chosen) => {
 						this.option = chosen;
 					})
-					.setValue(this.option ? this.option : "index")
+					.setValue(this.option ? this.option : cases.gi)
 			);
 
 		new Setting(contentEl).addButton((btn) =>
@@ -139,18 +140,8 @@ export class CreateFileModal extends Modal {
 						this.fileName = this.option;
 					}
 
-					/*if (
-						!fileExists(
-							normalizePath(
-								(this.destFolder
-									? this.destFolder
-									: this.chosenFolder) +
-									"/" +
-									this.fileName
-							)
-						)
-					) {*/
 					this.close();
+
 					this.onSubmit(
 						this.option,
 						this.fileName,
@@ -158,7 +149,6 @@ export class CreateFileModal extends Modal {
 						this.fileOrder,
 						this.destFolder
 					);
-					//}
 				})
 		);
 	}

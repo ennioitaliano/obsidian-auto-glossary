@@ -16,7 +16,7 @@ export default class autoGlossary extends Plugin {
 	// SETTINGS
 	settings: AutoGlossarySettings;
 	async onload() {
-		console.log("Auto Glossary enabled");
+		console.info("Auto Glossary enabled");
 
 		//SETTINGS
 		await this.loadSettings();
@@ -166,7 +166,7 @@ export default class autoGlossary extends Plugin {
 	}
 
 	onunload() {
-		console.log("Auto Glossary disabled");
+		console.info("Auto Glossary unloaded");
 	}
 
 	// SETTINGS

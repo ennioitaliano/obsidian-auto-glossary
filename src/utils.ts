@@ -1,13 +1,15 @@
 import { App, DataAdapter, Notice, TFile } from "obsidian";
 
+// enum to handle different cases
 export enum cases {
 	i = "index",
 	g = "glossary",
 	gi = "glossaryIndex",
 }
 
+// function to get the enum value from the string
 export function getEnum(value: string): cases {
-	let result: cases = cases.gi;
+	let result: cases;
 
 	switch (value.toLowerCase()) {
 		case "glossary":
@@ -20,6 +22,7 @@ export function getEnum(value: string): cases {
 			result = cases.gi;
 			break;
 		default:
+			result = cases.gi;
 			break;
 	}
 
@@ -27,13 +30,8 @@ export function getEnum(value: string): cases {
 }
 
 export async function fileExists(app: App, fileName: string): Promise<boolean> {
-	//const notesTFiles = app.vault.getMarkdownFiles();
 	const adapter: DataAdapter = app.vault.adapter;
-
-	//result = notesTFiles.some((file) => file.name.contains(fileName));
-	console.log(fileName);
-	const result = await adapter.exists(fileName + ".md").then((value) => value);
-	console.log(result);
+	const result = await adapter.exists(fileName + ".md");
 
 	if (result) {
 		new Notice("Already existing file " + fileName + ".md");
@@ -51,11 +49,7 @@ export async function cleanFiles(
 
 	notesTFiles.forEach(async (file: TFile) => {
 		const fileContent = await vault.cachedRead(file);
-		if (
-			!fileContent
-				.toString()
-				.contains("---\ntags: obsidian-auto-glossary\n---\n")
-		) {
+		if (!fileContent.contains("---\ntags: obsidian-auto-glossary\n---\n")) {
 			cleanedNotes.push(file);
 		}
 	});
