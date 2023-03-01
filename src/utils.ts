@@ -1,4 +1,4 @@
-import { App, DataAdapter, Notice, TFile } from "obsidian";
+import { App, DataAdapter, TFile } from "obsidian";
 
 // enum to handle different cases
 export enum fileType {
@@ -82,7 +82,7 @@ export async function fileExists(app: App, fileName: string): Promise<boolean> {
 	const result = await adapter.exists(fileName + ".md");
 
 	if (result) {
-		new Notice("Already existing file " + fileName + ".md");
+		console.log("Already existing file " + fileName + ".md");
 	}
 
 	return result;

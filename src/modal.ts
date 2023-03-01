@@ -3,12 +3,15 @@ import { fileType } from "utils";
 
 export class CreateFileModal extends Modal {
 	option: string;
+	overwrite: boolean;
 	fileName: string;
 	chosenFolder: string;
 	fileOrder: string;
 	destFolder: string;
+
 	onSubmit: (
 		option: string,
+		overwrite: boolean,
 		fileName?: string,
 		chosenFolder?: string,
 		fileOrder?: string,
@@ -17,8 +20,10 @@ export class CreateFileModal extends Modal {
 
 	constructor(
 		app: App,
+		overwrite: boolean,
 		onSubmit: (
 			option: string,
+			overwrite: boolean,
 			fileName: string,
 			chosenFolder: string,
 			fileOrder: string,
@@ -30,12 +35,15 @@ export class CreateFileModal extends Modal {
 	) {
 		super(app);
 		this.onSubmit = onSubmit;
+		this.overwrite = overwrite;
 		this.chosenFolder = passedFolder ? passedFolder : "";
 		this.fileName = passedName ? passedName : "";
 		this.option = passedOption ? passedOption : "";
 	}
 
 	onOpen() {
+		console.log(this.overwrite);
+
 		const { contentEl } = this;
 
 		contentEl.createEl("h1", { text: "AutoGlossary" });
@@ -94,6 +102,17 @@ export class CreateFileModal extends Modal {
 			);
 
 		new Setting(contentEl)
+			.setName("Overwrite existing file")
+			.setDesc(
+				"If turned on, if a file with the same name and location already exists, it will be overwritten. Default behavior can be changed in the plugin settings."
+			)
+			.addToggle((toggle) =>
+				toggle.setValue(this.overwrite).onChange((value) => {
+					this.overwrite = value;
+				})
+			);
+
+		new Setting(contentEl)
 			.setName("File order")
 			.setDesc("The order for the files to be indexed.")
 			.addDropdown((drop) =>
@@ -144,6 +163,7 @@ export class CreateFileModal extends Modal {
 
 					this.onSubmit(
 						this.option,
+						this.overwrite,
 						this.fileName,
 						this.chosenFolder,
 						this.fileOrder,

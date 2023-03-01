@@ -2,13 +2,15 @@ import { App, Plugin, PluginSettingTab, Setting, TFolder } from "obsidian";
 
 import { CreateFileModal } from "./modal";
 import { createFile } from "./glossaryIndex";
-import { getEnumFT, getEnumFO } from "./utils";
+import { getEnumFT, getEnumFO, fileType } from "./utils";
 
 interface AutoGlossarySettings {
+	fileOverwrite: boolean;
 	fileInclusion: boolean;
 }
 
 const DEFAULT_SETTINGS: AutoGlossarySettings = {
+	fileOverwrite: false,
 	fileInclusion: false,
 };
 
@@ -40,8 +42,10 @@ export default class autoGlossary extends Plugin {
 							.onClick(async () => {
 								new CreateFileModal(
 									this.app,
+									this.settings.fileOverwrite,
 									(
 										option,
+										overwrite,
 										fileName,
 										chosenFolder,
 										fileOrder,
@@ -51,6 +55,7 @@ export default class autoGlossary extends Plugin {
 											this.app,
 											getEnumFT(option),
 											this.settings.fileInclusion,
+											overwrite,
 											fileName,
 											chosenFolder,
 											getEnumFO(fileOrder),
@@ -59,7 +64,7 @@ export default class autoGlossary extends Plugin {
 									},
 									folder.path,
 									folder.name + "_Index",
-									"index"
+									fileType.i
 								).open();
 							});
 					});
@@ -76,8 +81,10 @@ export default class autoGlossary extends Plugin {
 							.onClick(async () => {
 								new CreateFileModal(
 									this.app,
+									this.settings.fileOverwrite,
 									(
 										option,
+										overwrite,
 										fileName,
 										chosenFolder,
 										fileOrder,
@@ -87,6 +94,7 @@ export default class autoGlossary extends Plugin {
 											this.app,
 											getEnumFT(option),
 											this.settings.fileInclusion,
+											overwrite,
 											fileName,
 											chosenFolder,
 											getEnumFO(fileOrder),
@@ -95,7 +103,7 @@ export default class autoGlossary extends Plugin {
 									},
 									folder.path,
 									folder.name + "_Glossary",
-									"glossary"
+									fileType.g
 								).open();
 							});
 					});
@@ -112,8 +120,10 @@ export default class autoGlossary extends Plugin {
 							.onClick(async () => {
 								new CreateFileModal(
 									this.app,
+									this.settings.fileOverwrite,
 									(
 										option,
+										overwrite,
 										fileName,
 										chosenFolder,
 										fileOrder,
@@ -123,6 +133,7 @@ export default class autoGlossary extends Plugin {
 											this.app,
 											getEnumFT(option),
 											this.settings.fileInclusion,
+											overwrite,
 											fileName,
 											chosenFolder,
 											getEnumFO(fileOrder),
@@ -131,7 +142,7 @@ export default class autoGlossary extends Plugin {
 									},
 									folder.path,
 									folder.name + "_GlossaryIndex",
-									"glossaryindex"
+									fileType.gi
 								).open();
 							});
 					});
@@ -145,12 +156,21 @@ export default class autoGlossary extends Plugin {
 			callback: () => {
 				new CreateFileModal(
 					this.app,
-					(option, fileName, chosenFolder, fileOrder, destFolder) => {
+					this.settings.fileOverwrite,
+					(
+						option,
+						fileName,
+						chosenFolder,
+						fileOrder,
+						destFolder,
+						overwrite
+					) => {
 						createFile(
 							this.app,
 							getEnumFT(option),
 							this.settings.fileInclusion,
 							fileName,
+							overwrite,
 							chosenFolder,
 							getEnumFO(fileOrder),
 							destFolder
@@ -202,7 +222,7 @@ class SettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("File inclusion")
 			.setDesc(
-				"Include previously generated files in glossaries and indexes"
+				"Include previously generated files in glossaries and indexes."
 			)
 			.addToggle((toggle) =>
 				toggle
@@ -210,6 +230,21 @@ class SettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						console.log("fileInclusion switched to " + value);
 						this.plugin.settings.fileInclusion = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Overwrite existing files")
+			.setDesc(
+				"Set the default behavior when a file already exists. Can be changed every time in the modal."
+			)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.fileOverwrite)
+					.onChange(async (value) => {
+						console.log("fileOverwrite switched to " + value);
+						this.plugin.settings.fileOverwrite = value;
 						await this.plugin.saveSettings();
 					})
 			);

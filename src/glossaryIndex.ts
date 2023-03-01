@@ -1,4 +1,4 @@
-import { App, normalizePath, Notice } from "obsidian";
+import { App, DataAdapter, normalizePath, Notice } from "obsidian";
 import {
 	fileType,
 	cleanFiles,
@@ -62,7 +62,6 @@ export async function createArrays(
 	const glossaryText =
 		"## Glossary\n" +
 		glossaryArray.toString().replace(/,####\s!\[\[/g, "#### ![[");
-	console.log(glossaryText);
 	return [indexText, glossaryText];
 }
 
@@ -71,6 +70,7 @@ export async function createFile(
 	app: App,
 	requestedFile: fileType,
 	fileInclusion: boolean,
+	fileOverwrite: boolean,
 	fileName: string,
 	chosenFolder?: string,
 	fileOrder?: fileOrder,
@@ -97,9 +97,18 @@ export async function createFile(
 	}
 
 	const fileExistsBool = await fileExists(app, completeFileName);
+	const adapter: DataAdapter = app.vault.adapter;
 
-	if (!fileExistsBool) {
-		app.vault.create(
+	console.log("destFolder: " + destFolder);
+	console.log("fileName: " + fileName);
+	console.log("requestedFile: " + requestedFile);
+	console.log("chosenFolder: " + chosenFolder);
+	console.log("completeFileName: " + completeFileName);
+
+	if (fileExistsBool && !fileOverwrite) {
+		new Notice(`${completeFileName} file already exists. Try again with overwrite enabled or a different file name.`);
+	} else {
+		adapter.write(
 			completeFileName + ".md",
 			await createText(
 				app,
@@ -110,7 +119,7 @@ export async function createFile(
 				fileOrder
 			)
 		);
-		new Notice(`${completeFileName} file created`);
+		new Notice(`${completeFileName} file updated`);
 	}
 }
 
