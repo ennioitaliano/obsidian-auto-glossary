@@ -1,10 +1,9 @@
 import { App, normalizePath, Notice } from "obsidian";
-import { cases, cleanFiles } from "./utils";
-import { fileExists } from "./utils";
+import { fileType, cleanFiles, fileExists, sortFiles } from "./utils";
 
 export async function getFiles(
 	app: App,
-	requestedFile: cases,
+	requestedFile: fileType,
 	fileInclusion: boolean,
 	fileName?: string,
 	chosenFolder?: string,
@@ -17,63 +16,15 @@ export async function getFiles(
 		notesTFile = await cleanFiles(app, notesTFile);
 	}
 
-	switch (fileOrder) {
-		case "ctime_new":
-			notesTFile.sort((a, b) => b.stat.ctime - a.stat.ctime);
-			break;
-		case "ctime_old":
-			notesTFile.sort((a, b) => a.stat.ctime - b.stat.ctime);
-			break;
-		case "mtime_new":
-			notesTFile.sort((a, b) => b.stat.mtime - a.stat.mtime);
-			break;
-		case "mtime_old":
-			notesTFile.sort((a, b) => a.stat.mtime - b.stat.mtime);
-			break;
-		case "alphabetical":
-			notesTFile.sort((a, b) => {
-				const nameA = a.name.toUpperCase(); // ignore upper and lowercase
-				const nameB = b.name.toUpperCase(); // ignore upper and lowercase
-				if (nameA < nameB) {
-					return -1;
-				}
-				if (nameA > nameB) {
-					return 1;
-				}
-
-				// names must be equal
-				return 0;
-			});
-			break;
-		case "alphabetical_rev":
-			notesTFile.sort((a, b) => {
-				const nameA = a.name.toUpperCase(); // ignore upper and lowercase
-				const nameB = b.name.toUpperCase(); // ignore upper and lowercase
-				if (nameA > nameB) {
-					return -1;
-				}
-				if (nameA < nameB) {
-					return 1;
-				}
-
-				// names must be equal
-				return 0;
-			});
-			break;
-		case "default":
-		default:
-			break;
+	if(fileOrder) {
+		notesTFile = sortFiles(notesTFile, fileOrder);
 	}
 
 	notesTFile.forEach((file) => {
-		if (chosenFolder && file.path.includes(chosenFolder)) {
-			/*if (file.path.replace(chosenFolder + "/", "").includes("/")) {
-				file.path.replace(chosenFolder + "/", "").indexOf("/");
-				console.log(file.path.replace(chosenFolder + "/", ""));
-			}*/
-
-			notes.push(file.name);
-		} else if (!chosenFolder) {
+		if (
+			(chosenFolder && file.path.includes(chosenFolder)) ||
+			!chosenFolder
+		) {
 			notes.push(file.name);
 		}
 	});
@@ -86,7 +37,7 @@ export async function getFiles(
 		const noteName = note.slice(0, -3);
 
 		// Array of strings that will show up as an index. If clicked, each entry takes to the point in the same document where the note is embedded
-		if (requestedFile == cases.gi) {
+		if (requestedFile == fileType.gi) {
 			indexArray.push(
 				"- [[" + fileName + "#" + noteName + "|" + noteName + "]]\n"
 			);
@@ -110,7 +61,7 @@ export async function getFiles(
 // This takes in which type of file we want to create and an optional fileName
 export async function createFile(
 	app: App,
-	requestedFile: cases,
+	requestedFile: fileType,
 	fileInclusion: boolean,
 	fileName: string,
 	chosenFolder?: string,
@@ -157,7 +108,7 @@ export async function createFile(
 
 async function createText(
 	app: App,
-	requestedFile: cases,
+	requestedFile: fileType,
 	fileInclusion: boolean,
 	fileName?: string,
 	chosenFolder?: string,
@@ -174,13 +125,13 @@ async function createText(
 	let text = "---\ntags: obsidian-auto-glossary\n---\n";
 
 	switch (requestedFile) {
-		case cases.g:
+		case fileType.g:
 			text += array[1];
 			break;
-		case cases.i:
+		case fileType.i:
 			text += array[0];
 			break;
-		case cases.gi:
+		case fileType.gi:
 			text += array[0] + "\n***\n\n" + array[1];
 			break;
 		default:

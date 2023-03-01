@@ -1,5 +1,5 @@
 import { App, Modal, Setting } from "obsidian";
-import { cases } from "utils";
+import { fileType } from "utils";
 
 export class CreateFileModal extends Modal {
 	option: string;
@@ -122,13 +122,13 @@ export class CreateFileModal extends Modal {
 			.setDesc("Choose between index, glossary or both.")
 			.addDropdown((drop) =>
 				drop
-					.addOption(cases.g, "Glossary")
-					.addOption(cases.i, "Index")
-					.addOption(cases.gi, "Glossary with index")
+					.addOption(fileType.g, "Glossary")
+					.addOption(fileType.i, "Index")
+					.addOption(fileType.gi, "Glossary with index")
 					.onChange((chosen) => {
 						this.option = chosen;
 					})
-					.setValue(this.option ? this.option : cases.gi)
+					.setValue(this.option ? this.option : fileType.gi)
 			);
 
 		new Setting(contentEl).addButton((btn) =>
