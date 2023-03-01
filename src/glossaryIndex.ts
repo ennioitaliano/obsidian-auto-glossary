@@ -16,7 +16,7 @@ export async function getFiles(
 		notesTFile = await cleanFiles(app, notesTFile);
 	}
 
-	if(fileOrder) {
+	if (fileOrder) {
 		notesTFile = sortFiles(notesTFile, fileOrder);
 	}
 
@@ -50,10 +50,10 @@ export async function getFiles(
 		glossaryArray.push("#### ![[" + noteName + "]]\n\n***\n\n");
 	});
 
-	// Arrays toString + remove all ','
-	const indexText = "## Index\n" + indexArray.toString().replace(/,/g, "");
+	// Arrays toString + remove only the commas that separate the entries
+	const indexText = "## Index\n" + indexArray.toString().replace(/,-\s\[\[/g, "- [[");
 	const glossaryText =
-		"## Glossary\n" + glossaryArray.toString().replace(/,/g, "");
+		"## Glossary\n" + glossaryArray.toString().replace(/,-\s\[\[/g, "- [[");
 
 	return [indexText, glossaryText];
 }
