@@ -2,7 +2,7 @@ import { App, Plugin, PluginSettingTab, Setting, TFolder } from "obsidian";
 
 import { CreateFileModal } from "./modal";
 import { createFile } from "./glossaryIndex";
-import { getEnum } from "./utils";
+import { getEnumFT, getEnumFO } from "./utils";
 
 interface AutoGlossarySettings {
 	fileInclusion: boolean;
@@ -49,11 +49,11 @@ export default class autoGlossary extends Plugin {
 									) => {
 										createFile(
 											this.app,
-											getEnum(option),
+											getEnumFT(option),
 											this.settings.fileInclusion,
 											fileName,
 											chosenFolder,
-											fileOrder,
+											getEnumFO(fileOrder),
 											destFolder
 										);
 									},
@@ -85,11 +85,11 @@ export default class autoGlossary extends Plugin {
 									) => {
 										createFile(
 											this.app,
-											getEnum(option),
+											getEnumFT(option),
 											this.settings.fileInclusion,
 											fileName,
 											chosenFolder,
-											fileOrder,
+											getEnumFO(fileOrder),
 											destFolder
 										);
 									},
@@ -121,11 +121,11 @@ export default class autoGlossary extends Plugin {
 									) => {
 										createFile(
 											this.app,
-											getEnum(option),
+											getEnumFT(option),
 											this.settings.fileInclusion,
 											fileName,
 											chosenFolder,
-											fileOrder,
+											getEnumFO(fileOrder),
 											destFolder
 										);
 									},
@@ -148,11 +148,11 @@ export default class autoGlossary extends Plugin {
 					(option, fileName, chosenFolder, fileOrder, destFolder) => {
 						createFile(
 							this.app,
-							getEnum(option),
+							getEnumFT(option),
 							this.settings.fileInclusion,
 							fileName,
 							chosenFolder,
-							fileOrder,
+							getEnumFO(fileOrder),
 							destFolder
 						);
 					}

@@ -1,13 +1,19 @@
 import { App, normalizePath, Notice } from "obsidian";
-import { fileType, cleanFiles, fileExists, sortFiles } from "./utils";
+import {
+	fileType,
+	cleanFiles,
+	fileExists,
+	sortFiles,
+	fileOrder,
+} from "./utils";
 
-export async function getFiles(
+export async function createArrays(
 	app: App,
 	requestedFile: fileType,
 	fileInclusion: boolean,
 	fileName?: string,
 	chosenFolder?: string,
-	fileOrder?: string
+	fileOrder?: fileOrder
 ): Promise<string[]> {
 	let notesTFile = app.vault.getMarkdownFiles();
 	const notes: string[] = [];
@@ -51,10 +57,12 @@ export async function getFiles(
 	});
 
 	// Arrays toString + remove only the commas that separate the entries
-	const indexText = "## Index\n" + indexArray.toString().replace(/,-\s\[\[/g, "- [[");
+	const indexText =
+		"## Index\n" + indexArray.toString().replace(/,-\s\[\[/g, "- [[");
 	const glossaryText =
-		"## Glossary\n" + glossaryArray.toString().replace(/,-\s\[\[/g, "- [[");
-
+		"## Glossary\n" +
+		glossaryArray.toString().replace(/,####\s!\[\[/g, "#### ![[");
+	console.log(glossaryText);
 	return [indexText, glossaryText];
 }
 
@@ -65,7 +73,7 @@ export async function createFile(
 	fileInclusion: boolean,
 	fileName: string,
 	chosenFolder?: string,
-	fileOrder?: string,
+	fileOrder?: fileOrder,
 	destFolder?: string
 ) {
 	let completeFileName = "";
@@ -112,9 +120,9 @@ async function createText(
 	fileInclusion: boolean,
 	fileName?: string,
 	chosenFolder?: string,
-	fileOrder?: string
+	fileOrder?: fileOrder
 ): Promise<string> {
-	const array = await getFiles(
+	const array = await createArrays(
 		app,
 		requestedFile,
 		fileInclusion,

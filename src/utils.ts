@@ -7,8 +7,19 @@ export enum fileType {
 	gi = "glossaryIndex",
 }
 
-// function to get the enum value from the string
-export function getEnum(value: string): fileType {
+// enum to handle different orders
+export enum fileOrder {
+	default = "default",
+	mtime_new = "mtime_new",
+	mtime_old = "mtime_old",
+	ctime_new = "ctime_new",
+	ctime_old = "ctime_old",
+	alphabetical = "alphabetical",
+	alphabetical_rev = "alphabetical_rev",
+}
+
+// function to get the file type enum key from the string
+export function getEnumFT(value: string): fileType {
 	let result: fileType;
 
 	switch (value.toLowerCase()) {
@@ -24,6 +35,43 @@ export function getEnum(value: string): fileType {
 		default:
 			result = fileType.gi;
 			break;
+	}
+
+	return result;
+}
+
+// function to get the file order enum key from the string
+export function getEnumFO(value: string): fileOrder {
+	let result: fileOrder;
+	if (!value) {
+		return fileOrder.default;
+	} else {
+		switch (value.toLowerCase()) {
+			case "default":
+				result = fileOrder.default;
+				break;
+			case "mtime_new":
+				result = fileOrder.mtime_new;
+				break;
+			case "mtime_old":
+				result = fileOrder.mtime_old;
+				break;
+			case "ctime_new":
+				result = fileOrder.ctime_new;
+				break;
+			case "ctime_old":
+				result = fileOrder.ctime_old;
+				break;
+			case "alphabetical":
+				result = fileOrder.alphabetical;
+				break;
+			case "alphabetical_rev":
+				result = fileOrder.alphabetical_rev;
+				break;
+			default:
+				result = fileOrder.default;
+				break;
+		}
 	}
 
 	return result;
@@ -57,7 +105,7 @@ export async function cleanFiles(
 	return cleanedNotes;
 }
 
-export function sortFiles(notesTFile: TFile[], fileOrder: string) {
+export function sortFiles(notesTFile: TFile[], fileOrder: fileOrder) {
 	switch (fileOrder) {
 		case "ctime_new":
 			notesTFile.sort((a, b) => b.stat.ctime - a.stat.ctime);
