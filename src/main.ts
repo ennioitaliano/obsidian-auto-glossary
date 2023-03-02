@@ -7,12 +7,14 @@ import { getEnumFT, getEnumFO, fileType } from "./utils";
 interface AutoGlossarySettings {
 	fileInclusion: boolean;
 	sameDest: boolean;
+	fileDest: string;
 	fileOverwrite: boolean;
 }
 
 const DEFAULT_SETTINGS: AutoGlossarySettings = {
 	fileInclusion: false,
 	sameDest: true,
+	fileDest: "",
 	fileOverwrite: false,
 };
 
@@ -46,6 +48,7 @@ export default class autoGlossary extends Plugin {
 									this.app,
 									this.settings.fileOverwrite,
 									this.settings.sameDest,
+									this.settings.fileDest,
 									(
 										option,
 										overwrite,
@@ -86,6 +89,7 @@ export default class autoGlossary extends Plugin {
 									this.app,
 									this.settings.fileOverwrite,
 									this.settings.sameDest,
+									this.settings.fileDest,
 									(
 										option,
 										overwrite,
@@ -126,6 +130,7 @@ export default class autoGlossary extends Plugin {
 									this.app,
 									this.settings.fileOverwrite,
 									this.settings.sameDest,
+									this.settings.fileDest,
 									(
 										option,
 										overwrite,
@@ -244,7 +249,7 @@ class SettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("Same destination as folder")
 			.setDesc(
-				"If on, the file will be created in the same folder specified above and the 'Destination' field will be disabled."
+				"If on, files will be created in the same folder specified above and the 'Destination' field will be disabled."
 			)
 			.addToggle((toggle) =>
 				toggle
@@ -252,9 +257,27 @@ class SettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						console.log("sameDest switched to " + value);
 						this.plugin.settings.sameDest = value;
+						destination.setDisabled(value);
 						await this.plugin.saveSettings();
 					})
 			);
+
+		const destination = new Setting(containerEl);
+
+		destination
+			.setName("Destination")
+			.setDesc(
+				"If the above toggle is off, specify here the destination folder for the files created."
+			)
+			.addText((text) =>
+				text
+					.onChange((value) => {
+						this.plugin.settings.fileDest = value;
+					})
+					.setValue(this.plugin.settings.fileDest)
+					.setDisabled(true)
+			)
+			.setDisabled(this.plugin.settings.sameDest);
 
 		new Setting(containerEl)
 			.setName("Overwrite existing files")

@@ -23,6 +23,7 @@ export class CreateFileModal extends Modal {
 		app: App,
 		overwrite: boolean,
 		sameDest: boolean,
+		destFolder: string,
 		onSubmit: (
 			option: string,
 			overwrite: boolean,
@@ -39,6 +40,7 @@ export class CreateFileModal extends Modal {
 		this.onSubmit = onSubmit;
 		this.overwrite = overwrite;
 		this.sameDest = sameDest;
+		this.destFolder = destFolder ? destFolder : "";
 		this.chosenFolder = passedFolder ? passedFolder : "";
 		this.fileName = passedName ? passedName : "";
 		this.option = passedOption ? passedOption : "";
