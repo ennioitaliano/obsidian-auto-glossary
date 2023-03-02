@@ -24,6 +24,7 @@ export class CreateFileModal extends Modal {
 		overwrite: boolean,
 		sameDest: boolean,
 		destFolder: string,
+		fileOrder: string,
 		onSubmit: (
 			option: string,
 			overwrite: boolean,
@@ -41,6 +42,7 @@ export class CreateFileModal extends Modal {
 		this.overwrite = overwrite;
 		this.sameDest = sameDest;
 		this.destFolder = destFolder ? destFolder : "";
+		this.fileOrder = fileOrder ? fileOrder : "default";
 		this.chosenFolder = passedFolder ? passedFolder : "";
 		this.fileName = passedName ? passedName : "";
 		this.option = passedOption ? passedOption : "";
@@ -135,7 +137,7 @@ export class CreateFileModal extends Modal {
 					.addOption("ctime_old", "Creation time - Oldest to newest")
 					.addOption("alphabetical", "Alphabetical")
 					.addOption("alphabetical_rev", "Alphabetical - Reverse")
-					.setValue("default")
+					.setValue(this.fileOrder)
 					.onChange((chosen) => {
 						this.fileOrder = chosen;
 					})

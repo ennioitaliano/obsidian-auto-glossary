@@ -9,6 +9,7 @@ interface AutoGlossarySettings {
 	sameDest: boolean;
 	fileDest: string;
 	fileOverwrite: boolean;
+	fileOrder: string;
 }
 
 const DEFAULT_SETTINGS: AutoGlossarySettings = {
@@ -16,6 +17,7 @@ const DEFAULT_SETTINGS: AutoGlossarySettings = {
 	sameDest: true,
 	fileDest: "",
 	fileOverwrite: false,
+	fileOrder: "default",
 };
 
 export default class autoGlossary extends Plugin {
@@ -26,7 +28,6 @@ export default class autoGlossary extends Plugin {
 
 		//SETTINGS
 		await this.loadSettings();
-
 		/* // This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon(
 			"dice",
@@ -49,6 +50,7 @@ export default class autoGlossary extends Plugin {
 									this.settings.fileOverwrite,
 									this.settings.sameDest,
 									this.settings.fileDest,
+									this.settings.fileOrder,
 									(
 										option,
 										overwrite,
@@ -90,6 +92,7 @@ export default class autoGlossary extends Plugin {
 									this.settings.fileOverwrite,
 									this.settings.sameDest,
 									this.settings.fileDest,
+									this.settings.fileOrder,
 									(
 										option,
 										overwrite,
@@ -131,6 +134,7 @@ export default class autoGlossary extends Plugin {
 									this.settings.fileOverwrite,
 									this.settings.sameDest,
 									this.settings.fileDest,
+									this.settings.fileOrder,
 									(
 										option,
 										overwrite,
@@ -210,6 +214,7 @@ export default class autoGlossary extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+		console.log("Settings saved.");
 	}
 }
 
@@ -271,8 +276,10 @@ class SettingTab extends PluginSettingTab {
 			)
 			.addText((text) =>
 				text
-					.onChange((value) => {
+					.onChange(async (value) => {
 						this.plugin.settings.fileDest = value;
+						console.log("fileDest switched to " + value);
+						await this.plugin.saveSettings();
 					})
 					.setValue(this.plugin.settings.fileDest)
 					.setDisabled(true)
@@ -290,6 +297,32 @@ class SettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						console.log("fileOverwrite switched to " + value);
 						this.plugin.settings.fileOverwrite = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("File order")
+			.setDesc("The order for the files to be indexed.")
+			.addDropdown((drop) =>
+				drop
+					.addOption("default", "Default")
+					.addOption(
+						"mtime_new",
+						"Modification time - Newest to oldest"
+					)
+					.addOption(
+						"mtime_old",
+						"Modification time - Oldest to newest"
+					)
+					.addOption("ctime_new", "Creation time - Newest to oldest")
+					.addOption("ctime_old", "Creation time - Oldest to newest")
+					.addOption("alphabetical", "Alphabetical")
+					.addOption("alphabetical_rev", "Alphabetical - Reverse")
+					.setValue(this.plugin.settings.fileOrder)
+					.onChange(async (chosen) => {
+						console.log("fileOrder switched to " + chosen);
+						this.plugin.settings.fileOrder = chosen;
 						await this.plugin.saveSettings();
 					})
 			);
