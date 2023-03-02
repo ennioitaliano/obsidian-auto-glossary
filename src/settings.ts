@@ -60,6 +60,9 @@ export class SettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						console.log("sameDest switched to " + value);
 						this.plugin.settings.sameDest = value;
+						if (value) {
+							this.plugin.settings.fileDest = "";
+						}
 						destination.setDisabled(value);
 						await this.plugin.saveSettings();
 					})
