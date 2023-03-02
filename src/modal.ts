@@ -4,6 +4,7 @@ import { fileType } from "utils";
 export class CreateFileModal extends Modal {
 	option: string;
 	overwrite: boolean;
+	sameDest: boolean;
 	fileName: string;
 	chosenFolder: string;
 	fileOrder: string;
@@ -21,6 +22,7 @@ export class CreateFileModal extends Modal {
 	constructor(
 		app: App,
 		overwrite: boolean,
+		sameDest: boolean,
 		onSubmit: (
 			option: string,
 			overwrite: boolean,
@@ -36,6 +38,7 @@ export class CreateFileModal extends Modal {
 		super(app);
 		this.onSubmit = onSubmit;
 		this.overwrite = overwrite;
+		this.sameDest = sameDest;
 		this.chosenFolder = passedFolder ? passedFolder : "";
 		this.fileName = passedName ? passedName : "";
 		this.option = passedOption ? passedOption : "";
@@ -64,7 +67,8 @@ export class CreateFileModal extends Modal {
 				"If on, the file will be created in the same folder specified above and the 'Destination' field will be disabled."
 			)
 			.addToggle((toggle) =>
-				toggle.setValue(true).onChange((value) => {
+				toggle.setValue(this.sameDest).onChange((value) => {
+					this.sameDest = value;
 					destination.setDisabled(value);
 					if (value) {
 						this.destFolder = this.chosenFolder;
@@ -87,7 +91,7 @@ export class CreateFileModal extends Modal {
 					.setValue(this.destFolder)
 					.setDisabled(true)
 			)
-			.setDisabled(true);
+			.setDisabled(this.sameDest);
 
 		new Setting(contentEl)
 			.setName("File name")

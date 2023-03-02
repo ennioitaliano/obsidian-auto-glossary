@@ -5,13 +5,15 @@ import { createFile } from "./glossaryIndex";
 import { getEnumFT, getEnumFO, fileType } from "./utils";
 
 interface AutoGlossarySettings {
-	fileOverwrite: boolean;
 	fileInclusion: boolean;
+	sameDest: boolean;
+	fileOverwrite: boolean;
 }
 
 const DEFAULT_SETTINGS: AutoGlossarySettings = {
-	fileOverwrite: false,
 	fileInclusion: false,
+	sameDest: true,
+	fileOverwrite: false,
 };
 
 export default class autoGlossary extends Plugin {
@@ -43,6 +45,7 @@ export default class autoGlossary extends Plugin {
 								new CreateFileModal(
 									this.app,
 									this.settings.fileOverwrite,
+									this.settings.sameDest,
 									(
 										option,
 										overwrite,
@@ -82,6 +85,7 @@ export default class autoGlossary extends Plugin {
 								new CreateFileModal(
 									this.app,
 									this.settings.fileOverwrite,
+									this.settings.sameDest,
 									(
 										option,
 										overwrite,
@@ -121,6 +125,7 @@ export default class autoGlossary extends Plugin {
 								new CreateFileModal(
 									this.app,
 									this.settings.fileOverwrite,
+									this.settings.sameDest,
 									(
 										option,
 										overwrite,
@@ -230,6 +235,23 @@ class SettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						console.log("fileInclusion switched to " + value);
 						this.plugin.settings.fileInclusion = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		containerEl.createEl("h3", { text: "Default options" });
+
+		new Setting(containerEl)
+			.setName("Same destination as folder")
+			.setDesc(
+				"If on, the file will be created in the same folder specified above and the 'Destination' field will be disabled."
+			)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.sameDest)
+					.onChange(async (value) => {
+						console.log("sameDest switched to " + value);
+						this.plugin.settings.sameDest = value;
 						await this.plugin.saveSettings();
 					})
 			);
