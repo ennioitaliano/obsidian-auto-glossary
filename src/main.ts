@@ -150,7 +150,7 @@ export default class autoGlossary extends Plugin {
 			})
 		);
 
-		this.addCommand({
+		/*this.addCommand({
 			id: "create-glossary",
 			name: "Create glossary",
 			callback: () => {
@@ -178,7 +178,7 @@ export default class autoGlossary extends Plugin {
 					}
 				).open();
 			},
-		});
+		});*/
 
 		// SETTINGS
 		// This adds a settings tab so the user can configure various aspects of the plugin

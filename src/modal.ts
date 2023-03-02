@@ -48,16 +48,15 @@ export class CreateFileModal extends Modal {
 
 		contentEl.createEl("h1", { text: "AutoGlossary" });
 
-		new Setting(contentEl)
-			.setName("Folder")
-			.setDesc("The folder to get the files indexed from.")
-			.addText((text) =>
+		new Setting(contentEl).setName("Folder: " + this.chosenFolder);
+		/*.setDesc("The folder to get the files indexed from.")
+		.addText((text) =>
 				text
 					.onChange((value) => {
 						this.chosenFolder = value;
 					})
 					.setValue(this.chosenFolder)
-			);
+			);*/
 
 		new Setting(contentEl)
 			.setName("Same destination as folder")
