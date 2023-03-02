@@ -42,7 +42,82 @@ export default class autoGlossary extends Plugin {
 			this.app.workspace.on("file-menu", (menu, folder) => {
 				if (folder instanceof TFolder) {
 					menu.addItem((item) => {
-						item.setTitle("Create index file")
+						item.setTitle("New index")
+							.setIcon("list")
+							.onClick(async () => {
+								createFile(
+									this.app,
+									fileType.i,
+									this.settings.fileInclusion,
+									this.settings.fileOverwrite,
+									folder.name + "_Index",
+									folder.path,
+									getEnumFO(this.settings.fileOrder),
+									this.settings.sameDest
+										? ""
+										: this.settings.fileDest
+								);
+							});
+					});
+				}
+			})
+		);
+
+		this.registerEvent(
+			this.app.workspace.on("file-menu", (menu, folder) => {
+				if (folder instanceof TFolder) {
+					menu.addItem((item) => {
+						item.setTitle("New glossary")
+							.setIcon("layout-list")
+							.onClick(async () => {
+								createFile(
+									this.app,
+									fileType.g,
+									this.settings.fileInclusion,
+									this.settings.fileOverwrite,
+									folder.name + "_Glossary",
+									folder.path,
+									getEnumFO(this.settings.fileOrder),
+									this.settings.sameDest
+										? ""
+										: this.settings.fileDest
+								);
+							});
+					});
+				}
+			})
+		);
+
+		this.registerEvent(
+			this.app.workspace.on("file-menu", (menu, folder) => {
+				if (folder instanceof TFolder) {
+					menu.addItem((item) => {
+						item.setTitle("New index+glossary")
+							.setIcon("list-ordered")
+							.onClick(async () => {
+								createFile(
+									this.app,
+									fileType.gi,
+									this.settings.fileInclusion,
+									this.settings.fileOverwrite,
+									folder.name + "_GlossaryIndex",
+									folder.path,
+									getEnumFO(this.settings.fileOrder),
+									this.settings.sameDest
+										? ""
+										: this.settings.fileDest
+								);
+							});
+					});
+				}
+			})
+		);
+
+		this.registerEvent(
+			this.app.workspace.on("file-menu", (menu, folder) => {
+				if (folder instanceof TFolder) {
+					menu.addItem((item) => {
+						item.setTitle("Advanced index")
 							.setIcon("list")
 							.onClick(async () => {
 								new CreateFileModal(
@@ -84,7 +159,7 @@ export default class autoGlossary extends Plugin {
 			this.app.workspace.on("file-menu", (menu, folder) => {
 				if (folder instanceof TFolder) {
 					menu.addItem((item) => {
-						item.setTitle("Create glossary file")
+						item.setTitle("Advanced glossary")
 							.setIcon("layout-list")
 							.onClick(async () => {
 								new CreateFileModal(
@@ -126,7 +201,7 @@ export default class autoGlossary extends Plugin {
 			this.app.workspace.on("file-menu", (menu, folder) => {
 				if (folder instanceof TFolder) {
 					menu.addItem((item) => {
-						item.setTitle("Create index+glossary file")
+						item.setTitle("Advanced index+glossary")
 							.setIcon("list-ordered")
 							.onClick(async () => {
 								new CreateFileModal(
