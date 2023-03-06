@@ -49,8 +49,6 @@ export class CreateFileModal extends Modal {
 	}
 
 	onOpen() {
-		console.log(this.overwrite);
-
 		const { contentEl } = this;
 
 		contentEl.createEl("h1", { text: "AutoGlossary" });
