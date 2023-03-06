@@ -1,26 +1,18 @@
-import { App, Plugin, PluginSettingTab, Setting, TFolder } from "obsidian";
+import { Plugin, TFolder } from "obsidian";
 
 import { CreateFileModal } from "./modal";
 import { createFile } from "./glossaryIndex";
-import { getEnum } from "./utils";
-
-interface AutoGlossarySettings {
-	fileInclusion: boolean;
-}
-
-const DEFAULT_SETTINGS: AutoGlossarySettings = {
-	fileInclusion: false,
-};
+import { getEnumFT, getEnumFO, fileType } from "./utils";
+import { AutoGlossarySettings, DEFAULT_SETTINGS, SettingTab } from "settings";
 
 export default class autoGlossary extends Plugin {
 	// SETTINGS
 	settings: AutoGlossarySettings;
 	async onload() {
-		console.log("Auto Glossary enabled");
+		console.info("Auto Glossary enabled");
 
 		//SETTINGS
 		await this.loadSettings();
-
 		/* // This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon(
 			"dice",
@@ -35,13 +27,93 @@ export default class autoGlossary extends Plugin {
 			this.app.workspace.on("file-menu", (menu, folder) => {
 				if (folder instanceof TFolder) {
 					menu.addItem((item) => {
-						item.setTitle("Create index file")
+						item.setTitle("New index")
+							.setIcon("list")
+							.onClick(async () => {
+								createFile(
+									this.app,
+									fileType.i,
+									this.settings.fileInclusion,
+									this.settings.fileOverwrite,
+									folder.name + "_Index",
+									folder.path,
+									getEnumFO(this.settings.fileOrder),
+									this.settings.sameDest
+										? ""
+										: this.settings.fileDest
+								);
+							});
+					});
+				}
+			})
+		);
+
+		this.registerEvent(
+			this.app.workspace.on("file-menu", (menu, folder) => {
+				if (folder instanceof TFolder) {
+					menu.addItem((item) => {
+						item.setTitle("New glossary")
+							.setIcon("layout-list")
+							.onClick(async () => {
+								createFile(
+									this.app,
+									fileType.g,
+									this.settings.fileInclusion,
+									this.settings.fileOverwrite,
+									folder.name + "_Glossary",
+									folder.path,
+									getEnumFO(this.settings.fileOrder),
+									this.settings.sameDest
+										? ""
+										: this.settings.fileDest
+								);
+							});
+					});
+				}
+			})
+		);
+
+		this.registerEvent(
+			this.app.workspace.on("file-menu", (menu, folder) => {
+				if (folder instanceof TFolder) {
+					menu.addItem((item) => {
+						item.setTitle("New index+glossary")
+							.setIcon("list-ordered")
+							.onClick(async () => {
+								createFile(
+									this.app,
+									fileType.gi,
+									this.settings.fileInclusion,
+									this.settings.fileOverwrite,
+									folder.name + "_GlossaryIndex",
+									folder.path,
+									getEnumFO(this.settings.fileOrder),
+									this.settings.sameDest
+										? ""
+										: this.settings.fileDest
+								);
+							});
+					});
+				}
+			})
+		);
+
+		this.registerEvent(
+			this.app.workspace.on("file-menu", (menu, folder) => {
+				if (folder instanceof TFolder) {
+					menu.addItem((item) => {
+						item.setTitle("Advanced index")
 							.setIcon("list")
 							.onClick(async () => {
 								new CreateFileModal(
 									this.app,
+									this.settings.fileOverwrite,
+									this.settings.sameDest,
+									this.settings.fileDest,
+									this.settings.fileOrder,
 									(
 										option,
+										overwrite,
 										fileName,
 										chosenFolder,
 										fileOrder,
@@ -49,17 +121,18 @@ export default class autoGlossary extends Plugin {
 									) => {
 										createFile(
 											this.app,
-											getEnum(option),
+											getEnumFT(option),
 											this.settings.fileInclusion,
+											overwrite,
 											fileName,
 											chosenFolder,
-											fileOrder,
+											getEnumFO(fileOrder),
 											destFolder
 										);
 									},
 									folder.path,
 									folder.name + "_Index",
-									"index"
+									fileType.i
 								).open();
 							});
 					});
@@ -71,13 +144,18 @@ export default class autoGlossary extends Plugin {
 			this.app.workspace.on("file-menu", (menu, folder) => {
 				if (folder instanceof TFolder) {
 					menu.addItem((item) => {
-						item.setTitle("Create glossary file")
+						item.setTitle("Advanced glossary")
 							.setIcon("layout-list")
 							.onClick(async () => {
 								new CreateFileModal(
 									this.app,
+									this.settings.fileOverwrite,
+									this.settings.sameDest,
+									this.settings.fileDest,
+									this.settings.fileOrder,
 									(
 										option,
+										overwrite,
 										fileName,
 										chosenFolder,
 										fileOrder,
@@ -85,17 +163,18 @@ export default class autoGlossary extends Plugin {
 									) => {
 										createFile(
 											this.app,
-											getEnum(option),
+											getEnumFT(option),
 											this.settings.fileInclusion,
+											overwrite,
 											fileName,
 											chosenFolder,
-											fileOrder,
+											getEnumFO(fileOrder),
 											destFolder
 										);
 									},
 									folder.path,
 									folder.name + "_Glossary",
-									"glossary"
+									fileType.g
 								).open();
 							});
 					});
@@ -107,13 +186,18 @@ export default class autoGlossary extends Plugin {
 			this.app.workspace.on("file-menu", (menu, folder) => {
 				if (folder instanceof TFolder) {
 					menu.addItem((item) => {
-						item.setTitle("Create index+glossary file")
+						item.setTitle("Advanced index+glossary")
 							.setIcon("list-ordered")
 							.onClick(async () => {
 								new CreateFileModal(
 									this.app,
+									this.settings.fileOverwrite,
+									this.settings.sameDest,
+									this.settings.fileDest,
+									this.settings.fileOrder,
 									(
 										option,
+										overwrite,
 										fileName,
 										chosenFolder,
 										fileOrder,
@@ -121,17 +205,18 @@ export default class autoGlossary extends Plugin {
 									) => {
 										createFile(
 											this.app,
-											getEnum(option),
+											getEnumFT(option),
 											this.settings.fileInclusion,
+											overwrite,
 											fileName,
 											chosenFolder,
-											fileOrder,
+											getEnumFO(fileOrder),
 											destFolder
 										);
 									},
 									folder.path,
 									folder.name + "_GlossaryIndex",
-									"glossaryindex"
+									fileType.gi
 								).open();
 							});
 					});
@@ -139,26 +224,35 @@ export default class autoGlossary extends Plugin {
 			})
 		);
 
-		this.addCommand({
+		/*this.addCommand({
 			id: "create-glossary",
 			name: "Create glossary",
 			callback: () => {
 				new CreateFileModal(
 					this.app,
-					(option, fileName, chosenFolder, fileOrder, destFolder) => {
+					this.settings.fileOverwrite,
+					(
+						option,
+						fileName,
+						chosenFolder,
+						fileOrder,
+						destFolder,
+						overwrite
+					) => {
 						createFile(
 							this.app,
-							getEnum(option),
+							getEnumFT(option),
 							this.settings.fileInclusion,
 							fileName,
+							overwrite,
 							chosenFolder,
-							fileOrder,
+							getEnumFO(fileOrder),
 							destFolder
 						);
 					}
 				).open();
 			},
-		});
+		});*/
 
 		// SETTINGS
 		// This adds a settings tab so the user can configure various aspects of the plugin
@@ -166,7 +260,7 @@ export default class autoGlossary extends Plugin {
 	}
 
 	onunload() {
-		console.log("Auto Glossary disabled");
+		console.info("Auto Glossary unloaded");
 	}
 
 	// SETTINGS
@@ -180,38 +274,6 @@ export default class autoGlossary extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
-	}
-}
-
-// SETTINGS
-class SettingTab extends PluginSettingTab {
-	plugin: autoGlossary;
-
-	constructor(app: App, plugin: autoGlossary) {
-		super(app, plugin);
-		this.plugin = plugin;
-	}
-
-	display(): void {
-		const { containerEl } = this;
-
-		containerEl.empty();
-
-		containerEl.createEl("h2", { text: "Auto Glossary Settings" });
-
-		new Setting(containerEl)
-			.setName("File inclusion")
-			.setDesc(
-				"Include previously generated files in glossaries and indexes"
-			)
-			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.fileInclusion)
-					.onChange(async (value) => {
-						console.log("fileInclusion switched to " + value);
-						this.plugin.settings.fileInclusion = value;
-						await this.plugin.saveSettings();
-					})
-			);
+		console.log("Settings saved.");
 	}
 }
