@@ -2,7 +2,7 @@ import { Plugin, TFolder } from "obsidian";
 
 import { CreateFileModal } from "./modal";
 import { createFile } from "./glossaryIndex";
-import { getEnumFT, getEnumFO, fileType } from "./utils";
+import { getEnumFO } from "./utils";
 import { AutoGlossarySettings, DEFAULT_SETTINGS, SettingTab } from "settings";
 
 export default class autoGlossary extends Plugin {
@@ -32,7 +32,7 @@ export default class autoGlossary extends Plugin {
 							.onClick(async () => {
 								createFile(
 									this.app,
-									fileType.i,
+									"index",
 									this.settings.fileInclusion,
 									this.settings.fileOverwrite,
 									folder.name + "_Index",
@@ -57,7 +57,7 @@ export default class autoGlossary extends Plugin {
 							.onClick(async () => {
 								createFile(
 									this.app,
-									fileType.g,
+									"glossary",
 									this.settings.fileInclusion,
 									this.settings.fileOverwrite,
 									folder.name + "_Glossary",
@@ -82,7 +82,7 @@ export default class autoGlossary extends Plugin {
 							.onClick(async () => {
 								createFile(
 									this.app,
-									fileType.gi,
+									"glossaryindex",
 									this.settings.fileInclusion,
 									this.settings.fileOverwrite,
 									folder.name + "_GlossaryIndex",
@@ -121,7 +121,7 @@ export default class autoGlossary extends Plugin {
 									) => {
 										createFile(
 											this.app,
-											getEnumFT(option),
+											option,
 											this.settings.fileInclusion,
 											overwrite,
 											fileName,
@@ -132,7 +132,7 @@ export default class autoGlossary extends Plugin {
 									},
 									folder.path,
 									folder.name + "_Index",
-									fileType.i
+									"index"
 								).open();
 							});
 					});
@@ -163,7 +163,7 @@ export default class autoGlossary extends Plugin {
 									) => {
 										createFile(
 											this.app,
-											getEnumFT(option),
+											option,
 											this.settings.fileInclusion,
 											overwrite,
 											fileName,
@@ -174,7 +174,7 @@ export default class autoGlossary extends Plugin {
 									},
 									folder.path,
 									folder.name + "_Glossary",
-									fileType.g
+									"glossary"
 								).open();
 							});
 					});
@@ -205,7 +205,7 @@ export default class autoGlossary extends Plugin {
 									) => {
 										createFile(
 											this.app,
-											getEnumFT(option),
+											option,
 											this.settings.fileInclusion,
 											overwrite,
 											fileName,
@@ -216,7 +216,7 @@ export default class autoGlossary extends Plugin {
 									},
 									folder.path,
 									folder.name + "_GlossaryIndex",
-									fileType.gi
+									"glossaryindex"
 								).open();
 							});
 					});

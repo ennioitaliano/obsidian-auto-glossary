@@ -1,8 +1,7 @@
 import { App, Modal, Setting } from "obsidian";
-import { fileType } from "utils";
 
 export class CreateFileModal extends Modal {
-	option: string;
+	option: "index" | "glossary" | "glossaryindex";
 	overwrite: boolean;
 	sameDest: boolean;
 	fileName: string;
@@ -11,7 +10,7 @@ export class CreateFileModal extends Modal {
 	destFolder: string;
 
 	onSubmit: (
-		option: string,
+		option: "index" | "glossary" | "glossaryindex",
 		overwrite: boolean,
 		fileName?: string,
 		chosenFolder?: string,
@@ -26,7 +25,7 @@ export class CreateFileModal extends Modal {
 		destFolder: string,
 		fileOrder: string,
 		onSubmit: (
-			option: string,
+			option: "index" | "glossary" | "glossaryindex",
 			overwrite: boolean,
 			fileName: string,
 			chosenFolder: string,
@@ -35,7 +34,7 @@ export class CreateFileModal extends Modal {
 		) => void,
 		passedFolder?: string,
 		passedName?: string,
-		passedOption?: string
+		passedOption?: "index" | "glossary" | "glossaryindex"
 	) {
 		super(app);
 		this.onSubmit = onSubmit;
@@ -45,7 +44,7 @@ export class CreateFileModal extends Modal {
 		this.fileOrder = fileOrder ? fileOrder : "default";
 		this.chosenFolder = passedFolder ? passedFolder : "";
 		this.fileName = passedName ? passedName : "";
-		this.option = passedOption ? passedOption : "";
+		this.option = passedOption ? passedOption : "index";
 	}
 
 	onOpen() {
@@ -146,13 +145,13 @@ export class CreateFileModal extends Modal {
 			.setDesc("Choose between index, glossary or both.")
 			.addDropdown((drop) =>
 				drop
-					.addOption(fileType.g, "Glossary")
-					.addOption(fileType.i, "Index")
-					.addOption(fileType.gi, "Glossary with index")
-					.onChange((chosen) => {
+					.addOption("glossary", "Glossary")
+					.addOption("index", "Index")
+					.addOption("glossaryindex", "Glossary with index")
+					.onChange((chosen:"index"|"glossary"|"glossaryindex") => {
 						this.option = chosen;
 					})
-					.setValue(this.option ? this.option : fileType.gi)
+					.setValue(this.option ? this.option : "glossaryindex")
 			);
 
 		new Setting(contentEl).addButton((btn) =>

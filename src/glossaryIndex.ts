@@ -1,6 +1,5 @@
 import { App, DataAdapter, normalizePath, Notice } from "obsidian";
 import {
-	fileType,
 	cleanFiles,
 	fileExists,
 	sortFiles,
@@ -9,7 +8,7 @@ import {
 
 export async function createArrays(
 	app: App,
-	requestedFile: fileType,
+	requestedFile: "index" | "glossary" | "glossaryindex",
 	fileInclusion: boolean,
 	fileName?: string,
 	chosenFolder?: string,
@@ -43,7 +42,7 @@ export async function createArrays(
 		const noteName = note.slice(0, -3);
 
 		// Array of strings that will show up as an index. If clicked, each entry takes to the point in the same document where the note is embedded
-		if (requestedFile == fileType.gi) {
+		if (requestedFile == "glossaryindex") {
 			indexArray.push(
 				"- [[" + fileName + "#" + noteName + "|" + noteName + "]]\n"
 			);
@@ -68,7 +67,7 @@ export async function createArrays(
 // This takes in which type of file we want to create and an optional fileName
 export async function createFile(
 	app: App,
-	requestedFile: fileType,
+	requestedFile: "index" | "glossary" | "glossaryindex",
 	fileInclusion: boolean,
 	fileOverwrite: boolean,
 	fileName: string,
@@ -125,7 +124,7 @@ export async function createFile(
 
 async function createText(
 	app: App,
-	requestedFile: fileType,
+	requestedFile: "index" | "glossary" | "glossaryindex",
 	fileInclusion: boolean,
 	fileName?: string,
 	chosenFolder?: string,
@@ -142,13 +141,13 @@ async function createText(
 	let text = "---\ntags: obsidian-auto-glossary\n---\n";
 
 	switch (requestedFile) {
-		case fileType.g:
+		case "glossary":
 			text += array[1];
 			break;
-		case fileType.i:
+		case "index":
 			text += array[0];
 			break;
-		case fileType.gi:
+		case "glossaryindex":
 			text += array[0] + "\n***\n\n" + array[1];
 			break;
 		default:

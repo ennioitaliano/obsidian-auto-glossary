@@ -1,12 +1,5 @@
 import { App, DataAdapter, TFile } from "obsidian";
 
-// enum to handle different cases
-export enum fileType {
-	i = "index",
-	g = "glossary",
-	gi = "glossaryIndex",
-}
-
 // enum to handle different orders
 export enum fileOrder {
 	default = "default",
@@ -18,7 +11,7 @@ export enum fileOrder {
 	alphabetical_rev = "alphabetical_rev",
 }
 
-// function to get the file type enum key from the string
+/* function to get the file type enum key from the string
 export function getEnumFT(value: string): fileType {
 	let result: fileType;
 
@@ -38,7 +31,7 @@ export function getEnumFT(value: string): fileType {
 	}
 
 	return result;
-}
+}*/
 
 // function to get the file order enum key from the string
 export function getEnumFO(value: string): fileOrder {
