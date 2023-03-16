@@ -1,74 +1,14 @@
 import { App, DataAdapter, TFile } from "obsidian";
 
-// enum to handle different orders
-export enum fileOrder {
-	default = "default",
-	mtime_new = "mtime_new",
-	mtime_old = "mtime_old",
-	ctime_new = "ctime_new",
-	ctime_old = "ctime_old",
-	alphabetical = "alphabetical",
-	alphabetical_rev = "alphabetical_rev",
-}
-
-/* function to get the file type enum key from the string
-export function getEnumFT(value: string): fileType {
-	let result: fileType;
-
-	switch (value.toLowerCase()) {
-		case "glossary":
-			result = fileType.g;
-			break;
-		case "index":
-			result = fileType.i;
-			break;
-		case "glossaryindex":
-			result = fileType.gi;
-			break;
-		default:
-			result = fileType.gi;
-			break;
-	}
-
-	return result;
-}*/
-
-// function to get the file order enum key from the string
-export function getEnumFO(value: string): fileOrder {
-	let result: fileOrder;
-	if (!value) {
-		return fileOrder.default;
-	} else {
-		switch (value.toLowerCase()) {
-			case "default":
-				result = fileOrder.default;
-				break;
-			case "mtime_new":
-				result = fileOrder.mtime_new;
-				break;
-			case "mtime_old":
-				result = fileOrder.mtime_old;
-				break;
-			case "ctime_new":
-				result = fileOrder.ctime_new;
-				break;
-			case "ctime_old":
-				result = fileOrder.ctime_old;
-				break;
-			case "alphabetical":
-				result = fileOrder.alphabetical;
-				break;
-			case "alphabetical_rev":
-				result = fileOrder.alphabetical_rev;
-				break;
-			default:
-				result = fileOrder.default;
-				break;
-		}
-	}
-
-	return result;
-}
+export type fileType = "index" | "glossary" | "glossaryindex";
+export type fileOrder =
+	| "default"
+	| "mtime_new"
+	| "mtime_old"
+	| "ctime_new"
+	| "ctime_old"
+	| "alphabetical"
+	| "alphabetical_rev";
 
 export async function fileExists(app: App, fileName: string): Promise<boolean> {
 	const adapter: DataAdapter = app.vault.adapter;

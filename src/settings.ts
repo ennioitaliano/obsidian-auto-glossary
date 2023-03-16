@@ -1,12 +1,13 @@
 import autoGlossary from "main";
 import { App, PluginSettingTab, Setting } from "obsidian";
+import { fileOrder } from "utils";
 
 export interface AutoGlossarySettings {
 	fileInclusion: boolean;
 	sameDest: boolean;
 	fileDest: string;
 	fileOverwrite: boolean;
-	fileOrder: string;
+	fileOrder: fileOrder;
 }
 
 export const DEFAULT_SETTINGS: AutoGlossarySettings = {
@@ -121,7 +122,7 @@ export class SettingTab extends PluginSettingTab {
 					.addOption("alphabetical", "Alphabetical")
 					.addOption("alphabetical_rev", "Alphabetical - Reverse")
 					.setValue(this.plugin.settings.fileOrder)
-					.onChange(async (chosen) => {
+					.onChange(async (chosen:fileOrder) => {
 						console.log("fileOrder switched to " + chosen);
 						this.plugin.settings.fileOrder = chosen;
 						await this.plugin.saveSettings();

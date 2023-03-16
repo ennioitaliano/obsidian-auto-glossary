@@ -2,7 +2,6 @@ import { Plugin, TFolder } from "obsidian";
 
 import { CreateFileModal } from "./modal";
 import { createFile } from "./glossaryIndex";
-import { getEnumFO } from "./utils";
 import { AutoGlossarySettings, DEFAULT_SETTINGS, SettingTab } from "settings";
 
 export default class autoGlossary extends Plugin {
@@ -37,7 +36,7 @@ export default class autoGlossary extends Plugin {
 									this.settings.fileOverwrite,
 									folder.name + "_Index",
 									folder.path,
-									getEnumFO(this.settings.fileOrder),
+									this.settings.fileOrder,
 									this.settings.sameDest
 										? ""
 										: this.settings.fileDest
@@ -62,7 +61,7 @@ export default class autoGlossary extends Plugin {
 									this.settings.fileOverwrite,
 									folder.name + "_Glossary",
 									folder.path,
-									getEnumFO(this.settings.fileOrder),
+									this.settings.fileOrder,
 									this.settings.sameDest
 										? ""
 										: this.settings.fileDest
@@ -87,7 +86,7 @@ export default class autoGlossary extends Plugin {
 									this.settings.fileOverwrite,
 									folder.name + "_GlossaryIndex",
 									folder.path,
-									getEnumFO(this.settings.fileOrder),
+									this.settings.fileOrder,
 									this.settings.sameDest
 										? ""
 										: this.settings.fileDest
@@ -126,7 +125,7 @@ export default class autoGlossary extends Plugin {
 											overwrite,
 											fileName,
 											chosenFolder,
-											getEnumFO(fileOrder),
+											fileOrder,
 											destFolder
 										);
 									},
@@ -168,7 +167,7 @@ export default class autoGlossary extends Plugin {
 											overwrite,
 											fileName,
 											chosenFolder,
-											getEnumFO(fileOrder),
+											fileOrder,
 											destFolder
 										);
 									},
@@ -210,7 +209,7 @@ export default class autoGlossary extends Plugin {
 											overwrite,
 											fileName,
 											chosenFolder,
-											getEnumFO(fileOrder),
+											fileOrder,
 											destFolder
 										);
 									},

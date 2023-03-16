@@ -4,11 +4,12 @@ import {
 	fileExists,
 	sortFiles,
 	fileOrder,
+	fileType
 } from "./utils";
 
 export async function createArrays(
 	app: App,
-	requestedFile: "index" | "glossary" | "glossaryindex",
+	requestedFile: fileType,
 	fileInclusion: boolean,
 	fileName?: string,
 	chosenFolder?: string,
@@ -67,7 +68,7 @@ export async function createArrays(
 // This takes in which type of file we want to create and an optional fileName
 export async function createFile(
 	app: App,
-	requestedFile: "index" | "glossary" | "glossaryindex",
+	requestedFile: fileType,
 	fileInclusion: boolean,
 	fileOverwrite: boolean,
 	fileName: string,
@@ -124,7 +125,7 @@ export async function createFile(
 
 async function createText(
 	app: App,
-	requestedFile: "index" | "glossary" | "glossaryindex",
+	requestedFile: fileType,
 	fileInclusion: boolean,
 	fileName?: string,
 	chosenFolder?: string,
