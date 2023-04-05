@@ -10,7 +10,7 @@ Auto Glossary is an Obsidian plugin to create a glossary, an index or a glossary
 - create a glossary with an index (the two lists above concatenated)
 
 ## How to install
-The plugin is available in the Community Plugins section inside Obsidian, or you can clone this repo in `path/to/your/vault/.obsidian/plugins`.
+The plugin is available in the Community Plugins section inside Obsidian, or you can download and unpack the latest release in `path/to/your/vault/.obsidian/plugins`.
 
 ## Demo
 [Demo](https://user-images.githubusercontent.com/47503625/199766990-b158263e-4f6b-4c97-8efa-b8bfc2f4b674.webm)
