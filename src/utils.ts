@@ -1,4 +1,4 @@
-import { App, DataAdapter, TFile } from "obsidian";
+import { App, DataAdapter, TFile, normalizePath } from "obsidian";
 
 export type fileType = "index" | "glossary" | "glossaryindex";
 export type fileOrder =
@@ -88,4 +88,34 @@ export function sortFiles(notesTFile: TFile[], fileOrder: fileOrder) {
 	}
 
 	return notesTFile;
+}
+
+export function fileNamer(
+	requestedFile: fileType,
+	fileName?: string,
+	chosenFolder?: string
+): string {
+	let completeFileName: string;
+
+	console.log("requestedFile: " + requestedFile);
+	console.log("fileName: " + fileName);
+	console.log("chosenFolder: " + chosenFolder);
+
+	if (chosenFolder) {
+		if (fileName) {
+			completeFileName = normalizePath(chosenFolder + "/" + fileName);
+		} else {
+			completeFileName = normalizePath(
+				chosenFolder + "/" + requestedFile
+			);
+		}
+	} else {
+		if (fileName) {
+			completeFileName = normalizePath(fileName);
+		} else {
+			completeFileName = normalizePath(requestedFile);
+		}
+	}
+
+	return completeFileName;
 }

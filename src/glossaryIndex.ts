@@ -1,10 +1,11 @@
-import { App, DataAdapter, normalizePath, Notice } from "obsidian";
+import { App, DataAdapter, Notice } from "obsidian";
 import {
 	cleanFiles,
 	fileExists,
 	sortFiles,
 	fileOrder,
 	fileType,
+	fileNamer,
 } from "./utils";
 
 export async function createText(
@@ -83,6 +84,10 @@ export async function createText(
 					"- [[" + fileName + "#" + noteName + "|" + noteName + "]]\n"
 				);
 
+				/*indexArray.push(
+					`- [[${fileName}#${noteName}|${noteName}]]\n`
+				);*/
+
 				// Array of strings that will show up as embedded notes
 				// #### to make them findable as sections
 				glossaryArray.push("#### ![[" + noteName + "]]\n\n***\n\n");
@@ -113,41 +118,20 @@ export async function createFile(
 	fileOrder?: fileOrder,
 	destFolder?: string
 ) {
-	let completeFileName = "";
-
 	if (chosenFolder == app.vault.getName()) {
 		chosenFolder = "";
 	}
 
-	if (destFolder) {
-		if (fileName) {
-			completeFileName = normalizePath(destFolder + "/" + fileName);
-		} else {
-			completeFileName = normalizePath(destFolder + "/" + requestedFile);
-		}
-	} else if (chosenFolder) {
-		if (fileName) {
-			completeFileName = normalizePath(chosenFolder + "/" + fileName);
-		} else {
-			completeFileName = normalizePath(
-				chosenFolder + "/" + requestedFile
-			);
-		}
-	} else {
-		if (fileName) {
-			completeFileName = normalizePath(fileName);
-		} else {
-			completeFileName = normalizePath(requestedFile);
-		}
-	}
+	const completeFileName: string = fileNamer(
+		requestedFile,
+		fileName,
+		chosenFolder
+	);
 
 	const fileExistsBool = await fileExists(app, completeFileName);
 	const adapter: DataAdapter = app.vault.adapter;
 
 	console.log("destFolder: " + destFolder);
-	console.log("fileName: " + fileName);
-	console.log("requestedFile: " + requestedFile);
-	console.log("chosenFolder: " + chosenFolder);
 	console.log("completeFileName: " + completeFileName);
 
 	if (fileExistsBool && !fileOverwrite) {
