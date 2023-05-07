@@ -1,20 +1,20 @@
 import { App, Modal, Setting } from "obsidian";
-import { fileType, fileOrder } from "utils";
+import { FileType, NotesOrder } from "utils";
 
 export class CreateFileModal extends Modal {
-	option: fileType;
+	option: FileType;
 	overwrite: boolean;
 	sameDest: boolean;
 	fileName: string;
 	chosenFolder: string;
-	fileOrder: fileOrder;
+	fileOrder: NotesOrder;
 	destFolder: string;
 
 	onSubmit: (
 		overwrite: boolean,
 		fileName?: string,
 		chosenFolder?: string,
-		fileOrder?: fileOrder,
+		fileOrder?: NotesOrder,
 		destFolder?: string
 	) => void;
 
@@ -23,17 +23,17 @@ export class CreateFileModal extends Modal {
 		overwrite: boolean,
 		sameDest: boolean,
 		destFolder: string,
-		fileOrder: fileOrder,
+		fileOrder: NotesOrder,
 		onSubmit: (
 			overwrite: boolean,
 			fileName: string,
 			chosenFolder: string,
-			fileOrder: fileOrder,
+			fileOrder: NotesOrder,
 			destFolder: string
 		) => void,
 		passedFolder?: string,
 		passedName?: string,
-		passedOption?: fileType
+		passedOption?: FileType
 	) {
 		super(app);
 		this.onSubmit = onSubmit;
@@ -134,7 +134,7 @@ export class CreateFileModal extends Modal {
 					.addOption("alphabetical", "Alphabetical")
 					.addOption("alphabetical_rev", "Alphabetical - Reverse")
 					.setValue(this.fileOrder)
-					.onChange((chosen:fileOrder) => {
+					.onChange((chosen: NotesOrder) => {
 						this.fileOrder = chosen;
 					})
 			);
@@ -147,7 +147,7 @@ export class CreateFileModal extends Modal {
 					.addOption("glossary", "Glossary")
 					.addOption("index", "Index")
 					.addOption("glossaryindex", "Glossary with index")
-					.onChange((chosen:fileType) => {
+					.onChange((chosen: FileType) => {
 						this.option = chosen;
 					})
 					.setValue(this.option ? this.option : "glossaryindex")

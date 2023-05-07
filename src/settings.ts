@@ -3,7 +3,7 @@ import { App, PluginSettingTab, Setting } from "obsidian";
 import { fileOrder } from "utils";
 
 export interface AutoGlossarySettings {
-	fileInclusion: boolean;
+	includeFiles: boolean;
 	sameDest: boolean;
 	fileDest: string;
 	fileOverwrite: boolean;
@@ -11,7 +11,7 @@ export interface AutoGlossarySettings {
 }
 
 export const DEFAULT_SETTINGS: AutoGlossarySettings = {
-	fileInclusion: false,
+	includeFiles: false,
 	sameDest: true,
 	fileDest: "",
 	fileOverwrite: false,
@@ -40,10 +40,10 @@ export class SettingTab extends PluginSettingTab {
 			)
 			.addToggle((toggle) =>
 				toggle
-					.setValue(this.plugin.settings.fileInclusion)
+					.setValue(this.plugin.settings.includeFiles)
 					.onChange(async (value) => {
-						console.log("fileInclusion switched to " + value);
-						this.plugin.settings.fileInclusion = value;
+						console.log("includeFiles switched to " + value);
+						this.plugin.settings.includeFiles = value;
 						await this.plugin.saveSettings();
 					})
 			);

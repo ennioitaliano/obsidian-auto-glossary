@@ -1,13 +1,18 @@
 import { App, DataAdapter, Notice } from "obsidian";
-import { fileExists, fileOrder, fileNamer, getNotes } from "./utils";
+import { fileExists, NotesOrder, fileNamer, getNotes, FileType } from "./utils";
 
 export async function createIndex(
 	app: App,
 	includeFiles: boolean,
-	folder?: string,
-	order?: fileOrder
+	chosenFolder?: string,
+	notesOrder?: NotesOrder
 ): Promise<string> {
-	const noteNames = await getNotes(app, includeFiles, folder, order);
+	const noteNames = await getNotes({
+		app,
+		includeFiles,
+		chosenFolder,
+		notesOrder,
+	});
 	const indexEntries = noteNames.map((name) => `- [[${name}]]`);
 	const indexText = indexEntries.join("\n");
 	const finalText = `## Index\n${indexText}`;
@@ -17,10 +22,15 @@ export async function createIndex(
 export async function createGlossary(
 	app: App,
 	includeFiles: boolean,
-	folder?: string,
-	order?: fileOrder
+	chosenFolder?: string,
+	notesOrder?: NotesOrder
 ): Promise<string> {
-	const noteNames = await getNotes(app, includeFiles, folder, order);
+	const noteNames = await getNotes({
+		app,
+		includeFiles,
+		chosenFolder,
+		notesOrder,
+	});
 	const glossaryEntries = noteNames.map(
 		(name) => `#### ![[${name}]]\n\n***\n\n`
 	);
@@ -33,10 +43,15 @@ export async function createGlossaryIndex(
 	app: App,
 	includeFiles: boolean,
 	fileName: string,
-	folder?: string,
-	order?: fileOrder
+	chosenFolder?: string,
+	notesOrder?: NotesOrder
 ): Promise<string> {
-	const noteNames = await getNotes(app, includeFiles, folder, order);
+	const noteNames = await getNotes({
+		app,
+		includeFiles,
+		chosenFolder,
+		notesOrder,
+	});
 	const indexEntries = noteNames.map(
 		(name) => `- [[${fileName}#${name}|${name}]]`
 	);
@@ -54,15 +69,22 @@ export async function createIndexFile(
 	includeFiles: boolean,
 	overwrite: boolean,
 	fileName: string,
-	folder?: string,
-	order?: fileOrder,
+	chosenFolder?: string,
+	notesOrder?: NotesOrder,
 	destFolder?: string
 ) {
-	if (folder === app.vault.getName()) {
-		folder = "";
+	if (chosenFolder === app.vault.getName()) {
+		chosenFolder = "";
 	}
 
-	const completeFileName = fileNamer("index", fileName, folder, destFolder);
+	const fileType: FileType = "index";
+
+	const completeFileName = fileNamer({
+		fileType,
+		fileName,
+		chosenFolder,
+		destFolder,
+	});
 	const fileExistsBool = await fileExists(app, completeFileName);
 	const adapter: DataAdapter = app.vault.adapter;
 
@@ -73,7 +95,7 @@ export async function createIndexFile(
 	} else {
 		adapter.write(
 			completeFileName + ".md",
-			await createIndex(app, includeFiles, folder, order)
+			await createIndex(app, includeFiles, chosenFolder, notesOrder)
 		);
 		new Notice(`${completeFileName} file updated`);
 	}
@@ -84,20 +106,22 @@ export async function createGlossaryFile(
 	includeFiles: boolean,
 	overwrite: boolean,
 	fileName: string,
-	folder?: string,
-	order?: fileOrder,
+	chosenFolder?: string,
+	notesOrder?: NotesOrder,
 	destFolder?: string
 ) {
-	if (folder === app.vault.getName()) {
-		folder = "";
+	if (chosenFolder === app.vault.getName()) {
+		chosenFolder = "";
 	}
 
-	const completeFileName = fileNamer(
-		"glossary",
+	const fileType: FileType = "glossary";
+
+	const completeFileName = fileNamer({
+		fileType,
 		fileName,
-		folder,
-		destFolder
-	);
+		chosenFolder,
+		destFolder,
+	});
 	const fileExistsBool = await fileExists(app, completeFileName);
 	const adapter: DataAdapter = app.vault.adapter;
 
@@ -108,7 +132,7 @@ export async function createGlossaryFile(
 	} else {
 		adapter.write(
 			completeFileName + ".md",
-			await createGlossary(app, includeFiles, folder, order)
+			await createGlossary(app, includeFiles, chosenFolder, notesOrder)
 		);
 		new Notice(`${completeFileName} file updated`);
 	}
@@ -119,20 +143,22 @@ export async function createGlossaryIndexFile(
 	includeFiles: boolean,
 	overwrite: boolean,
 	fileName: string,
-	folder?: string,
-	order?: fileOrder,
+	chosenFolder?: string,
+	notesOrder?: NotesOrder,
 	destFolder?: string
 ) {
-	if (folder === app.vault.getName()) {
-		folder = "";
+	if (chosenFolder === app.vault.getName()) {
+		chosenFolder = "";
 	}
 
-	const completeFileName = fileNamer(
-		"glossaryindex",
+	const fileType: FileType = "glossaryindex";
+
+	const completeFileName = fileNamer({
+		fileType,
 		fileName,
-		folder,
-		destFolder
-	);
+		chosenFolder,
+		destFolder,
+	});
 	const fileExistsBool = await fileExists(app, completeFileName);
 	const adapter: DataAdapter = app.vault.adapter;
 
@@ -147,8 +173,8 @@ export async function createGlossaryIndexFile(
 				app,
 				includeFiles,
 				fileName,
-				folder,
-				order
+				chosenFolder,
+				notesOrder
 			)
 		);
 		new Notice(`${completeFileName} file updated`);

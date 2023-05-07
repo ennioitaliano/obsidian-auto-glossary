@@ -35,7 +35,7 @@ export default class autoGlossary extends Plugin {
 							.onClick(async () => {
 								createIndexFile(
 									this.app,
-									this.settings.fileInclusion,
+									this.settings.includeFiles,
 									this.settings.fileOverwrite,
 									folder.name + "_Index",
 									folder.path,
@@ -59,7 +59,7 @@ export default class autoGlossary extends Plugin {
 							.onClick(async () => {
 								createGlossaryFile(
 									this.app,
-									this.settings.fileInclusion,
+									this.settings.includeFiles,
 									this.settings.fileOverwrite,
 									folder.name + "_Glossary",
 									folder.path,
@@ -83,7 +83,7 @@ export default class autoGlossary extends Plugin {
 							.onClick(async () => {
 								createGlossaryIndexFile(
 									this.app,
-									this.settings.fileInclusion,
+									this.settings.includeFiles,
 									this.settings.fileOverwrite,
 									folder.name + "_GlossaryIndex",
 									folder.path,
@@ -120,7 +120,7 @@ export default class autoGlossary extends Plugin {
 									) => {
 										createIndexFile(
 											this.app,
-											this.settings.fileInclusion,
+											this.settings.includeFiles,
 											overwrite,
 											fileName,
 											chosenFolder,
@@ -160,7 +160,7 @@ export default class autoGlossary extends Plugin {
 									) => {
 										createGlossaryFile(
 											this.app,
-											this.settings.fileInclusion,
+											this.settings.includeFiles,
 											overwrite,
 											fileName,
 											chosenFolder,
@@ -200,7 +200,7 @@ export default class autoGlossary extends Plugin {
 									) => {
 										createGlossaryIndexFile(
 											this.app,
-											this.settings.fileInclusion,
+											this.settings.includeFiles,
 											overwrite,
 											fileName,
 											chosenFolder,
@@ -238,7 +238,7 @@ export default class autoGlossary extends Plugin {
 					) => {
 						createIndexFile(
 							this.app,
-							this.settings.fileInclusion,
+							this.settings.includeFiles,
 							overwrite,
 							fileName,
 							chosenFolder,
@@ -273,7 +273,7 @@ export default class autoGlossary extends Plugin {
 					) => {
 						createGlossaryFile(
 							this.app,
-							this.settings.fileInclusion,
+							this.settings.includeFiles,
 							overwrite,
 							fileName,
 							chosenFolder,
@@ -308,7 +308,7 @@ export default class autoGlossary extends Plugin {
 					) => {
 						createGlossaryIndexFile(
 							this.app,
-							this.settings.fileInclusion,
+							this.settings.includeFiles,
 							overwrite,
 							fileName,
 							chosenFolder,

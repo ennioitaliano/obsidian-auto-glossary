@@ -1,7 +1,7 @@
 import { App, DataAdapter, TFile, normalizePath } from "obsidian";
 
-export type fileType = "index" | "glossary" | "glossaryindex";
-export type fileOrder =
+export type FileType = "index" | "glossary" | "glossaryindex";
+export type NotesOrder =
 	| "default"
 	| "mtime_new"
 	| "mtime_old"
@@ -15,7 +15,7 @@ export async function fileExists(app: App, fileName: string): Promise<boolean> {
 	const result = await adapter.exists(fileName + ".md");
 
 	if (result) {
-		console.log("Already existing file " + fileName + ".md");
+		console.log(`File ${fileName}.md already exists`);
 	}
 
 	return result;
@@ -25,135 +25,95 @@ async function cleanFiles(app: App, notesTFiles: TFile[]): Promise<TFile[]> {
 	const { vault } = app;
 	const cleanedNotes: TFile[] = [];
 
-	notesTFiles.forEach(async (file: TFile) => {
+	for (const file of notesTFiles) {
 		const fileContent = await vault.cachedRead(file);
 		if (!fileContent.contains("---\ntags: obsidian-auto-glossary\n---\n")) {
 			cleanedNotes.push(file);
 		}
-	});
+	}
 
 	return cleanedNotes;
 }
 
-function sortFiles(notesTFile: TFile[], fileOrder: fileOrder) {
+function sortFiles(notesTFiles: TFile[], fileOrder: NotesOrder): TFile[] {
+	const copy = [...notesTFiles];
+
 	switch (fileOrder) {
 		case "ctime_new":
-			notesTFile.sort((a, b) => b.stat.ctime - a.stat.ctime);
-			break;
+			return copy.sort((a, b) => b.stat.ctime - a.stat.ctime);
 		case "ctime_old":
-			notesTFile.sort((a, b) => a.stat.ctime - b.stat.ctime);
-			break;
+			return copy.sort((a, b) => a.stat.ctime - b.stat.ctime);
 		case "mtime_new":
-			notesTFile.sort((a, b) => b.stat.mtime - a.stat.mtime);
-			break;
+			return copy.sort((a, b) => b.stat.mtime - a.stat.mtime);
 		case "mtime_old":
-			notesTFile.sort((a, b) => a.stat.mtime - b.stat.mtime);
-			break;
+			return copy.sort((a, b) => a.stat.mtime - b.stat.mtime);
 		case "alphabetical":
-			notesTFile.sort((a, b) => {
-				const nameA = a.name.toUpperCase(); // ignore upper and lowercase
-				const nameB = b.name.toUpperCase(); // ignore upper and lowercase
-				if (nameA < nameB) {
-					return -1;
-				}
-				if (nameA > nameB) {
-					return 1;
-				}
-
-				// names must be equal
-				return 0;
-			});
-			break;
+			return copy.sort((a, b) => a.name.localeCompare(b.name));
 		case "alphabetical_rev":
-			notesTFile.sort((a, b) => {
-				const nameA = a.name.toUpperCase(); // ignore upper and lowercase
-				const nameB = b.name.toUpperCase(); // ignore upper and lowercase
-				if (nameA > nameB) {
-					return -1;
-				}
-				if (nameA < nameB) {
-					return 1;
-				}
-
-				// names must be equal
-				return 0;
-			});
-			break;
+			return copy.sort((a, b) => b.name.localeCompare(a.name));
 		case "default":
 		default:
-			break;
+			return copy;
 	}
-
-	return notesTFile;
 }
 
-export function fileNamer(
-	requestedFile: fileType,
-	fileName?: string,
-	chosenFolder?: string,
-	destFolder?: string
-): string {
-	let completeFileName: string;
+export function fileNamer({
+	fileType,
+	fileName,
+	chosenFolder,
+	destFolder,
+}: {
+	fileType: FileType;
+	fileName?: string;
+	chosenFolder?: string;
+	destFolder?: string;
+}): string {
+	//log all the inputs
+	console.log(`fileType: ${fileType}`);
+	console.log(`fileName: ${fileName}`);
+	console.log(`chosenFolder: ${chosenFolder}`);
+	console.log(`destFolder: ${destFolder}`);
 
-	console.log("requestedFile: " + requestedFile);
-	console.log("fileName: " + fileName);
-	console.log("chosenFolder: " + chosenFolder);
-	console.log("destFolder: " + destFolder);
+	let fullPath = "";
 
 	if (destFolder) {
-		if (fileName) {
-			completeFileName = normalizePath(destFolder + "/" + fileName);
-		} else {
-			completeFileName = normalizePath(destFolder + "/" + requestedFile);
-		}
+		fullPath = destFolder;
 	} else if (chosenFolder) {
-		if (fileName) {
-			completeFileName = normalizePath(chosenFolder + "/" + fileName);
-		} else {
-			completeFileName = normalizePath(
-				chosenFolder + "/" + requestedFile
-			);
-		}
-	} else {
-		if (fileName) {
-			completeFileName = normalizePath(fileName);
-		} else {
-			completeFileName = normalizePath(requestedFile);
-		}
+		fullPath = chosenFolder;
 	}
-	return completeFileName;
+
+	const name = fileName ?? fileType;
+	const normalizedPath = normalizePath(`${fullPath}/${name}`);
+
+	console.log(`NORMALIZED PATH: ${normalizedPath}`);
+
+	return normalizedPath;
 }
 
-export async function getNotes(
-	app: App,
-	fileInclusion: boolean,
-	chosenFolder?: string,
-	fileOrder?: fileOrder
-): Promise<string[]> {
-	let notesTFile = app.vault.getMarkdownFiles();
-	const notes: string[] = [];
+export async function getNotes({
+	app,
+	includeFiles,
+	chosenFolder,
+	notesOrder,
+}: {
+	app: App;
+	includeFiles: boolean;
+	chosenFolder?: string;
+	notesOrder?: NotesOrder;
+}): Promise<string[]> {
+	let notesTFiles = app.vault.getMarkdownFiles();
 
-	if (!fileInclusion) {
-		notesTFile = await cleanFiles(app, notesTFile);
+	if (!includeFiles) {
+		notesTFiles = await cleanFiles(app, notesTFiles);
 	}
 
-	if (fileOrder) {
-		notesTFile = sortFiles(notesTFile, fileOrder);
+	if (notesOrder) {
+		notesTFiles = sortFiles(notesTFiles, notesOrder);
 	}
 
-	notesTFile.forEach((file) => {
-		if (
-			(chosenFolder && file.path.includes(chosenFolder)) ||
-			!chosenFolder
-		) {
-			notes.push(file.name);
-		}
-	});
-
-	notes.forEach((note) => {
-		// To obtain the note name in a 'linkable' format we have to remove the extension (aka the last 3 character)
-		note = note.slice(0, -3);
-	});
+	const notes = notesTFiles
+		.filter((file) => !chosenFolder || file.path.includes(chosenFolder))
+		.map((file) => file.name.slice(0, -3));
 
 	return notes;
 }
