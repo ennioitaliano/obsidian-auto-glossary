@@ -34,7 +34,6 @@ export default class autoGlossary extends Plugin {
 							.setIcon("list")
 							.onClick(async () => {
 								createIndexFile(
-									this.app,
 									this.settings.includeFiles,
 									this.settings.fileOverwrite,
 									folder.name + "_Index",
@@ -58,7 +57,6 @@ export default class autoGlossary extends Plugin {
 							.setIcon("layout-list")
 							.onClick(async () => {
 								createGlossaryFile(
-									this.app,
 									this.settings.includeFiles,
 									this.settings.fileOverwrite,
 									folder.name + "_Glossary",
@@ -82,7 +80,6 @@ export default class autoGlossary extends Plugin {
 							.setIcon("list-ordered")
 							.onClick(async () => {
 								createGlossaryIndexFile(
-									this.app,
 									this.settings.includeFiles,
 									this.settings.fileOverwrite,
 									folder.name + "_GlossaryIndex",
@@ -119,7 +116,6 @@ export default class autoGlossary extends Plugin {
 										destFolder
 									) => {
 										createIndexFile(
-											this.app,
 											this.settings.includeFiles,
 											overwrite,
 											fileName,
@@ -159,7 +155,6 @@ export default class autoGlossary extends Plugin {
 										destFolder
 									) => {
 										createGlossaryFile(
-											this.app,
 											this.settings.includeFiles,
 											overwrite,
 											fileName,
@@ -199,7 +194,6 @@ export default class autoGlossary extends Plugin {
 										destFolder
 									) => {
 										createGlossaryIndexFile(
-											this.app,
 											this.settings.includeFiles,
 											overwrite,
 											fileName,
@@ -237,7 +231,6 @@ export default class autoGlossary extends Plugin {
 						destFolder
 					) => {
 						createIndexFile(
-							this.app,
 							this.settings.includeFiles,
 							overwrite,
 							fileName,
@@ -272,7 +265,6 @@ export default class autoGlossary extends Plugin {
 						destFolder
 					) => {
 						createGlossaryFile(
-							this.app,
 							this.settings.includeFiles,
 							overwrite,
 							fileName,
@@ -307,7 +299,6 @@ export default class autoGlossary extends Plugin {
 						destFolder
 					) => {
 						createGlossaryIndexFile(
-							this.app,
 							this.settings.includeFiles,
 							overwrite,
 							fileName,
@@ -325,7 +316,7 @@ export default class autoGlossary extends Plugin {
 
 		// SETTINGS
 		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SettingTab(this.app, this));
+		this.addSettingTab(new SettingTab(this));
 	}
 
 	onunload() {
@@ -343,6 +334,6 @@ export default class autoGlossary extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
-		console.log("Settings saved.");
+		console.info("Settings saved.");
 	}
 }

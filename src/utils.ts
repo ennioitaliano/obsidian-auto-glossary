@@ -68,11 +68,6 @@ export function fileNamer({
 	chosenFolder?: string;
 	destFolder?: string;
 }): string {
-	//log all the inputs
-	console.log(`fileType: ${fileType}`);
-	console.log(`fileName: ${fileName}`);
-	console.log(`chosenFolder: ${chosenFolder}`);
-	console.log(`destFolder: ${destFolder}`);
 
 	let fullPath = "";
 
@@ -84,8 +79,6 @@ export function fileNamer({
 
 	const name = fileName ?? fileType;
 	const normalizedPath = normalizePath(`${fullPath}/${name}`);
-
-	console.log(`NORMALIZED PATH: ${normalizedPath}`);
 
 	return normalizedPath;
 }
