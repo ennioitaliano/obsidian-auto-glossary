@@ -1,5 +1,5 @@
 import autoGlossary from "main";
-import { PluginSettingTab, Setting } from "obsidian";
+import { App, PluginSettingTab, Setting } from "obsidian";
 import { NotesOrder } from "utils";
 
 export interface AutoGlossarySettings {
@@ -21,7 +21,7 @@ export const DEFAULT_SETTINGS: AutoGlossarySettings = {
 export class SettingTab extends PluginSettingTab {
 	plugin: autoGlossary;
 
-	constructor(plugin: autoGlossary) {
+	constructor(app: App, plugin: autoGlossary) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
