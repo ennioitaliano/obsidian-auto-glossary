@@ -7,14 +7,14 @@ import {
 	fileType,
 } from "./utils";
 
-export async function createArrays(
+export async function createText(
 	app: App,
 	requestedFile: fileType,
 	fileInclusion: boolean,
 	fileName?: string,
 	chosenFolder?: string,
 	fileOrder?: fileOrder
-): Promise<string[]> {
+): Promise<string> {
 	let notesTFile = app.vault.getMarkdownFiles();
 	const notes: string[] = [];
 
@@ -37,32 +37,69 @@ export async function createArrays(
 
 	const glossaryArray: string[] = [];
 	const indexArray: string[] = [];
+	let noteName, finalText: string;
 
-	notes.forEach((note) => {
-		// To obtain the note name in a 'linkable' format we have to remove the extension (aka the last 3 character)
-		const noteName = note.slice(0, -3);
+	switch (requestedFile) {
+		case "glossary":
+			notes.forEach((note) => {
+				// To obtain the note name in a 'linkable' format we have to remove the extension (aka the last 3 character)
+				noteName = note.slice(0, -3);
 
-		// Array of strings that will show up as an index. If clicked, each entry takes to the point in the same document where the note is embedded
-		if (requestedFile == "glossaryindex") {
-			indexArray.push(
-				"- [[" + fileName + "#" + noteName + "|" + noteName + "]]\n"
-			);
-		} else {
-			indexArray.push("- [[" + noteName + "]]\n");
-		}
+				// Array of strings that will show up as embedded notes
+				// #### to make them findable as sections
+				glossaryArray.push("#### ![[" + noteName + "]]\n\n***\n\n");
+			});
 
-		// Array of strings that will show up as embedded notes
-		// #### to make them findable as sections
-		glossaryArray.push("#### ![[" + noteName + "]]\n\n***\n\n");
-	});
+			// Arrays toString + remove only the commas that separate the entries
+			finalText =
+				"## Glossary\n" +
+				glossaryArray.toString().replace(/,####\s!\[\[/g, "#### ![[");
 
-	// Arrays toString + remove only the commas that separate the entries
-	const indexText =
-		"## Index\n" + indexArray.toString().replace(/,-\s\[\[/g, "- [[");
-	const glossaryText =
-		"## Glossary\n" +
-		glossaryArray.toString().replace(/,####\s!\[\[/g, "#### ![[");
-	return [indexText, glossaryText];
+			break;
+
+		case "index":
+			notes.forEach((note) => {
+				// To obtain the note name in a 'linkable' format we have to remove the extension (aka the last 3 character)
+				noteName = note.slice(0, -3);
+
+				indexArray.push("- [[" + noteName + "]]\n");
+			});
+
+			// Arrays toString + remove only the commas that separate the entries
+			finalText =
+				"## Index\n" +
+				indexArray.toString().replace(/,-\s\[\[/g, "- [[");
+
+			break;
+
+		case "glossaryindex":
+			notes.forEach((note) => {
+				// To obtain the note name in a 'linkable' format we have to remove the extension (aka the last 3 character)
+				noteName = note.slice(0, -3);
+
+				// Array of strings that will show up as an index. If clicked, each entry takes to the point in the same document where the note is embedded
+
+				indexArray.push(
+					"- [[" + fileName + "#" + noteName + "|" + noteName + "]]\n"
+				);
+
+				// Array of strings that will show up as embedded notes
+				// #### to make them findable as sections
+				glossaryArray.push("#### ![[" + noteName + "]]\n\n***\n\n");
+			});
+
+			// Arrays toString + remove only the commas that separate the entries
+			finalText =
+				"## Index\n" +
+				indexArray.toString().replace(/,-\s\[\[/g, "- [[") +
+				"\n***\n\n" +
+				"## Glossary\n" +
+				glossaryArray.toString().replace(/,####\s!\[\[/g, "#### ![[");
+
+			break;
+	}
+
+	return "---\ntags: obsidian-auto-glossary\n---\n" + finalText;
 }
 
 // This takes in which type of file we want to create and an optional fileName
@@ -133,7 +170,7 @@ export async function createFile(
 	}
 }
 
-async function createText(
+/*async function createText(
 	app: App,
 	requestedFile: fileType,
 	fileInclusion: boolean,
@@ -166,4 +203,4 @@ async function createText(
 	}
 
 	return text;
-}
+}*/
