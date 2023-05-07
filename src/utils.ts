@@ -21,10 +21,7 @@ export async function fileExists(app: App, fileName: string): Promise<boolean> {
 	return result;
 }
 
-export async function cleanFiles(
-	app: App,
-	notesTFiles: TFile[]
-): Promise<TFile[]> {
+async function cleanFiles(app: App, notesTFiles: TFile[]): Promise<TFile[]> {
 	const { vault } = app;
 	const cleanedNotes: TFile[] = [];
 
@@ -38,7 +35,7 @@ export async function cleanFiles(
 	return cleanedNotes;
 }
 
-export function sortFiles(notesTFile: TFile[], fileOrder: fileOrder) {
+function sortFiles(notesTFile: TFile[], fileOrder: fileOrder) {
 	switch (fileOrder) {
 		case "ctime_new":
 			notesTFile.sort((a, b) => b.stat.ctime - a.stat.ctime);
@@ -93,15 +90,23 @@ export function sortFiles(notesTFile: TFile[], fileOrder: fileOrder) {
 export function fileNamer(
 	requestedFile: fileType,
 	fileName?: string,
-	chosenFolder?: string
+	chosenFolder?: string,
+	destFolder?: string
 ): string {
 	let completeFileName: string;
 
 	console.log("requestedFile: " + requestedFile);
 	console.log("fileName: " + fileName);
 	console.log("chosenFolder: " + chosenFolder);
+	console.log("destFolder: " + destFolder);
 
-	if (chosenFolder) {
+	if (destFolder) {
+		if (fileName) {
+			completeFileName = normalizePath(destFolder + "/" + fileName);
+		} else {
+			completeFileName = normalizePath(destFolder + "/" + requestedFile);
+		}
+	} else if (chosenFolder) {
 		if (fileName) {
 			completeFileName = normalizePath(chosenFolder + "/" + fileName);
 		} else {
@@ -116,6 +121,39 @@ export function fileNamer(
 			completeFileName = normalizePath(requestedFile);
 		}
 	}
-
 	return completeFileName;
+}
+
+export async function getNotes(
+	app: App,
+	fileInclusion: boolean,
+	chosenFolder?: string,
+	fileOrder?: fileOrder
+): Promise<string[]> {
+	let notesTFile = app.vault.getMarkdownFiles();
+	const notes: string[] = [];
+
+	if (!fileInclusion) {
+		notesTFile = await cleanFiles(app, notesTFile);
+	}
+
+	if (fileOrder) {
+		notesTFile = sortFiles(notesTFile, fileOrder);
+	}
+
+	notesTFile.forEach((file) => {
+		if (
+			(chosenFolder && file.path.includes(chosenFolder)) ||
+			!chosenFolder
+		) {
+			notes.push(file.name);
+		}
+	});
+
+	notes.forEach((note) => {
+		// To obtain the note name in a 'linkable' format we have to remove the extension (aka the last 3 character)
+		note = note.slice(0, -3);
+	});
+
+	return notes;
 }

@@ -11,7 +11,6 @@ export class CreateFileModal extends Modal {
 	destFolder: string;
 
 	onSubmit: (
-		option: fileType,
 		overwrite: boolean,
 		fileName?: string,
 		chosenFolder?: string,
@@ -26,7 +25,6 @@ export class CreateFileModal extends Modal {
 		destFolder: string,
 		fileOrder: fileOrder,
 		onSubmit: (
-			option: fileType,
 			overwrite: boolean,
 			fileName: string,
 			chosenFolder: string,
@@ -167,7 +165,6 @@ export class CreateFileModal extends Modal {
 					this.close();
 
 					this.onSubmit(
-						this.option,
 						this.overwrite,
 						this.fileName,
 						this.chosenFolder,

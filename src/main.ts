@@ -112,7 +112,6 @@ export default class autoGlossary extends Plugin {
 									this.settings.fileDest,
 									this.settings.fileOrder,
 									(
-										option,
 										overwrite,
 										fileName,
 										chosenFolder,
@@ -153,7 +152,6 @@ export default class autoGlossary extends Plugin {
 									this.settings.fileDest,
 									this.settings.fileOrder,
 									(
-										option,
 										overwrite,
 										fileName,
 										chosenFolder,
@@ -194,7 +192,6 @@ export default class autoGlossary extends Plugin {
 									this.settings.fileDest,
 									this.settings.fileOrder,
 									(
-										option,
 										overwrite,
 										fileName,
 										chosenFolder,
@@ -233,7 +230,6 @@ export default class autoGlossary extends Plugin {
 					this.settings.fileDest,
 					this.settings.fileOrder,
 					(
-						option,
 						overwrite,
 						fileName,
 						chosenFolder,
@@ -269,7 +265,6 @@ export default class autoGlossary extends Plugin {
 					this.settings.fileDest,
 					this.settings.fileOrder,
 					(
-						option,
 						overwrite,
 						fileName,
 						chosenFolder,
@@ -305,7 +300,6 @@ export default class autoGlossary extends Plugin {
 					this.settings.fileDest,
 					this.settings.fileOrder,
 					(
-						option,
 						overwrite,
 						fileName,
 						chosenFolder,
