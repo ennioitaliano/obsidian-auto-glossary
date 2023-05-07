@@ -4,15 +4,103 @@ import {
 	fileExists,
 	sortFiles,
 	fileOrder,
-	fileType,
 	fileNamer,
 } from "./utils";
 
-export async function createText(
+export async function createIndex(
 	app: App,
-	requestedFile: fileType,
 	fileInclusion: boolean,
-	fileName?: string,
+	chosenFolder?: string,
+	fileOrder?: fileOrder
+): Promise<string> {
+	let notesTFile = app.vault.getMarkdownFiles();
+	const notes: string[] = [];
+
+	if (!fileInclusion) {
+		notesTFile = await cleanFiles(app, notesTFile);
+	}
+
+	if (fileOrder) {
+		notesTFile = sortFiles(notesTFile, fileOrder);
+	}
+
+	notesTFile.forEach((file) => {
+		if (
+			(chosenFolder && file.path.includes(chosenFolder)) ||
+			!chosenFolder
+		) {
+			notes.push(file.name);
+		}
+	});
+
+	const indexArray: string[] = [];
+	let noteName: string;
+
+	notes.forEach((note) => {
+		// To obtain the note name in a 'linkable' format we have to remove the extension (aka the last 3 character)
+		noteName = note.slice(0, -3);
+
+		indexArray.push(`- [[${noteName}]]\n`);
+	});
+
+	// Arrays toString + remove only the commas that separate the entries
+	const finalText = `## Index\n${indexArray
+		.toString()
+		.replace(/,-\s\[\[/g, "- [[")}`;
+
+	return `---\ntags: obsidian-auto-glossary\n---\n${finalText}`;
+}
+
+export async function createGlossary(
+	app: App,
+	fileInclusion: boolean,
+	chosenFolder?: string,
+	fileOrder?: fileOrder
+): Promise<string> {
+	let notesTFile = app.vault.getMarkdownFiles();
+	const notes: string[] = [];
+
+	if (!fileInclusion) {
+		notesTFile = await cleanFiles(app, notesTFile);
+	}
+
+	if (fileOrder) {
+		notesTFile = sortFiles(notesTFile, fileOrder);
+	}
+
+	notesTFile.forEach((file) => {
+		if (
+			(chosenFolder && file.path.includes(chosenFolder)) ||
+			!chosenFolder
+		) {
+			notes.push(file.name);
+		}
+	});
+
+	const glossaryArray: string[] = [];
+	let noteName: string;
+
+	notes.forEach((note) => {
+		// To obtain the note name in a 'linkable' format we have to remove the extension (aka the last 3 character)
+		noteName = note.slice(0, -3);
+
+		// Array of strings that will show up as embedded notes
+		// #### to make them findable as sections
+		glossaryArray.push(`#### ![[${noteName}]]\n\n***\n\n`);
+	});
+
+	// Arrays toString + remove only the commas that separate the entries
+	const finalText = `## Glossary\n${glossaryArray
+		.toString()
+		.replace(/,####\s!\[\[/g, "#### ![[")}`;
+
+	return `---\ntags: obsidian-auto-glossary\n---\n${finalText}`;
+}
+
+export async function createGlossaryIndex(
+	app: App,
+	fileInclusion: boolean,
+	fileName: string,
 	chosenFolder?: string,
 	fileOrder?: fileOrder
 ): Promise<string> {
@@ -38,79 +126,71 @@ export async function createText(
 
 	const glossaryArray: string[] = [];
 	const indexArray: string[] = [];
-	let noteName, finalText: string;
+	let noteName: string;
 
-	switch (requestedFile) {
-		case "glossary":
-			notes.forEach((note) => {
-				// To obtain the note name in a 'linkable' format we have to remove the extension (aka the last 3 character)
-				noteName = note.slice(0, -3);
+	notes.forEach((note) => {
+		// To obtain the note name in a 'linkable' format we have to remove the extension (aka the last 3 character)
+		noteName = note.slice(0, -3);
 
-				// Array of strings that will show up as embedded notes
-				// #### to make them findable as sections
-				glossaryArray.push("#### ![[" + noteName + "]]\n\n***\n\n");
-			});
+		// Array of strings that will show up as an index. If clicked, each entry takes to the point in the same document where the note is embedded
 
-			// Arrays toString + remove only the commas that separate the entries
-			finalText =
-				"## Glossary\n" +
-				glossaryArray.toString().replace(/,####\s!\[\[/g, "#### ![[");
+		indexArray.push(`- [[${fileName}#${noteName}|${noteName}]]\n`);
 
-			break;
+		// Array of strings that will show up as embedded notes
+		// #### to make them findable as sections
+		glossaryArray.push(`#### ![[${noteName}]]\n\n***\n\n`);
+	});
 
-		case "index":
-			notes.forEach((note) => {
-				// To obtain the note name in a 'linkable' format we have to remove the extension (aka the last 3 character)
-				noteName = note.slice(0, -3);
+	const indexText = `## Index\n${indexArray
+		.toString()
+		.replace(/,-\s\[\[/g, "- [[")}`;
 
-				indexArray.push("- [[" + noteName + "]]\n");
-			});
+	const glossaryText = `## Glossary\n${glossaryArray
+		.toString()
+		.replace(/,####\s!\[\[/g, "#### ![[")}`;
 
-			// Arrays toString + remove only the commas that separate the entries
-			finalText =
-				"## Index\n" +
-				indexArray.toString().replace(/,-\s\[\[/g, "- [[");
+	// Arrays toString + remove only the commas that separate the entries
+	const finalText = `${indexText}\n***\n\n${glossaryText}`;
 
-			break;
-
-		case "glossaryindex":
-			notes.forEach((note) => {
-				// To obtain the note name in a 'linkable' format we have to remove the extension (aka the last 3 character)
-				noteName = note.slice(0, -3);
-
-				// Array of strings that will show up as an index. If clicked, each entry takes to the point in the same document where the note is embedded
-
-				indexArray.push(
-					"- [[" + fileName + "#" + noteName + "|" + noteName + "]]\n"
-				);
-
-				/*indexArray.push(
-					`- [[${fileName}#${noteName}|${noteName}]]\n`
-				);*/
-
-				// Array of strings that will show up as embedded notes
-				// #### to make them findable as sections
-				glossaryArray.push("#### ![[" + noteName + "]]\n\n***\n\n");
-			});
-
-			// Arrays toString + remove only the commas that separate the entries
-			finalText =
-				"## Index\n" +
-				indexArray.toString().replace(/,-\s\[\[/g, "- [[") +
-				"\n***\n\n" +
-				"## Glossary\n" +
-				glossaryArray.toString().replace(/,####\s!\[\[/g, "#### ![[");
-
-			break;
-	}
-
-	return "---\ntags: obsidian-auto-glossary\n---\n" + finalText;
+	return `---\ntags: obsidian-auto-glossary\n---\n${finalText}`;
 }
 
-// This takes in which type of file we want to create and an optional fileName
-export async function createFile(
+export async function createIndexFile(
 	app: App,
-	requestedFile: fileType,
+	fileInclusion: boolean,
+	fileOverwrite: boolean,
+	fileName: string,
+	chosenFolder?: string,
+	fileOrder?: fileOrder,
+	destFolder?: string
+) {
+	if (chosenFolder == app.vault.getName()) {
+		chosenFolder = "";
+	}
+
+	const completeFileName: string = fileNamer("index", fileName, chosenFolder);
+
+	const fileExistsBool = await fileExists(app, completeFileName);
+	const adapter: DataAdapter = app.vault.adapter;
+
+	console.log("destFolder: " + destFolder);
+	console.log("completeFileName: " + completeFileName);
+
+	if (fileExistsBool && !fileOverwrite) {
+		new Notice(
+			`${completeFileName} file already exists. Try again with overwrite enabled or a different file name.`
+		);
+	} else {
+		adapter.write(
+			completeFileName + ".md",
+			await createIndex(app, fileInclusion, chosenFolder, fileOrder)
+		);
+		new Notice(`${completeFileName} file updated`);
+	}
+}
+
+export async function createGlossaryFile(
+	app: App,
 	fileInclusion: boolean,
 	fileOverwrite: boolean,
 	fileName: string,
@@ -123,7 +203,7 @@ export async function createFile(
 	}
 
 	const completeFileName: string = fileNamer(
-		requestedFile,
+		"glossary",
 		fileName,
 		chosenFolder
 	);
@@ -141,9 +221,46 @@ export async function createFile(
 	} else {
 		adapter.write(
 			completeFileName + ".md",
-			await createText(
+			await createGlossary(app, fileInclusion, chosenFolder, fileOrder)
+		);
+		new Notice(`${completeFileName} file updated`);
+	}
+}
+
+export async function createGlossaryIndexFile(
+	app: App,
+	fileInclusion: boolean,
+	fileOverwrite: boolean,
+	fileName: string,
+	chosenFolder?: string,
+	fileOrder?: fileOrder,
+	destFolder?: string
+) {
+	if (chosenFolder == app.vault.getName()) {
+		chosenFolder = "";
+	}
+
+	const completeFileName: string = fileNamer(
+		"glossaryindex",
+		fileName,
+		chosenFolder
+	);
+
+	const fileExistsBool = await fileExists(app, completeFileName);
+	const adapter: DataAdapter = app.vault.adapter;
+
+	console.log("destFolder: " + destFolder);
+	console.log("completeFileName: " + completeFileName);
+
+	if (fileExistsBool && !fileOverwrite) {
+		new Notice(
+			`${completeFileName} file already exists. Try again with overwrite enabled or a different file name.`
+		);
+	} else {
+		adapter.write(
+			completeFileName + ".md",
+			await createGlossaryIndex(
 				app,
-				requestedFile,
 				fileInclusion,
 				fileName,
 				chosenFolder,

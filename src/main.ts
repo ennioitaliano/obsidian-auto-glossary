@@ -1,7 +1,11 @@
 import { Plugin, TFolder } from "obsidian";
 
 import { CreateFileModal } from "./modal";
-import { createFile } from "./glossaryIndex";
+import {
+	createIndexFile,
+	createGlossaryFile,
+	createGlossaryIndexFile,
+} from "./glossaryIndex";
 import { AutoGlossarySettings, DEFAULT_SETTINGS, SettingTab } from "settings";
 
 export default class autoGlossary extends Plugin {
@@ -29,9 +33,8 @@ export default class autoGlossary extends Plugin {
 						item.setTitle("New index")
 							.setIcon("list")
 							.onClick(async () => {
-								createFile(
+								createIndexFile(
 									this.app,
-									"index",
 									this.settings.fileInclusion,
 									this.settings.fileOverwrite,
 									folder.name + "_Index",
@@ -54,9 +57,8 @@ export default class autoGlossary extends Plugin {
 						item.setTitle("New glossary")
 							.setIcon("layout-list")
 							.onClick(async () => {
-								createFile(
+								createGlossaryFile(
 									this.app,
-									"glossary",
 									this.settings.fileInclusion,
 									this.settings.fileOverwrite,
 									folder.name + "_Glossary",
@@ -79,9 +81,8 @@ export default class autoGlossary extends Plugin {
 						item.setTitle("New index+glossary")
 							.setIcon("list-ordered")
 							.onClick(async () => {
-								createFile(
+								createGlossaryIndexFile(
 									this.app,
-									"glossaryindex",
 									this.settings.fileInclusion,
 									this.settings.fileOverwrite,
 									folder.name + "_GlossaryIndex",
@@ -118,9 +119,8 @@ export default class autoGlossary extends Plugin {
 										fileOrder,
 										destFolder
 									) => {
-										createFile(
+										createIndexFile(
 											this.app,
-											option,
 											this.settings.fileInclusion,
 											overwrite,
 											fileName,
@@ -160,9 +160,8 @@ export default class autoGlossary extends Plugin {
 										fileOrder,
 										destFolder
 									) => {
-										createFile(
+										createGlossaryFile(
 											this.app,
-											option,
 											this.settings.fileInclusion,
 											overwrite,
 											fileName,
@@ -202,9 +201,8 @@ export default class autoGlossary extends Plugin {
 										fileOrder,
 										destFolder
 									) => {
-										createFile(
+										createGlossaryIndexFile(
 											this.app,
-											option,
 											this.settings.fileInclusion,
 											overwrite,
 											fileName,
@@ -222,43 +220,6 @@ export default class autoGlossary extends Plugin {
 				}
 			})
 		);
-
-		// Command to create glossary in root folder
-		this.addCommand({
-			id: "glossary-root",
-			name: "Create glossary in root folder",
-			callback: async () => {
-				new CreateFileModal(
-					this.app,
-					this.settings.fileOverwrite,
-					this.settings.sameDest,
-					this.settings.fileDest,
-					this.settings.fileOrder,
-					(
-						option,
-						overwrite,
-						fileName,
-						chosenFolder,
-						fileOrder,
-						destFolder
-					) => {
-						createFile(
-							this.app,
-							option,
-							this.settings.fileInclusion,
-							overwrite,
-							fileName,
-							chosenFolder,
-							fileOrder,
-							destFolder
-						);
-					},
-					this.app.vault.getName(),
-					this.app.vault.getName() + "_Glossary",
-					"glossary"
-				).open();
-			},
-		});
 
 		// Command to create index in root folder
 		this.addCommand({
@@ -279,9 +240,8 @@ export default class autoGlossary extends Plugin {
 						fileOrder,
 						destFolder
 					) => {
-						createFile(
+						createIndexFile(
 							this.app,
-							option,
 							this.settings.fileInclusion,
 							overwrite,
 							fileName,
@@ -293,6 +253,42 @@ export default class autoGlossary extends Plugin {
 					this.app.vault.getName(),
 					this.app.vault.getName() + "_Index",
 					"index"
+				).open();
+			},
+		});
+
+		// Command to create glossary in root folder
+		this.addCommand({
+			id: "glossary-root",
+			name: "Create glossary in root folder",
+			callback: async () => {
+				new CreateFileModal(
+					this.app,
+					this.settings.fileOverwrite,
+					this.settings.sameDest,
+					this.settings.fileDest,
+					this.settings.fileOrder,
+					(
+						option,
+						overwrite,
+						fileName,
+						chosenFolder,
+						fileOrder,
+						destFolder
+					) => {
+						createGlossaryFile(
+							this.app,
+							this.settings.fileInclusion,
+							overwrite,
+							fileName,
+							chosenFolder,
+							fileOrder,
+							destFolder
+						);
+					},
+					this.app.vault.getName(),
+					this.app.vault.getName() + "_Glossary",
+					"glossary"
 				).open();
 			},
 		});
@@ -316,9 +312,8 @@ export default class autoGlossary extends Plugin {
 						fileOrder,
 						destFolder
 					) => {
-						createFile(
+						createGlossaryIndexFile(
 							this.app,
-							option,
 							this.settings.fileInclusion,
 							overwrite,
 							fileName,
