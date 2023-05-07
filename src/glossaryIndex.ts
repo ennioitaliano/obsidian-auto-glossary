@@ -4,7 +4,7 @@ import {
 	fileExists,
 	sortFiles,
 	fileOrder,
-	fileType
+	fileType,
 } from "./utils";
 
 export async function createArrays(
@@ -78,6 +78,10 @@ export async function createFile(
 ) {
 	let completeFileName = "";
 
+	if (chosenFolder == app.vault.getName()) {
+		chosenFolder = "";
+	}
+
 	if (destFolder) {
 		if (fileName) {
 			completeFileName = normalizePath(destFolder + "/" + fileName);
@@ -93,7 +97,11 @@ export async function createFile(
 			);
 		}
 	} else {
-		completeFileName = normalizePath(requestedFile);
+		if (fileName) {
+			completeFileName = normalizePath(fileName);
+		} else {
+			completeFileName = normalizePath(requestedFile);
+		}
 	}
 
 	const fileExistsBool = await fileExists(app, completeFileName);
@@ -106,7 +114,9 @@ export async function createFile(
 	console.log("completeFileName: " + completeFileName);
 
 	if (fileExistsBool && !fileOverwrite) {
-		new Notice(`${completeFileName} file already exists. Try again with overwrite enabled or a different file name.`);
+		new Notice(
+			`${completeFileName} file already exists. Try again with overwrite enabled or a different file name.`
+		);
 	} else {
 		adapter.write(
 			completeFileName + ".md",

@@ -223,35 +223,116 @@ export default class autoGlossary extends Plugin {
 			})
 		);
 
-		/*this.addCommand({
-			id: "create-glossary",
-			name: "Create glossary",
-			callback: () => {
+		// Command to create glossary in root folder
+		this.addCommand({
+			id: "glossary-root",
+			name: "Create glossary in root folder",
+			callback: async () => {
 				new CreateFileModal(
 					this.app,
 					this.settings.fileOverwrite,
+					this.settings.sameDest,
+					this.settings.fileDest,
+					this.settings.fileOrder,
 					(
 						option,
+						overwrite,
 						fileName,
 						chosenFolder,
 						fileOrder,
-						destFolder,
-						overwrite
+						destFolder
 					) => {
 						createFile(
 							this.app,
-							getEnumFT(option),
+							option,
 							this.settings.fileInclusion,
-							fileName,
 							overwrite,
+							fileName,
 							chosenFolder,
-							getEnumFO(fileOrder),
+							fileOrder,
 							destFolder
 						);
-					}
+					},
+					this.app.vault.getName(),
+					this.app.vault.getName() + "_Glossary",
+					"glossary"
 				).open();
 			},
-		});*/
+		});
+
+		// Command to create index in root folder
+		this.addCommand({
+			id: "index-root",
+			name: "Create index in root folder",
+			callback: async () => {
+				new CreateFileModal(
+					this.app,
+					this.settings.fileOverwrite,
+					this.settings.sameDest,
+					this.settings.fileDest,
+					this.settings.fileOrder,
+					(
+						option,
+						overwrite,
+						fileName,
+						chosenFolder,
+						fileOrder,
+						destFolder
+					) => {
+						createFile(
+							this.app,
+							option,
+							this.settings.fileInclusion,
+							overwrite,
+							fileName,
+							chosenFolder,
+							fileOrder,
+							destFolder
+						);
+					},
+					this.app.vault.getName(),
+					this.app.vault.getName() + "_Index",
+					"index"
+				).open();
+			},
+		});
+
+		// Command to create index in root folder
+		this.addCommand({
+			id: "glossaryIndex-root",
+			name: "Create a glossary with index in root folder",
+			callback: async () => {
+				new CreateFileModal(
+					this.app,
+					this.settings.fileOverwrite,
+					this.settings.sameDest,
+					this.settings.fileDest,
+					this.settings.fileOrder,
+					(
+						option,
+						overwrite,
+						fileName,
+						chosenFolder,
+						fileOrder,
+						destFolder
+					) => {
+						createFile(
+							this.app,
+							option,
+							this.settings.fileInclusion,
+							overwrite,
+							fileName,
+							chosenFolder,
+							fileOrder,
+							destFolder
+						);
+					},
+					this.app.vault.getName(),
+					this.app.vault.getName() + "_GlossaryIndex",
+					"glossaryindex"
+				).open();
+			},
+		});
 
 		// SETTINGS
 		// This adds a settings tab so the user can configure various aspects of the plugin
