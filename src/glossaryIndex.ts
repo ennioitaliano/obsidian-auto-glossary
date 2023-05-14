@@ -7,9 +7,8 @@ export async function createIndex(
 	notesOrder?: NotesOrder
 ): Promise<string> {
 	const noteNames = await getNotes({
-		app,
 		includeFiles,
-		chosenFolder,
+		rootPath: chosenFolder,
 		notesOrder,
 	});
 	const indexEntries = noteNames.map((name) => `- [[${name}]]`);
@@ -24,9 +23,8 @@ export async function createGlossary(
 	notesOrder?: NotesOrder
 ): Promise<string> {
 	const noteNames = await getNotes({
-		app,
 		includeFiles,
-		chosenFolder,
+		rootPath: chosenFolder,
 		notesOrder,
 	});
 	const glossaryEntries = noteNames.map(
@@ -44,9 +42,8 @@ export async function createGlossaryIndex(
 	notesOrder?: NotesOrder
 ): Promise<string> {
 	const noteNames = await getNotes({
-		app,
 		includeFiles,
-		chosenFolder,
+		rootPath: chosenFolder,
 		notesOrder,
 	});
 	const indexEntries = noteNames.map(

@@ -1,4 +1,13 @@
-import { App, DataAdapter, TFile, normalizePath } from "obsidian";
+import {
+	App,
+	DataAdapter,
+	TAbstractFile,
+	TFile,
+	TFolder,
+	Vault,
+	normalizePath,
+} from "obsidian";
+import { type } from "os";
 
 export type FileType = "index" | "glossary" | "glossaryindex";
 export type NotesOrder =
@@ -9,6 +18,61 @@ export type NotesOrder =
 	| "ctime_old"
 	| "alphabetical"
 	| "alphabetical_rev";
+
+export async function getNotes({
+	includeFiles,
+	rootPath,
+	notesOrder,
+	prevResult,
+}: {
+	includeFiles: boolean;
+	rootPath?: string;
+	notesOrder?: NotesOrder;
+	prevResult?: string[];
+}): Promise<string[]> {
+	console.log("rootPath: " + rootPath);
+
+	const rootFolder: TFolder | null = app.vault.getAbstractFileByPath(
+		rootPath ?? app.vault.getName()
+	) as TFolder;
+
+	/*const files: TFile[] = [];
+	const folders: TFolder[] = [];*/
+
+	let result: string[] = prevResult ?? [];
+
+	//result.push(rootFolder.name);
+
+	for (const child of rootFolder.children) {
+		if (child instanceof TFile) {
+			const fileContent = await app.vault.cachedRead(child);
+			if (
+				!includeFiles &&
+				!fileContent.contains(
+					"---\ntags: obsidian-auto-glossary\n---\n"
+				)
+			) {
+				result.push(child.basename);
+			}
+		} else if (child instanceof TFolder) {
+			result.push(child.name);
+
+			result = result.concat(
+				await getNotes({
+					includeFiles,
+					rootPath: child.path,
+					notesOrder,
+					//prevResult: result,
+				})
+			);
+		}
+	}
+
+	/*console.log("RESULT: ");
+	console.log(result);*/
+
+	return result;
+}
 
 export async function fileExists(app: App, fileName: string): Promise<boolean> {
 	const adapter: DataAdapter = app.vault.adapter;
@@ -21,13 +85,20 @@ export async function fileExists(app: App, fileName: string): Promise<boolean> {
 	return result;
 }
 
-async function cleanFiles(app: App, notesTFiles: TFile[]): Promise<TFile[]> {
-	const { vault } = app;
-	const cleanedNotes: TFile[] = [];
+async function cleanFiles(absFiles: TAbstractFile[]): Promise<TAbstractFile[]> {
+	const cleanedNotes: TAbstractFile[] = [];
 
-	for (const file of notesTFiles) {
-		const fileContent = await vault.cachedRead(file);
-		if (!fileContent.contains("---\ntags: obsidian-auto-glossary\n---\n")) {
+	for (const file of absFiles) {
+		if (file instanceof TFile) {
+			const fileContent = await app.vault.cachedRead(file);
+			if (
+				!fileContent.contains(
+					"---\ntags: obsidian-auto-glossary\n---\n"
+				)
+			) {
+				cleanedNotes.push(file);
+			}
+		} else if (file instanceof TFolder) {
 			cleanedNotes.push(file);
 		}
 	}
@@ -68,7 +139,6 @@ export function fileNamer({
 	chosenFolder?: string;
 	destFolder?: string;
 }): string {
-
 	let fullPath = "";
 
 	if (destFolder) {
@@ -81,32 +151,4 @@ export function fileNamer({
 	const normalizedPath = normalizePath(`${fullPath}/${name}`);
 
 	return normalizedPath;
-}
-
-export async function getNotes({
-	app,
-	includeFiles,
-	chosenFolder,
-	notesOrder,
-}: {
-	app: App;
-	includeFiles: boolean;
-	chosenFolder?: string;
-	notesOrder?: NotesOrder;
-}): Promise<string[]> {
-	let notesTFiles = app.vault.getMarkdownFiles();
-
-	if (!includeFiles) {
-		notesTFiles = await cleanFiles(app, notesTFiles);
-	}
-
-	if (notesOrder) {
-		notesTFiles = sortFiles(notesTFiles, notesOrder);
-	}
-
-	const notes = notesTFiles
-		.filter((file) => !chosenFolder || file.path.includes(chosenFolder))
-		.map((file) => file.name.slice(0, -3));
-
-	return notes;
 }
