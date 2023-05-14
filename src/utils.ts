@@ -22,12 +22,12 @@ export async function getNotes({
 	includeFiles,
 	rootPath,
 	notesOrder,
-	prevDepth,
+	depth,
 }: {
 	includeFiles: boolean;
 	rootPath?: string;
 	notesOrder?: NotesOrder;
-	prevDepth?: number;
+	depth?: number;
 }): Promise<File[]> {
 	console.log("rootPath: " + rootPath);
 
@@ -39,7 +39,7 @@ export async function getNotes({
 	const folders: TFolder[] = [];*/
 
 	let result: File[] = [];
-	let depth = prevDepth ?? 0;
+	const prevDepth = depth ?? 0;
 
 	//result.push(rootFolder.name);
 
@@ -62,7 +62,7 @@ export async function getNotes({
 					includeFiles,
 					rootPath: child.path,
 					notesOrder,
-					prevDepth: depth + 1,
+					depth: prevDepth + 1,
 				})
 			);
 		}
