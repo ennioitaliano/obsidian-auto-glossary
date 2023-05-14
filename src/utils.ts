@@ -4,10 +4,8 @@ import {
 	TAbstractFile,
 	TFile,
 	TFolder,
-	Vault,
 	normalizePath,
 } from "obsidian";
-import { type } from "os";
 
 export type FileType = "index" | "glossary" | "glossaryindex";
 export type NotesOrder =
@@ -18,18 +16,19 @@ export type NotesOrder =
 	| "ctime_old"
 	| "alphabetical"
 	| "alphabetical_rev";
+export type File = { type: string; name: string; depth?: number };
 
 export async function getNotes({
 	includeFiles,
 	rootPath,
 	notesOrder,
-	prevResult,
+	prevDepth,
 }: {
 	includeFiles: boolean;
 	rootPath?: string;
 	notesOrder?: NotesOrder;
-	prevResult?: string[];
-}): Promise<string[]> {
+	prevDepth?: number;
+}): Promise<File[]> {
 	console.log("rootPath: " + rootPath);
 
 	const rootFolder: TFolder | null = app.vault.getAbstractFileByPath(
@@ -39,7 +38,8 @@ export async function getNotes({
 	/*const files: TFile[] = [];
 	const folders: TFolder[] = [];*/
 
-	let result: string[] = prevResult ?? [];
+	let result: File[] = [];
+	let depth = prevDepth ?? 0;
 
 	//result.push(rootFolder.name);
 
@@ -52,17 +52,17 @@ export async function getNotes({
 					"---\ntags: obsidian-auto-glossary\n---\n"
 				)
 			) {
-				result.push(child.basename);
+				result.push({ type: "file", name: child.basename });
 			}
 		} else if (child instanceof TFolder) {
-			result.push(child.name);
+			result.push({ type: "folder", name: child.name, depth: depth });
 
 			result = result.concat(
 				await getNotes({
 					includeFiles,
 					rootPath: child.path,
 					notesOrder,
-					//prevResult: result,
+					prevDepth: depth + 1,
 				})
 			);
 		}

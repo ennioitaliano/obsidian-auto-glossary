@@ -6,14 +6,32 @@ export async function createIndex(
 	chosenFolder?: string,
 	notesOrder?: NotesOrder
 ): Promise<string> {
-	const noteNames = await getNotes({
+	const files = await getNotes({
 		includeFiles,
 		rootPath: chosenFolder,
 		notesOrder,
 	});
-	const indexEntries = noteNames.map((name) => `- [[${name}]]`);
+
+	const chosenFolderName =
+		chosenFolder?.split("/").pop() ?? app.vault.getName();
+
+	const indexEntries: string[] = [];
+	let hLevel = "###";
+
+	files.forEach((file) => {
+		if (file.type === "file") {
+			indexEntries.push(`- [[${file.name}]]`);
+		} else if (file.type === "folder") {
+			for (let i = 0; file.depth && i < file.depth; i++) {
+				hLevel += "#";
+			}
+
+			indexEntries.push(`${hLevel} ${file.name}`);
+		}
+	});
+
 	const indexText = indexEntries.join("\n");
-	const finalText = `## Index\n${indexText}`;
+	const finalText = `## ${chosenFolderName} Index\n${indexText}`;
 	return `---\ntags: obsidian-auto-glossary\n---\n${finalText}`;
 }
 
@@ -82,21 +100,19 @@ export async function createIndexFile(
 	const fileExistsBool = await fileExists(app, completeFileName);
 	const adapter: DataAdapter = app.vault.adapter;
 
-	if(fileExistsBool) {
-		if(overwrite) {
+	if (fileExistsBool) {
+		if (overwrite) {
 			adapter.write(
 				completeFileName + ".md",
 				await createIndex(includeFiles, chosenFolder, notesOrder)
 			);
 			new Notice(`${completeFileName} updated`);
-		}
-		else {
+		} else {
 			new Notice(
 				`${completeFileName} file already exists. Try again with overwrite enabled or a different file name.`
 			);
 		}
-	}
-	else {
+	} else {
 		adapter.write(
 			completeFileName + ".md",
 			await createIndex(includeFiles, chosenFolder, notesOrder)
@@ -128,21 +144,19 @@ export async function createGlossaryFile(
 	const fileExistsBool = await fileExists(app, completeFileName);
 	const adapter: DataAdapter = app.vault.adapter;
 
-	if(fileExistsBool) {
-		if(overwrite) {
+	if (fileExistsBool) {
+		if (overwrite) {
 			adapter.write(
 				completeFileName + ".md",
 				await createGlossary(includeFiles, chosenFolder, notesOrder)
 			);
 			new Notice(`${completeFileName} updated`);
-		}
-		else {
+		} else {
 			new Notice(
 				`${completeFileName} file already exists. Try again with overwrite enabled or a different file name.`
 			);
 		}
-	}
-	else {
+	} else {
 		adapter.write(
 			completeFileName + ".md",
 			await createGlossary(includeFiles, chosenFolder, notesOrder)
@@ -174,24 +188,32 @@ export async function createGlossaryIndexFile(
 	const fileExistsBool = await fileExists(app, completeFileName);
 	const adapter: DataAdapter = app.vault.adapter;
 
-	if(fileExistsBool) {
-		if(overwrite) {
+	if (fileExistsBool) {
+		if (overwrite) {
 			adapter.write(
 				completeFileName + ".md",
-				await createGlossaryIndex(includeFiles, fileName, chosenFolder, notesOrder)
+				await createGlossaryIndex(
+					includeFiles,
+					fileName,
+					chosenFolder,
+					notesOrder
+				)
 			);
 			new Notice(`${completeFileName} updated`);
-		}
-		else {
+		} else {
 			new Notice(
 				`${completeFileName} file already exists. Try again with overwrite enabled or a different file name.`
 			);
 		}
-	}
-	else {
+	} else {
 		adapter.write(
 			completeFileName + ".md",
-			await createGlossaryIndex(includeFiles, fileName, chosenFolder, notesOrder)
+			await createGlossaryIndex(
+				includeFiles,
+				fileName,
+				chosenFolder,
+				notesOrder
+			)
 		);
 		new Notice(`${completeFileName} created`);
 	}
