@@ -29,19 +29,14 @@ export async function getNotes({
 	notesOrder?: NotesOrder;
 	depth?: number;
 }): Promise<File[]> {
+	const rootFolder: TFolder | null = rootPath
+		? (app.vault.getAbstractFileByPath(rootPath) as TFolder)
+		: app.vault.getRoot();
+
 	console.log("rootPath: " + rootPath);
-
-	const rootFolder: TFolder | null = app.vault.getAbstractFileByPath(
-		rootPath ?? app.vault.getName()
-	) as TFolder;
-
-	/*const files: TFile[] = [];
-	const folders: TFolder[] = [];*/
 
 	let result: File[] = [];
 	const prevDepth = depth ?? 0;
-
-	//result.push(rootFolder.name);
 
 	for (const child of rootFolder.children) {
 		if (child instanceof TFile) {
@@ -67,9 +62,6 @@ export async function getNotes({
 			);
 		}
 	}
-
-	/*console.log("RESULT: ");
-	console.log(result);*/
 
 	return result;
 }
