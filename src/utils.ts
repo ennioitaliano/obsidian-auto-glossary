@@ -52,7 +52,7 @@ export async function getNotes({
 					"---\ntags: obsidian-auto-glossary\n---\n"
 				)
 			) {
-				result.push({ type: "file", name: child.basename });
+				result.unshift({ type: "file", name: child.basename });
 			}
 		} else if (child instanceof TFolder) {
 			result.push({ type: "folder", name: child.name, depth: depth });
