@@ -16,17 +16,24 @@ export async function createIndex(
 		chosenFolder?.split("/").pop() ?? app.vault.getName();
 
 	const indexEntries: string[] = [];
-	let hLevel = "###";
 
 	files.forEach((file) => {
 		if (file.type === "file") {
 			indexEntries.push(`- [[${file.name}]]`);
 		} else if (file.type === "folder") {
-			for (let i = 0; file.depth && i < file.depth; i++) {
-				hLevel += "#";
-			}
+			if (file.depth) {
+				if (file.depth <= 3) {
+					let hLevel = "###";
 
-			indexEntries.push(`${hLevel} ${file.name}`);
+					for (let i = 0; i < file.depth; i++) {
+						hLevel += "#";
+					}
+
+					indexEntries.push(`${hLevel} ${file.name}`);
+				} else {
+					indexEntries.push(`**${file.name}**`);
+				}
+			}
 		}
 	});
 

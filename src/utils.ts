@@ -33,10 +33,8 @@ export async function getNotes({
 		? (app.vault.getAbstractFileByPath(rootPath) as TFolder)
 		: app.vault.getRoot();
 
-	console.log("rootPath: " + rootPath);
-
 	let result: File[] = [];
-	const prevDepth = depth ?? 0;
+	const currentDepth = depth ?? 0;
 
 	for (const child of rootFolder.children) {
 		if (child instanceof TFile) {
@@ -50,14 +48,19 @@ export async function getNotes({
 				result.unshift({ type: "file", name: child.basename });
 			}
 		} else if (child instanceof TFolder) {
-			result.push({ type: "folder", name: child.name, depth: depth });
+			//console.log("pushed: " + child.name + " depth: " + currentDepth);
+			result.push({
+				type: "folder",
+				name: child.name,
+				depth: currentDepth,
+			});
 
-			result = result.concat(
+			result = await result.concat(
 				await getNotes({
 					includeFiles,
 					rootPath: child.path,
 					notesOrder,
-					depth: prevDepth + 1,
+					depth: currentDepth + 1,
 				})
 			);
 		}
