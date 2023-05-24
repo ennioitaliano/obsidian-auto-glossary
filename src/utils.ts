@@ -38,14 +38,16 @@ export async function getNotes({
 
 	for (const child of rootFolder.children) {
 		if (child instanceof TFile) {
-			const fileContent = await app.vault.cachedRead(child);
-			if (
-				!includeFiles &&
-				!fileContent.contains(
-					"---\ntags: obsidian-auto-glossary\n---\n"
-				)
-			) {
-				result.unshift({ type: "file", name: child.basename });
+			if (child.extension === "md") {
+				const fileContent = await app.vault.cachedRead(child);
+				if (
+					!includeFiles &&
+					!fileContent.contains(
+						"---\ntags: obsidian-auto-glossary\n---\n"
+					)
+				) {
+					result.unshift({ type: "file", name: child.basename });
+				}
 			}
 		} else if (child instanceof TFolder) {
 			//console.log("pushed: " + child.name + " depth: " + currentDepth);
