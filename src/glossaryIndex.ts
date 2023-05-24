@@ -21,7 +21,8 @@ export async function createIndex(
 		if (file.type === "file") {
 			indexEntries.push(`- [[${file.name}]]`);
 		} else if (file.type === "folder") {
-			if (file.depth) {
+			console.log(file);
+			if (file.depth!==undefined) {
 				if (file.depth <= 3) {
 					let hLevel = "###";
 
