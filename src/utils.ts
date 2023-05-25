@@ -1,13 +1,7 @@
-import {
-	App,
-	DataAdapter,
-	TAbstractFile,
-	TFile,
-	TFolder,
-	normalizePath,
-} from "obsidian";
+import { TFile, TFolder } from "obsidian";
 
 export type FileType = "index" | "glossary" | "glossaryindex";
+
 export type NotesOrder =
 	| "default"
 	| "mtime_new"
@@ -16,24 +10,25 @@ export type NotesOrder =
 	| "ctime_old"
 	| "alphabetical"
 	| "alphabetical_rev";
-export type File = { type: string; name: string; depth?: number };
 
-export async function getNotes({
+export type AbstractFile = { type: string; name: string; depth?: number };
+
+export async function getFilesAndFolders({
 	includeFiles,
-	rootPath,
+	startingFolderPath,
 	notesOrder,
 	depth,
 }: {
 	includeFiles: boolean;
-	rootPath?: string;
+	startingFolderPath?: string;
 	notesOrder?: NotesOrder;
 	depth?: number;
-}): Promise<File[]> {
-	const rootFolder: TFolder | null = rootPath
-		? (app.vault.getAbstractFileByPath(rootPath) as TFolder)
+}): Promise<AbstractFile[]> {
+	const rootFolder: TFolder | null = startingFolderPath
+		? (app.vault.getAbstractFileByPath(startingFolderPath) as TFolder)
 		: app.vault.getRoot();
 
-	let result: File[] = [];
+	let result: AbstractFile[] = [];
 	const currentDepth = depth ?? 0;
 
 	for (const child of rootFolder.children) {
@@ -58,9 +53,9 @@ export async function getNotes({
 			});
 
 			result = await result.concat(
-				await getNotes({
+				await getFilesAndFolders({
 					includeFiles,
-					rootPath: child.path,
+					startingFolderPath: child.path,
 					notesOrder,
 					depth: currentDepth + 1,
 				})
@@ -69,38 +64,6 @@ export async function getNotes({
 	}
 
 	return result;
-}
-
-export async function fileExists(app: App, fileName: string): Promise<boolean> {
-	const adapter: DataAdapter = app.vault.adapter;
-	const result = await adapter.exists(fileName + ".md");
-
-	if (result) {
-		console.log(`File ${fileName}.md already exists`);
-	}
-
-	return result;
-}
-
-async function cleanFiles(absFiles: TAbstractFile[]): Promise<TAbstractFile[]> {
-	const cleanedNotes: TAbstractFile[] = [];
-
-	for (const file of absFiles) {
-		if (file instanceof TFile) {
-			const fileContent = await app.vault.cachedRead(file);
-			if (
-				!fileContent.contains(
-					"---\ntags: obsidian-auto-glossary\n---\n"
-				)
-			) {
-				cleanedNotes.push(file);
-			}
-		} else if (file instanceof TFolder) {
-			cleanedNotes.push(file);
-		}
-	}
-
-	return cleanedNotes;
 }
 
 function sortFiles(notesTFiles: TFile[], fileOrder: NotesOrder): TFile[] {
@@ -123,29 +86,4 @@ function sortFiles(notesTFiles: TFile[], fileOrder: NotesOrder): TFile[] {
 		default:
 			return copy;
 	}
-}
-
-export function fileNamer({
-	fileType,
-	fileName,
-	chosenFolder,
-	destFolder,
-}: {
-	fileType: FileType;
-	fileName?: string;
-	chosenFolder?: string;
-	destFolder?: string;
-}): string {
-	let fullPath = "";
-
-	if (destFolder) {
-		fullPath = destFolder;
-	} else if (chosenFolder) {
-		fullPath = chosenFolder;
-	}
-
-	const name = fileName ?? fileType;
-	const normalizedPath = normalizePath(`${fullPath}/${name}`);
-
-	return normalizedPath;
 }
