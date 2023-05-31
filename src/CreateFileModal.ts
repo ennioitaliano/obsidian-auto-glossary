@@ -1,8 +1,11 @@
+import { GeneratedFile } from "GeneratedFile";
 import { App, Modal, Setting } from "obsidian";
+import { AutoGlossarySettings } from "settings";
 import { FileType, NotesOrder } from "utils";
 
 export class CreateFileModal extends Modal {
 	option: FileType;
+	includeFiles: boolean;
 	overwrite: boolean;
 	sameDest: boolean;
 	fileName: string;
@@ -10,40 +13,23 @@ export class CreateFileModal extends Modal {
 	fileOrder: NotesOrder;
 	destFolder: string;
 
-	onSubmit: (
-		overwrite: boolean,
-		fileName?: string,
-		chosenFolder?: string,
-		fileOrder?: NotesOrder,
-		destFolder?: string
-	) => void;
+	onSubmit: (fileToGenerate: GeneratedFile) => void;
 
 	constructor(
 		app: App,
-		overwrite: boolean,
-		sameDest: boolean,
-		destFolder: string,
-		fileOrder: NotesOrder,
-		onSubmit: (
-			overwrite: boolean,
-			fileName: string,
-			chosenFolder: string,
-			fileOrder: NotesOrder,
-			destFolder: string
-		) => void,
+		settings: AutoGlossarySettings,
+		onSubmit: (fileToGenerate: GeneratedFile) => void,
 		passedFolder?: string,
-		passedName?: string,
-		passedOption?: FileType
+		passedName?: string
 	) {
 		super(app);
 		this.onSubmit = onSubmit;
-		this.overwrite = overwrite;
-		this.sameDest = sameDest;
-		this.destFolder = destFolder ? destFolder : "";
-		this.fileOrder = fileOrder ? fileOrder : "default";
+		this.overwrite = settings.fileOverwrite;
+		this.sameDest = settings.sameDest;
+		this.destFolder = settings.fileDest;
+		this.fileOrder = settings.fileOrder;
 		this.chosenFolder = passedFolder ? passedFolder : "";
 		this.fileName = passedName ? passedName : "";
-		this.option = passedOption ? passedOption : "index";
 	}
 
 	onOpen() {
@@ -105,6 +91,17 @@ export class CreateFileModal extends Modal {
 			);
 
 		new Setting(contentEl)
+			.setName("Files inclusion")
+			.setDesc(
+				"Include files generated with AutoGlossary in new glossaries and indexes."
+			)
+			.addToggle((toggle) =>
+				toggle.setValue(this.includeFiles).onChange((value) => {
+					this.includeFiles = value;
+				})
+			);
+
+		new Setting(contentEl)
 			.setName("Overwrite existing file")
 			.setDesc(
 				"If turned on, if a file with the same name and location already exists, it will be overwritten. Default behavior can be changed in the plugin settings."
@@ -139,20 +136,6 @@ export class CreateFileModal extends Modal {
 					})
 			);
 
-		new Setting(contentEl)
-			.setName("File type")
-			.setDesc("Choose between index, glossary or both.")
-			.addDropdown((drop) =>
-				drop
-					.addOption("glossary", "Glossary")
-					.addOption("index", "Index")
-					.addOption("glossaryindex", "Glossary with index")
-					.onChange((chosen: FileType) => {
-						this.option = chosen;
-					})
-					.setValue(this.option ? this.option : "glossaryindex")
-			);
-
 		new Setting(contentEl).addButton((btn) =>
 			btn
 				.setButtonText("Submit")
@@ -165,11 +148,14 @@ export class CreateFileModal extends Modal {
 					this.close();
 
 					this.onSubmit(
-						this.overwrite,
-						this.fileName,
-						this.chosenFolder,
-						this.fileOrder,
-						this.destFolder
+						new GeneratedFile(
+							this.fileName,
+							this.includeFiles,
+							this.overwrite,
+							this.chosenFolder,
+							this.fileOrder,
+							this.destFolder
+						)
 					);
 				})
 		);

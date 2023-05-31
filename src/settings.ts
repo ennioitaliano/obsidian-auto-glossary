@@ -34,7 +34,7 @@ export class SettingTab extends PluginSettingTab {
 		containerEl.createEl("h2", { text: "Auto Glossary Settings" });
 
 		new Setting(containerEl)
-			.setName("File inclusion")
+			.setName("Files inclusion")
 			.setDesc(
 				"Include previously generated files in glossaries and indexes."
 			)

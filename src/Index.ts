@@ -1,28 +1,22 @@
 import { GeneratedFile } from "GeneratedFile";
-import { getFilesAndFolders } from "utils";
+import { MyFolder } from "MyFolder";
+import { TAbstractFile, TFile } from "obsidian";
 
 export class Index extends GeneratedFile {
 	async createText(
+		filesAndFolders: TAbstractFile[],
+		chosenFolderName: string,
 		fileName?: string,
 		isForGlossary?: boolean
 	): Promise<string> {
-		const filesAndFolders = await getFilesAndFolders({
-			includeFiles: this.IncludeFiles,
-			startingFolderPath: this.ChosenFolder,
-			notesOrder: this.NotesOrder,
-		});
-
-		const chosenFolderName =
-			this.ChosenFolder?.split("/").pop() ?? app.vault.getName();
-
 		isForGlossary = isForGlossary ?? false;
 
 		const indexEntries = filesAndFolders.map((absFile) => {
-			if (absFile.type === "file") {
+			if (absFile instanceof TFile) {
 				return isForGlossary
-					? `- [[${fileName}#${absFile.name}|${absFile.name}]]`
-					: `- [[${absFile.name}]]`;
-			} else if (absFile.type === "folder") {
+					? `- [[${fileName}#${absFile.basename}|${absFile.basename}]]`
+					: `- [[${absFile.basename}]]`;
+			} else if (absFile instanceof MyFolder) {
 				if (absFile.depth !== undefined) {
 					if (absFile.depth <= 3) {
 						let hLevel = "###";

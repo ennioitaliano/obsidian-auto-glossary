@@ -1,6 +1,6 @@
 import { Plugin, TFolder } from "obsidian";
 
-import { CreateFileModal } from "./modal";
+import { CreateFileModal } from "./CreateFileModal";
 import { AutoGlossarySettings, DEFAULT_SETTINGS, SettingTab } from "settings";
 import { Index } from "Index";
 import { Glossary } from "Glossary";
@@ -102,29 +102,12 @@ export default class autoGlossary extends Plugin {
 							.onClick(async () => {
 								new CreateFileModal(
 									this.app,
-									this.settings.fileOverwrite,
-									this.settings.sameDest,
-									this.settings.fileDest,
-									this.settings.fileOrder,
-									(
-										overwrite,
-										fileName,
-										chosenFolder,
-										fileOrder,
-										destFolder
-									) => {
-										new Index(
-											fileName,
-											this.settings.includeFiles,
-											overwrite,
-											chosenFolder,
-											fileOrder,
-											destFolder
-										).writeFile();
+									this.settings,
+									(fileToGenerate: Index) => {
+										fileToGenerate.writeFile();
 									},
 									folder.path,
-									folder.name + "_Index",
-									"index"
+									folder.name + "_Index"
 								).open();
 							});
 					});
@@ -141,29 +124,12 @@ export default class autoGlossary extends Plugin {
 							.onClick(async () => {
 								new CreateFileModal(
 									this.app,
-									this.settings.fileOverwrite,
-									this.settings.sameDest,
-									this.settings.fileDest,
-									this.settings.fileOrder,
-									(
-										overwrite,
-										fileName,
-										chosenFolder,
-										fileOrder,
-										destFolder
-									) => {
-										new Glossary(
-											fileName,
-											this.settings.includeFiles,
-											overwrite,
-											chosenFolder,
-											fileOrder,
-											destFolder
-										).writeFile();
+									this.settings,
+									(fileToGenerate: Glossary) => {
+										fileToGenerate.writeFile();
 									},
 									folder.path,
-									folder.name + "_Glossary",
-									"glossary"
+									folder.name + "_Glossary"
 								).open();
 							});
 					});
@@ -180,29 +146,12 @@ export default class autoGlossary extends Plugin {
 							.onClick(async () => {
 								new CreateFileModal(
 									this.app,
-									this.settings.fileOverwrite,
-									this.settings.sameDest,
-									this.settings.fileDest,
-									this.settings.fileOrder,
-									(
-										overwrite,
-										fileName,
-										chosenFolder,
-										fileOrder,
-										destFolder
-									) => {
-										new GlossaryIndex(
-											fileName,
-											this.settings.includeFiles,
-											overwrite,
-											chosenFolder,
-											fileOrder,
-											destFolder
-										).writeFile();
+									this.settings,
+									(fileToGenerate: GlossaryIndex) => {
+										fileToGenerate.writeFile();
 									},
 									folder.path,
-									folder.name + "_GlossaryIndex",
-									"glossaryindex"
+									folder.name + "_GlossaryIndex"
 								).open();
 							});
 					});
@@ -217,29 +166,12 @@ export default class autoGlossary extends Plugin {
 			callback: async () => {
 				new CreateFileModal(
 					this.app,
-					this.settings.fileOverwrite,
-					this.settings.sameDest,
-					this.settings.fileDest,
-					this.settings.fileOrder,
-					(
-						overwrite,
-						fileName,
-						chosenFolder,
-						fileOrder,
-						destFolder
-					) => {
-						new Index(
-							fileName,
-							this.settings.includeFiles,
-							overwrite,
-							chosenFolder,
-							fileOrder,
-							destFolder
-						).writeFile();
+					this.settings,
+					(fileToGenerate: Index) => {
+						fileToGenerate.writeFile();
 					},
 					this.app.vault.getName(),
-					this.app.vault.getName() + "_Index",
-					"index"
+					this.app.vault.getName() + "_Index"
 				).open();
 			},
 		});
@@ -251,29 +183,12 @@ export default class autoGlossary extends Plugin {
 			callback: async () => {
 				new CreateFileModal(
 					this.app,
-					this.settings.fileOverwrite,
-					this.settings.sameDest,
-					this.settings.fileDest,
-					this.settings.fileOrder,
-					(
-						overwrite,
-						fileName,
-						chosenFolder,
-						fileOrder,
-						destFolder
-					) => {
-						new Glossary(
-							fileName,
-							this.settings.includeFiles,
-							overwrite,
-							chosenFolder,
-							fileOrder,
-							destFolder
-						).writeFile();
+					this.settings,
+					(fileToGenerate: Glossary) => {
+						fileToGenerate.writeFile();
 					},
 					this.app.vault.getName(),
-					this.app.vault.getName() + "_Glossary",
-					"glossary"
+					this.app.vault.getName() + "_Glossary"
 				).open();
 			},
 		});
@@ -285,29 +200,12 @@ export default class autoGlossary extends Plugin {
 			callback: async () => {
 				new CreateFileModal(
 					this.app,
-					this.settings.fileOverwrite,
-					this.settings.sameDest,
-					this.settings.fileDest,
-					this.settings.fileOrder,
-					(
-						overwrite,
-						fileName,
-						chosenFolder,
-						fileOrder,
-						destFolder
-					) => {
-						new GlossaryIndex(
-							fileName,
-							this.settings.includeFiles,
-							overwrite,
-							chosenFolder,
-							fileOrder,
-							destFolder
-						).writeFile();
+					this.settings,
+					(fileToGenerate: GlossaryIndex) => {
+						fileToGenerate.writeFile();
 					},
 					this.app.vault.getName(),
-					this.app.vault.getName() + "_GlossaryIndex",
-					"glossaryindex"
+					this.app.vault.getName() + "_GlossaryIndex"
 				).open();
 			},
 		});

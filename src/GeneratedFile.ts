@@ -1,7 +1,15 @@
-import { DataAdapter, Notice, normalizePath } from "obsidian";
+import { MyFolder } from "MyFolder";
+import {
+	DataAdapter,
+	Notice,
+	TAbstractFile,
+	TFile,
+	TFolder,
+	normalizePath,
+} from "obsidian";
 import { NotesOrder } from "utils";
 
-export abstract class GeneratedFile {
+export class GeneratedFile {
 	private completePath: string;
 	private includeFiles: boolean;
 	private overwrite: boolean;
@@ -9,10 +17,14 @@ export abstract class GeneratedFile {
 	private notesOrder?: NotesOrder;
 	private destFolder?: string;
 
-	abstract createText(
+	createText(
+		filesAndFolders: TAbstractFile[],
+		chosenFolderName: string,
 		fileName?: string,
 		isForGlossary?: boolean
-	): Promise<string>;
+	): Promise<string> {
+		throw new Error("Method not implemented.");
+	}
 
 	constructor(
 		fileName: string,
@@ -94,7 +106,16 @@ export abstract class GeneratedFile {
 				`${this.CompletePath} file already exists. Try again with overwrite enabled or a different file name.`
 			);
 		} else {
+			const filesAndFolders = await this.getFilesAndFolders(
+				this.ChosenFolder
+			);
+
+			const chosenFolderName =
+				this.ChosenFolder?.split("/").pop() ?? app.vault.getName();
+
 			const text = await this.createText(
+				filesAndFolders,
+				chosenFolderName,
 				this.getFileName()
 			);
 
@@ -108,5 +129,44 @@ export abstract class GeneratedFile {
 					: `${this.CompletePath} created`
 			);
 		}
+	}
+
+	async getFilesAndFolders(
+		startingFolderPath?: string,
+		depth?: number
+	): Promise<TAbstractFile[]> {
+		const rootFolder: TFolder | null = startingFolderPath
+			? (app.vault.getAbstractFileByPath(startingFolderPath) as TFolder)
+			: app.vault.getRoot();
+
+		let filesAndFoldersArray: TAbstractFile[] = [];
+		const currentDepth = depth ?? 0;
+
+		for (const child of rootFolder.children) {
+			if (child instanceof TFile) {
+				if (child.extension === "md") {
+					const fileContent = await app.vault.cachedRead(child);
+					if (
+						!this.includeFiles &&
+						!fileContent.contains(
+							"---\ntags: obsidian-auto-glossary\n---\n"
+						)
+					) {
+						filesAndFoldersArray.unshift(child);
+					} else if (this.includeFiles) {
+						filesAndFoldersArray.unshift(child);
+					}
+				}
+			} else if (child instanceof TFolder) {
+				const myFolder = new MyFolder(child, currentDepth);
+				filesAndFoldersArray.push(myFolder);
+
+				filesAndFoldersArray = await filesAndFoldersArray.concat(
+					await this.getFilesAndFolders(child.path, currentDepth + 1)
+				);
+			}
+		}
+
+		return filesAndFoldersArray;
 	}
 }
