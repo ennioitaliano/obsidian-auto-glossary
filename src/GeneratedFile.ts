@@ -3,18 +3,21 @@ import { NotesOrder } from "utils";
 
 export abstract class GeneratedFile {
 	private completePath: string;
+	private includeFiles: boolean;
+	private overwrite: boolean;
 	private chosenFolder?: string;
 	private notesOrder?: NotesOrder;
 	private destFolder?: string;
 
 	abstract createText(
-		includeFiles: boolean,
 		fileName?: string,
 		isForGlossary?: boolean
 	): Promise<string>;
 
 	constructor(
 		fileName: string,
+		includeFiles: boolean,
+		overwrite: boolean,
 		chosenFolder?: string,
 		notesOrder?: NotesOrder,
 		destFolder?: string
@@ -26,6 +29,8 @@ export abstract class GeneratedFile {
 		this.notesOrder = notesOrder;
 		this.destFolder = destFolder;
 		this.CompletePath = fileName;
+		this.includeFiles = includeFiles;
+		this.overwrite = overwrite;
 	}
 
 	set CompletePath(name: string) {
@@ -55,6 +60,14 @@ export abstract class GeneratedFile {
 		return this.notesOrder;
 	}
 
+	get IncludeFiles(): boolean {
+		return this.includeFiles;
+	}
+
+	get Overwrite(): boolean {
+		return this.overwrite;
+	}
+
 	getFileName(): string {
 		return this.completePath.split("/").pop() ?? "";
 	}
@@ -70,38 +83,18 @@ export abstract class GeneratedFile {
 		return result;
 	}
 
-	async writeFile(includeFiles: boolean, overwrite: boolean) {
+	async writeFile() {
 		const adapter: DataAdapter = app.vault.adapter;
 		const frontmatter = `---\ntags: obsidian-auto-glossary\n---\n`;
 
 		const fileExistsBool = await this.exists();
 
-		if (fileExistsBool && !overwrite) {
+		if (fileExistsBool && !this.overwrite) {
 			new Notice(
 				`${this.CompletePath} file already exists. Try again with overwrite enabled or a different file name.`
 			);
 		} else {
-			/*const text = await this.createIndex(
-				includeFiles,
-				this.ChosenFolder,
-				this.NotesOrder
-			);
-
-			const text = await this.createGlossary(
-				includeFiles,
-				this.ChosenFolder,
-				this.NotesOrder
-			);
-
-			const text = await this.createGlossaryIndex(
-				includeFiles,
-				this.getFileName(),
-				this.ChosenFolder,
-				this.NotesOrder
-			);*/
-
 			const text = await this.createText(
-				includeFiles,
 				this.getFileName()
 			);
 

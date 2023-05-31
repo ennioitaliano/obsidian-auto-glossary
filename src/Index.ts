@@ -3,12 +3,11 @@ import { getFilesAndFolders } from "utils";
 
 export class Index extends GeneratedFile {
 	async createText(
-		includeFiles: boolean,
 		fileName?: string,
 		isForGlossary?: boolean
 	): Promise<string> {
 		const filesAndFolders = await getFilesAndFolders({
-			includeFiles,
+			includeFiles: this.IncludeFiles,
 			startingFolderPath: this.ChosenFolder,
 			notesOrder: this.NotesOrder,
 		});

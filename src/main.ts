@@ -33,15 +33,14 @@ export default class autoGlossary extends Plugin {
 							.onClick(async () => {
 								new Index(
 									folder.name + "_Index",
+									this.settings.includeFiles,
+									this.settings.fileOverwrite,
 									folder.path,
 									this.settings.fileOrder,
 									this.settings.sameDest
 										? ""
 										: this.settings.fileDest
-								).writeFile(
-									this.settings.includeFiles,
-									this.settings.fileOverwrite
-								);
+								).writeFile();
 							});
 					});
 				}
@@ -57,15 +56,14 @@ export default class autoGlossary extends Plugin {
 							.onClick(async () => {
 								new Glossary(
 									folder.name + "_Glossary",
+									this.settings.includeFiles,
+									this.settings.fileOverwrite,
 									folder.path,
 									this.settings.fileOrder,
 									this.settings.sameDest
 										? ""
 										: this.settings.fileDest
-								).writeFile(
-									this.settings.includeFiles,
-									this.settings.fileOverwrite
-								);
+								).writeFile();
 							});
 					});
 				}
@@ -81,15 +79,14 @@ export default class autoGlossary extends Plugin {
 							.onClick(async () => {
 								new GlossaryIndex(
 									folder.name + "_GlossaryIndex",
+									this.settings.includeFiles,
+									this.settings.fileOverwrite,
 									folder.path,
 									this.settings.fileOrder,
 									this.settings.sameDest
 										? ""
 										: this.settings.fileDest
-								).writeFile(
-									this.settings.includeFiles,
-									this.settings.fileOverwrite
-								);
+								).writeFile();
 							});
 					});
 				}
@@ -118,13 +115,12 @@ export default class autoGlossary extends Plugin {
 									) => {
 										new Index(
 											fileName,
+											this.settings.includeFiles,
+											overwrite,
 											chosenFolder,
 											fileOrder,
 											destFolder
-										).writeFile(
-											this.settings.includeFiles,
-											overwrite
-										);
+										).writeFile();
 									},
 									folder.path,
 									folder.name + "_Index",
@@ -158,13 +154,12 @@ export default class autoGlossary extends Plugin {
 									) => {
 										new Glossary(
 											fileName,
+											this.settings.includeFiles,
+											overwrite,
 											chosenFolder,
 											fileOrder,
 											destFolder
-										).writeFile(
-											this.settings.includeFiles,
-											overwrite
-										);
+										).writeFile();
 									},
 									folder.path,
 									folder.name + "_Glossary",
@@ -198,13 +193,12 @@ export default class autoGlossary extends Plugin {
 									) => {
 										new GlossaryIndex(
 											fileName,
+											this.settings.includeFiles,
+											overwrite,
 											chosenFolder,
 											fileOrder,
 											destFolder
-										).writeFile(
-											this.settings.includeFiles,
-											overwrite
-										);
+										).writeFile();
 									},
 									folder.path,
 									folder.name + "_GlossaryIndex",
@@ -236,10 +230,12 @@ export default class autoGlossary extends Plugin {
 					) => {
 						new Index(
 							fileName,
+							this.settings.includeFiles,
+							overwrite,
 							chosenFolder,
 							fileOrder,
 							destFolder
-						).writeFile(this.settings.includeFiles, overwrite);
+						).writeFile();
 					},
 					this.app.vault.getName(),
 					this.app.vault.getName() + "_Index",
@@ -268,10 +264,12 @@ export default class autoGlossary extends Plugin {
 					) => {
 						new Glossary(
 							fileName,
+							this.settings.includeFiles,
+							overwrite,
 							chosenFolder,
 							fileOrder,
 							destFolder
-						).writeFile(this.settings.includeFiles, overwrite);
+						).writeFile();
 					},
 					this.app.vault.getName(),
 					this.app.vault.getName() + "_Glossary",
@@ -300,10 +298,12 @@ export default class autoGlossary extends Plugin {
 					) => {
 						new GlossaryIndex(
 							fileName,
+							this.settings.includeFiles,
+							overwrite,
 							chosenFolder,
 							fileOrder,
 							destFolder
-						).writeFile(this.settings.includeFiles, overwrite);
+						).writeFile();
 					},
 					this.app.vault.getName(),
 					this.app.vault.getName() + "_GlossaryIndex",
