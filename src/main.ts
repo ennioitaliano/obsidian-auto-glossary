@@ -2,7 +2,9 @@ import { Plugin, TFolder } from "obsidian";
 
 import { CreateFileModal } from "./modal";
 import { AutoGlossarySettings, DEFAULT_SETTINGS, SettingTab } from "settings";
-import { GeneratedFile } from "GeneratedFile";
+import { Index } from "Index";
+import { Glossary } from "Glossary";
+import { GlossaryIndex } from "GlossaryIndex";
 
 export default class autoGlossary extends Plugin {
 	// SETTINGS
@@ -29,16 +31,14 @@ export default class autoGlossary extends Plugin {
 						item.setTitle("New index")
 							.setIcon("list")
 							.onClick(async () => {
-								const generatedIndex = new GeneratedFile(
-									"index",
+								new Index(
 									folder.name + "_Index",
 									folder.path,
 									this.settings.fileOrder,
 									this.settings.sameDest
 										? ""
 										: this.settings.fileDest
-								);
-								generatedIndex.writeFile(
+								).writeFile(
 									this.settings.includeFiles,
 									this.settings.fileOverwrite
 								);
@@ -55,16 +55,14 @@ export default class autoGlossary extends Plugin {
 						item.setTitle("New glossary")
 							.setIcon("layout-list")
 							.onClick(async () => {
-								const generatedGlossary = new GeneratedFile(
-									"glossary",
+								new Glossary(
 									folder.name + "_Glossary",
 									folder.path,
 									this.settings.fileOrder,
 									this.settings.sameDest
 										? ""
 										: this.settings.fileDest
-								);
-								generatedGlossary.writeFile(
+								).writeFile(
 									this.settings.includeFiles,
 									this.settings.fileOverwrite
 								);
@@ -81,17 +79,14 @@ export default class autoGlossary extends Plugin {
 						item.setTitle("New index+glossary")
 							.setIcon("list-ordered")
 							.onClick(async () => {
-								const generatedGlossaryIndex =
-									new GeneratedFile(
-										"glossaryindex",
-										folder.name + "_GlossaryIndex",
-										folder.path,
-										this.settings.fileOrder,
-										this.settings.sameDest
-											? ""
-											: this.settings.fileDest
-									);
-								generatedGlossaryIndex.writeFile(
+								new GlossaryIndex(
+									folder.name + "_GlossaryIndex",
+									folder.path,
+									this.settings.fileOrder,
+									this.settings.sameDest
+										? ""
+										: this.settings.fileDest
+								).writeFile(
 									this.settings.includeFiles,
 									this.settings.fileOverwrite
 								);
@@ -121,15 +116,12 @@ export default class autoGlossary extends Plugin {
 										fileOrder,
 										destFolder
 									) => {
-										const generatedIndex =
-											new GeneratedFile(
-												"index",
-												fileName,
-												chosenFolder,
-												fileOrder,
-												destFolder
-											);
-										generatedIndex.writeFile(
+										new Index(
+											fileName,
+											chosenFolder,
+											fileOrder,
+											destFolder
+										).writeFile(
 											this.settings.includeFiles,
 											overwrite
 										);
@@ -164,15 +156,12 @@ export default class autoGlossary extends Plugin {
 										fileOrder,
 										destFolder
 									) => {
-										const generatedGlossary =
-											new GeneratedFile(
-												"glossary",
-												fileName,
-												chosenFolder,
-												fileOrder,
-												destFolder
-											);
-										generatedGlossary.writeFile(
+										new Glossary(
+											fileName,
+											chosenFolder,
+											fileOrder,
+											destFolder
+										).writeFile(
 											this.settings.includeFiles,
 											overwrite
 										);
@@ -207,15 +196,12 @@ export default class autoGlossary extends Plugin {
 										fileOrder,
 										destFolder
 									) => {
-										const generatedGlossaryIndex =
-											new GeneratedFile(
-												"glossaryindex",
-												fileName,
-												chosenFolder,
-												fileOrder,
-												destFolder
-											);
-										generatedGlossaryIndex.writeFile(
+										new GlossaryIndex(
+											fileName,
+											chosenFolder,
+											fileOrder,
+											destFolder
+										).writeFile(
 											this.settings.includeFiles,
 											overwrite
 										);
@@ -248,17 +234,12 @@ export default class autoGlossary extends Plugin {
 						fileOrder,
 						destFolder
 					) => {
-						const generatedIndex = new GeneratedFile(
-							"index",
+						new Index(
 							fileName,
 							chosenFolder,
 							fileOrder,
 							destFolder
-						);
-						generatedIndex.writeFile(
-							this.settings.includeFiles,
-							overwrite
-						);
+						).writeFile(this.settings.includeFiles, overwrite);
 					},
 					this.app.vault.getName(),
 					this.app.vault.getName() + "_Index",
@@ -285,17 +266,12 @@ export default class autoGlossary extends Plugin {
 						fileOrder,
 						destFolder
 					) => {
-						const generatedGlossary = new GeneratedFile(
-							"glossary",
+						new Glossary(
 							fileName,
 							chosenFolder,
 							fileOrder,
 							destFolder
-						);
-						generatedGlossary.writeFile(
-							this.settings.includeFiles,
-							overwrite
-						);
+						).writeFile(this.settings.includeFiles, overwrite);
 					},
 					this.app.vault.getName(),
 					this.app.vault.getName() + "_Glossary",
@@ -322,17 +298,12 @@ export default class autoGlossary extends Plugin {
 						fileOrder,
 						destFolder
 					) => {
-						const generatedGlossaryIndex = new GeneratedFile(
-							"glossaryindex",
+						new GlossaryIndex(
 							fileName,
 							chosenFolder,
 							fileOrder,
 							destFolder
-						);
-						generatedGlossaryIndex.writeFile(
-							this.settings.includeFiles,
-							overwrite
-						);
+						).writeFile(this.settings.includeFiles, overwrite);
 					},
 					this.app.vault.getName(),
 					this.app.vault.getName() + "_GlossaryIndex",
