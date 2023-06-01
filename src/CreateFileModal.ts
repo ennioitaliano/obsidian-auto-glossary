@@ -18,9 +18,9 @@ export class CreateFileModal extends Modal {
 	constructor(
 		app: App,
 		settings: AutoGlossarySettings,
-		onSubmit: (fileToGenerate: GeneratedFile) => void,
-		passedFolder?: string,
-		passedName?: string
+		fileName: string,
+		chosenFolder: string,
+		onSubmit: (fileToGenerate: GeneratedFile) => void
 	) {
 		super(app);
 		this.onSubmit = onSubmit;
@@ -28,8 +28,8 @@ export class CreateFileModal extends Modal {
 		this.sameDest = settings.sameDest;
 		this.destFolder = settings.fileDest;
 		this.fileOrder = settings.fileOrder;
-		this.chosenFolder = passedFolder ? passedFolder : "";
-		this.fileName = passedName ? passedName : "";
+		this.chosenFolder = chosenFolder;
+		this.fileName = fileName;
 	}
 
 	onOpen() {
@@ -148,14 +148,14 @@ export class CreateFileModal extends Modal {
 					this.close();
 
 					this.onSubmit(
-						new GeneratedFile(
-							this.fileName,
-							this.includeFiles,
-							this.overwrite,
-							this.chosenFolder,
-							this.fileOrder,
-							this.destFolder
-						)
+						new GeneratedFile({
+							name: this.fileName,
+							chosenFolder: this.chosenFolder,
+							includeFiles: this.includeFiles,
+							overwrite: this.overwrite,
+							notesOrder: this.fileOrder,
+							destFolder: this.destFolder,
+						})
 					);
 				})
 		);

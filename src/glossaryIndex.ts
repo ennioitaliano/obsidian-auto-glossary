@@ -3,23 +3,23 @@ import { Glossary } from "Glossary";
 import { Index } from "Index";
 import { TAbstractFile } from "obsidian";
 export class GlossaryIndex extends GeneratedFile {
-	index = new Index(
-		super.getFileName(),
-		super.IncludeFiles,
-		super.Overwrite,
-		super.ChosenFolder,
-		super.NotesOrder,
-		super.CompletePath
-	);
+	index = new Index({
+		name: super.Name,
+		chosenFolder: super.ChosenFolder,
+		includeFiles: super.IncludeFiles,
+		overwrite: super.Overwrite,
+		notesOrder: super.NotesOrder,
+		destFolder: super.DestFolder,
+	});
 
-	glossary = new Glossary(
-		super.getFileName(),
-		super.IncludeFiles,
-		super.Overwrite,
-		super.ChosenFolder,
-		super.NotesOrder,
-		super.CompletePath
-	);
+	glossary = new Glossary({
+		name: super.Name,
+		chosenFolder: super.ChosenFolder,
+		includeFiles: super.IncludeFiles,
+		overwrite: super.Overwrite,
+		notesOrder: super.NotesOrder,
+		destFolder: super.DestFolder,
+	});
 
 	async createText(
 		filesAndFolders: TAbstractFile[],

@@ -31,16 +31,11 @@ export default class autoGlossary extends Plugin {
 						item.setTitle("New index")
 							.setIcon("list")
 							.onClick(async () => {
-								new Index(
-									folder.name + "_Index",
-									this.settings.includeFiles,
-									this.settings.fileOverwrite,
-									folder.path,
-									this.settings.fileOrder,
-									this.settings.sameDest
-										? ""
-										: this.settings.fileDest
-								).writeFile();
+								new Index({
+									name: folder.name + "_Index",
+									chosenFolder: folder.path,
+									settings: this.settings,
+								}).writeFile();
 							});
 					});
 				}
@@ -54,16 +49,11 @@ export default class autoGlossary extends Plugin {
 						item.setTitle("New glossary")
 							.setIcon("layout-list")
 							.onClick(async () => {
-								new Glossary(
-									folder.name + "_Glossary",
-									this.settings.includeFiles,
-									this.settings.fileOverwrite,
-									folder.path,
-									this.settings.fileOrder,
-									this.settings.sameDest
-										? ""
-										: this.settings.fileDest
-								).writeFile();
+								new Glossary({
+									name: folder.name + "_Glossary",
+									chosenFolder: folder.path,
+									settings: this.settings,
+								}).writeFile();
 							});
 					});
 				}
@@ -77,16 +67,11 @@ export default class autoGlossary extends Plugin {
 						item.setTitle("New index+glossary")
 							.setIcon("list-ordered")
 							.onClick(async () => {
-								new GlossaryIndex(
-									folder.name + "_GlossaryIndex",
-									this.settings.includeFiles,
-									this.settings.fileOverwrite,
-									folder.path,
-									this.settings.fileOrder,
-									this.settings.sameDest
-										? ""
-										: this.settings.fileDest
-								).writeFile();
+								new GlossaryIndex({
+									name: folder.name + "_GlossaryIndex",
+									chosenFolder: folder.path,
+									settings: this.settings,
+								}).writeFile();
 							});
 					});
 				}
@@ -103,12 +88,12 @@ export default class autoGlossary extends Plugin {
 								new CreateFileModal(
 									this.app,
 									this.settings,
+									folder.name + "_Index",
+									folder.path,
 									// It still calls writeFile on a GeneratedFile
 									(fileToGenerate: Index) => {
 										fileToGenerate.writeFile();
-									},
-									folder.path,
-									folder.name + "_Index"
+									}
 								).open();
 							});
 					});
@@ -126,12 +111,12 @@ export default class autoGlossary extends Plugin {
 								new CreateFileModal(
 									this.app,
 									this.settings,
+									folder.name + "_Glossary",
+									folder.path,
 									// It still calls writeFile on a GeneratedFile
 									(fileToGenerate: Glossary) => {
 										fileToGenerate.writeFile();
-									},
-									folder.path,
-									folder.name + "_Glossary"
+									}
 								).open();
 							});
 					});
@@ -149,12 +134,12 @@ export default class autoGlossary extends Plugin {
 								new CreateFileModal(
 									this.app,
 									this.settings,
+									folder.name + "_GlossaryIndex",
+									folder.path,
 									// It still calls writeFile on a GeneratedFile
 									(fileToGenerate: GlossaryIndex) => {
 										fileToGenerate.writeFile();
-									},
-									folder.path,
-									folder.name + "_GlossaryIndex"
+									}
 								).open();
 							});
 					});
@@ -170,12 +155,12 @@ export default class autoGlossary extends Plugin {
 				new CreateFileModal(
 					this.app,
 					this.settings,
+					this.app.vault.getName() + "_Index",
+					this.app.vault.getName(),
 					// It still calls writeFile on a GeneratedFile
 					(fileToGenerate: Index) => {
 						fileToGenerate.writeFile();
-					},
-					this.app.vault.getName(),
-					this.app.vault.getName() + "_Index"
+					}
 				).open();
 			},
 		});
@@ -188,12 +173,12 @@ export default class autoGlossary extends Plugin {
 				new CreateFileModal(
 					this.app,
 					this.settings,
+					this.app.vault.getName() + "_Glossary",
+					this.app.vault.getName(),
 					// It still calls writeFile on a GeneratedFile
 					(fileToGenerate: Glossary) => {
 						fileToGenerate.writeFile();
-					},
-					this.app.vault.getName(),
-					this.app.vault.getName() + "_Glossary"
+					}
 				).open();
 			},
 		});
@@ -206,12 +191,12 @@ export default class autoGlossary extends Plugin {
 				new CreateFileModal(
 					this.app,
 					this.settings,
+					this.app.vault.getName() + "_GlossaryIndex",
+					this.app.vault.getName(),
 					// It still calls writeFile on a GeneratedFile
 					(fileToGenerate: GlossaryIndex) => {
 						fileToGenerate.writeFile();
-					},
-					this.app.vault.getName(),
-					this.app.vault.getName() + "_GlossaryIndex"
+					}
 				).open();
 			},
 		});

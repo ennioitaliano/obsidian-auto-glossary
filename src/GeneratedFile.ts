@@ -7,12 +7,14 @@ import {
 	TFolder,
 	normalizePath,
 } from "obsidian";
+import { AutoGlossarySettings } from "settings";
 import { NotesOrder } from "utils";
 
 export class GeneratedFile {
+	private name: string;
 	private completePath: string;
-	private includeFiles: boolean;
-	private overwrite: boolean;
+	private includeFiles?: boolean;
+	private overwrite?: boolean;
 	private chosenFolder?: string;
 	private notesOrder?: NotesOrder;
 	private destFolder?: string;
@@ -26,23 +28,41 @@ export class GeneratedFile {
 		throw new Error("Method not implemented.");
 	}
 
-	constructor(
-		fileName: string,
-		includeFiles: boolean,
-		overwrite: boolean,
-		chosenFolder?: string,
-		notesOrder?: NotesOrder,
-		destFolder?: string
-	) {
+	constructor({
+		name,
+		chosenFolder,
+		settings,
+		includeFiles,
+		overwrite,
+		notesOrder,
+		destFolder,
+	}: {
+		name: string;
+		chosenFolder?: string;
+		settings?: AutoGlossarySettings;
+		includeFiles?: boolean;
+		overwrite?: boolean;
+		notesOrder?: NotesOrder;
+		destFolder?: string;
+	}) {
+		this.name = name;
 		this.chosenFolder =
 			chosenFolder === app.vault.getName()
 				? (chosenFolder = "")
 				: chosenFolder;
-		this.notesOrder = notesOrder;
-		this.destFolder = destFolder;
-		this.CompletePath = fileName;
-		this.includeFiles = includeFiles;
-		this.overwrite = overwrite;
+		if (settings) {
+			this.includeFiles = settings.includeFiles;
+			this.overwrite = settings.fileOverwrite;
+			this.notesOrder = settings.fileOrder;
+			this.destFolder = settings.sameDest ? "" : settings.fileDest;
+		} else {
+			this.notesOrder = notesOrder;
+			this.destFolder = destFolder;
+			this.includeFiles = includeFiles;
+			this.overwrite = overwrite;
+		}
+
+		this.CompletePath = name;
 	}
 
 	set CompletePath(name: string) {
@@ -72,12 +92,20 @@ export class GeneratedFile {
 		return this.notesOrder;
 	}
 
-	get IncludeFiles(): boolean {
+	get IncludeFiles(): boolean | undefined {
 		return this.includeFiles;
 	}
 
-	get Overwrite(): boolean {
+	get Overwrite(): boolean | undefined {
 		return this.overwrite;
+	}
+
+	get Name(): string {
+		return this.name;
+	}
+
+	get DestFolder(): string | undefined {
+		return this.destFolder;
 	}
 
 	getFileName(): string {
@@ -116,7 +144,7 @@ export class GeneratedFile {
 			const text = await this.createText(
 				filesAndFolders,
 				chosenFolderName,
-				this.getFileName()
+				this.Name
 			);
 
 			const completeText = frontmatter + text;
