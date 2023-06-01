@@ -54,7 +54,7 @@ export class GeneratedFile {
 				? chosenFolder
 				: (app.vault.getAbstractFileByPath(
 						settings.fileDest
-				) as TFolder);
+					) as TFolder);
 		} else if (includeFiles && overwrite && notesOrder && destFolder) {
 			this.includeFiles = includeFiles;
 			this.overwrite = overwrite;
@@ -182,5 +182,15 @@ export class GeneratedFile {
 		}
 
 		return heading;
+	}
+
+	// Have to use fileType since circular imports are not allowed
+	finalText(
+		filesAndFoldersStrings: (string | undefined)[],
+		fileType: string
+	): string {
+		const text = filesAndFoldersStrings.join("\n");
+		const finalText = `## ${this.ChosenFolder.name} ${fileType}\n${text}`;
+		return finalText;
 	}
 }

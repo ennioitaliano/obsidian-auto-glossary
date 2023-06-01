@@ -10,9 +10,7 @@ export class Glossary extends GeneratedFile {
 				return this.heading(absFile);
 			}
 		});
-		
-		const glossaryText = glossaryEntries.join("\n");
-		const finalText = `## ${this.ChosenFolder.name} Glossary\n${glossaryText}`;
-		return finalText;
+
+		return this.finalText(glossaryEntries, "Glossary");
 	}
 }

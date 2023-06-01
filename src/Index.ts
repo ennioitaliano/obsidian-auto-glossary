@@ -19,8 +19,7 @@ export class Index extends GeneratedFile {
 			}
 		});
 
-		const indexText = indexEntries.join("\n");
-		const finalText = `## ${this.ChosenFolder.name} Index\n${indexText}`;
-		return finalText;
+		return this.finalText(indexEntries, "Index");
+
 	}
 }
