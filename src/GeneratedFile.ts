@@ -13,11 +13,11 @@ import { NotesOrder } from "utils";
 export class GeneratedFile {
 	private name: string;
 	private completePath: string;
+	private chosenFolder: TFolder;
 	private includeFiles?: boolean;
 	private overwrite?: boolean;
-	private chosenFolder?: string;
 	private notesOrder?: NotesOrder;
-	private destFolder?: string;
+	private destFolder?: TFolder;
 
 	createText(
 		filesAndFolders: TAbstractFile[],
@@ -38,23 +38,24 @@ export class GeneratedFile {
 		destFolder,
 	}: {
 		name: string;
-		chosenFolder?: string;
+		chosenFolder: TFolder;
 		settings?: AutoGlossarySettings;
 		includeFiles?: boolean;
 		overwrite?: boolean;
 		notesOrder?: NotesOrder;
-		destFolder?: string;
+		destFolder?: TFolder;
 	}) {
 		this.name = name;
-		this.chosenFolder =
-			chosenFolder === app.vault.getName()
-				? (chosenFolder = "")
-				: chosenFolder;
+		this.chosenFolder = chosenFolder;
 		if (settings) {
 			this.includeFiles = settings.includeFiles;
 			this.overwrite = settings.fileOverwrite;
 			this.notesOrder = settings.fileOrder;
-			this.destFolder = settings.sameDest ? "" : settings.fileDest;
+			this.destFolder = settings.sameDest
+				? chosenFolder
+				: (app.vault.getAbstractFileByPath(
+						settings.fileDest
+					) as TFolder);
 		} else {
 			this.notesOrder = notesOrder;
 			this.destFolder = destFolder;
@@ -69,9 +70,9 @@ export class GeneratedFile {
 		let completePath = "";
 
 		if (this.destFolder) {
-			completePath = this.destFolder;
-		} else if (this.chosenFolder) {
-			completePath = this.chosenFolder;
+			completePath = this.destFolder.path;
+		} else {
+			completePath = this.chosenFolder.path;
 		}
 
 		const fileName = name ?? typeof this;
@@ -84,7 +85,7 @@ export class GeneratedFile {
 		return this.completePath;
 	}
 
-	get ChosenFolder(): string | undefined {
+	get ChosenFolder(): TFolder {
 		return this.chosenFolder;
 	}
 
@@ -104,7 +105,7 @@ export class GeneratedFile {
 		return this.name;
 	}
 
-	get DestFolder(): string | undefined {
+	get DestFolder(): TFolder | undefined {
 		return this.destFolder;
 	}
 
@@ -135,11 +136,10 @@ export class GeneratedFile {
 			);
 		} else {
 			const filesAndFolders = await this.getFilesAndFolders(
-				this.ChosenFolder
+				this.chosenFolder
 			);
 
-			const chosenFolderName =
-				this.ChosenFolder?.split("/").pop() ?? app.vault.getName();
+			const chosenFolderName = this.chosenFolder.name;
 
 			const text = await this.createText(
 				filesAndFolders,
@@ -160,12 +160,11 @@ export class GeneratedFile {
 	}
 
 	async getFilesAndFolders(
-		startingFolderPath?: string,
+		startingFolder: TFolder,
 		depth?: number
 	): Promise<TAbstractFile[]> {
-		const rootFolder: TFolder | null = startingFolderPath
-			? (app.vault.getAbstractFileByPath(startingFolderPath) as TFolder)
-			: app.vault.getRoot();
+		const rootFolder: TFolder | null =
+			startingFolder ?? app.vault.getRoot();
 
 		let filesAndFoldersArray: TAbstractFile[] = [];
 		const currentDepth = depth ?? 0;
@@ -190,7 +189,7 @@ export class GeneratedFile {
 				filesAndFoldersArray.push(myFolder);
 
 				filesAndFoldersArray = await filesAndFoldersArray.concat(
-					await this.getFilesAndFolders(child.path, currentDepth + 1)
+					await this.getFilesAndFolders(child, currentDepth + 1)
 				);
 			}
 		}

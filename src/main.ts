@@ -33,7 +33,7 @@ export default class autoGlossary extends Plugin {
 							.onClick(async () => {
 								new Index({
 									name: folder.name + "_Index",
-									chosenFolder: folder.path,
+									chosenFolder: folder,
 									settings: this.settings,
 								}).writeFile();
 							});
@@ -51,7 +51,7 @@ export default class autoGlossary extends Plugin {
 							.onClick(async () => {
 								new Glossary({
 									name: folder.name + "_Glossary",
-									chosenFolder: folder.path,
+									chosenFolder: folder,
 									settings: this.settings,
 								}).writeFile();
 							});
@@ -69,7 +69,7 @@ export default class autoGlossary extends Plugin {
 							.onClick(async () => {
 								new GlossaryIndex({
 									name: folder.name + "_GlossaryIndex",
-									chosenFolder: folder.path,
+									chosenFolder: folder,
 									settings: this.settings,
 								}).writeFile();
 							});

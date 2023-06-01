@@ -1,5 +1,5 @@
 import { GeneratedFile } from "GeneratedFile";
-import { App, Modal, Setting } from "obsidian";
+import { App, Modal, Setting, TFolder } from "obsidian";
 import { AutoGlossarySettings } from "settings";
 import { FileType, NotesOrder } from "utils";
 
@@ -9,9 +9,9 @@ export class CreateFileModal extends Modal {
 	overwrite: boolean;
 	sameDest: boolean;
 	fileName: string;
-	chosenFolder: string;
+	chosenFolder: TFolder;
 	fileOrder: NotesOrder;
-	destFolder: string;
+	destFolder: TFolder;
 
 	onSubmit: (fileToGenerate: GeneratedFile) => void;
 
@@ -26,9 +26,13 @@ export class CreateFileModal extends Modal {
 		this.onSubmit = onSubmit;
 		this.overwrite = settings.fileOverwrite;
 		this.sameDest = settings.sameDest;
-		this.destFolder = settings.fileDest;
+		this.destFolder = app.vault.getAbstractFileByPath(
+			settings.fileDest
+		) as TFolder;
 		this.fileOrder = settings.fileOrder;
-		this.chosenFolder = chosenFolder;
+		this.chosenFolder = this.app.vault.getAbstractFileByPath(
+			chosenFolder
+		) as TFolder;
 		this.fileName = fileName;
 	}
 
@@ -72,9 +76,11 @@ export class CreateFileModal extends Modal {
 			.addText((text) =>
 				text
 					.onChange((value) => {
-						this.destFolder = value;
+						this.destFolder = app.vault.getAbstractFileByPath(
+							value
+						) as TFolder;
 					})
-					.setValue(this.destFolder)
+					.setValue(this.destFolder.name)
 					.setDisabled(true)
 			)
 			.setDisabled(this.sameDest);
