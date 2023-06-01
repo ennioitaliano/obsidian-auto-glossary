@@ -12,7 +12,6 @@ import { NotesOrder } from "utils";
 
 export class GeneratedFile {
 	private name: string;
-	private finalPath: string;
 	private chosenFolder: TFolder;
 	private includeFiles: boolean;
 	private overwrite: boolean;
@@ -56,34 +55,13 @@ export class GeneratedFile {
 				? chosenFolder
 				: (app.vault.getAbstractFileByPath(
 						settings.fileDest
-					) as TFolder);
+				) as TFolder);
 		} else if (includeFiles && overwrite && notesOrder && destFolder) {
 			this.includeFiles = includeFiles;
 			this.overwrite = overwrite;
 			this.notesOrder = notesOrder;
 			this.destFolder = destFolder;
 		}
-
-		this.FinalPath = name;
-	}
-
-	set FinalPath(fileName: string) {
-		let path = "";
-
-		if (this.destFolder) {
-			path = this.destFolder.path;
-		} else {
-			path = this.chosenFolder.path;
-		}
-
-		//const fileName = fileName ?? typeof this;
-		const normalizedPath = normalizePath(`${path}/${fileName}`);
-
-		this.finalPath = normalizedPath + ".md";
-	}
-
-	get FinalPath(): string {
-		return this.finalPath;
 	}
 
 	get ChosenFolder(): TFolder {
@@ -130,16 +108,13 @@ export class GeneratedFile {
 		return this.destFolder;
 	}
 
-	getFileName(): string {
-		return this.finalPath.split("/").pop() ?? "";
-	}
-
 	async exists(): Promise<boolean> {
 		const adapter: DataAdapter = app.vault.adapter;
-		const result = await adapter.exists(this.finalPath);
+		const finalPath = this.getFinalPath();
+		const result = await adapter.exists(finalPath);
 
 		if (result) {
-			console.log(`File ${this.finalPath} already exists`);
+			console.log(`File ${finalPath} already exists`);
 		}
 
 		return result;
@@ -151,9 +126,11 @@ export class GeneratedFile {
 
 		const fileExistsBool = await this.exists();
 
+		const finalPath = this.getFinalPath();
+
 		if (fileExistsBool && !this.overwrite) {
 			new Notice(
-				`${this.FinalPath} file already exists. Try again with overwrite enabled or a different file name.`
+				`${finalPath} file already exists. Try again with overwrite enabled or a different file name.`
 			);
 		} else {
 			const filesAndFolders = await this.getFilesAndFolders(
@@ -170,14 +147,31 @@ export class GeneratedFile {
 
 			const completeText = frontmatter + text;
 
-			adapter.write(this.FinalPath, completeText);
+			adapter.write(finalPath, completeText);
 
 			new Notice(
 				fileExistsBool
-					? `${this.FinalPath} updated`
-					: `${this.FinalPath} created`
+					? `${finalPath} updated`
+					: `${finalPath} created`
 			);
 		}
+	}
+
+	getFinalPath(): string {
+		let path = "";
+
+		console.log(this.destFolder);
+
+		if (this.destFolder) {
+			path = this.destFolder.path;
+		} else {
+			path = this.chosenFolder.path;
+		}
+
+		//const fileName = fileName ?? typeof this;
+		const normalizedPath = normalizePath(`${path}/${this.name}`);
+
+		return normalizedPath + ".md";
 	}
 
 	async getFilesAndFolders(

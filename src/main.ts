@@ -93,10 +93,8 @@ export default class autoGlossary extends Plugin {
 										chosenFolder: folder,
 										settings: this.settings,
 									}),
-									// It still calls writeFile on a GeneratedFile
-									(fileToGenerate: Index) => {
-										fileToGenerate.writeFile();
-									}
+									(fileToGenerate: Index) =>
+										fileToGenerate.writeFile()
 								).open();
 							});
 					});
@@ -119,10 +117,8 @@ export default class autoGlossary extends Plugin {
 										chosenFolder: folder,
 										settings: this.settings,
 									}),
-									// It still calls writeFile on a GeneratedFile
-									(fileToGenerate: Glossary) => {
-										fileToGenerate.writeFile();
-									}
+									(fileToGenerate: Glossary) =>
+										fileToGenerate.writeFile()
 								).open();
 							});
 					});
@@ -145,10 +141,8 @@ export default class autoGlossary extends Plugin {
 										chosenFolder: folder,
 										settings: this.settings,
 									}),
-									// It still calls writeFile on a GeneratedFile
-									(fileToGenerate: GlossaryIndex) => {
-										fileToGenerate.writeFile();
-									}
+									(fileToGenerate: GlossaryIndex) =>
+										fileToGenerate.writeFile()
 								).open();
 							});
 					});
@@ -169,10 +163,7 @@ export default class autoGlossary extends Plugin {
 						name: this.app.vault.getName() + "_Index",
 						chosenFolder: this.app.vault.getRoot(),
 					}),
-					// It still calls writeFile on a GeneratedFile
-					(fileToGenerate) => {
-						fileToGenerate.writeFile();
-					}
+					(fileToGenerate) => fileToGenerate.writeFile()
 				).open();
 			},
 		});
@@ -190,10 +181,7 @@ export default class autoGlossary extends Plugin {
 						chosenFolder: this.app.vault.getRoot(),
 						settings: this.settings,
 					}),
-					// It still calls writeFile on a GeneratedFile
-					(fileToGenerate: Glossary) => {
-						fileToGenerate.writeFile();
-					}
+					(fileToGenerate: Glossary) => fileToGenerate.writeFile()
 				).open();
 			},
 		});
@@ -211,10 +199,8 @@ export default class autoGlossary extends Plugin {
 						chosenFolder: this.app.vault.getRoot(),
 						settings: this.settings,
 					}),
-					// It still calls writeFile on a GeneratedFile
-					(fileToGenerate: GlossaryIndex) => {
-						fileToGenerate.writeFile();
-					}
+					(fileToGenerate: GlossaryIndex) =>
+						fileToGenerate.writeFile()
 				).open();
 			},
 		});

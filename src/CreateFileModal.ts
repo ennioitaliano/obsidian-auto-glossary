@@ -65,15 +65,17 @@ export class CreateFileModal extends Modal {
 			)
 			.addText((text) =>
 				text
+					.setValue(
+						this.fileToGenerate.DestFolder
+							? this.fileToGenerate.DestFolder.path
+							: this.fileToGenerate.ChosenFolder.path
+					)
 					.onChange((value) => {
 						this.fileToGenerate.DestFolder =
 							app.vault.getAbstractFileByPath(value) as TFolder;
+
+						console.log(this.fileToGenerate.DestFolder);
 					})
-					.setValue(
-						this.fileToGenerate.DestFolder
-							? this.fileToGenerate.DestFolder.name
-							: this.fileToGenerate.ChosenFolder.name
-					)
 					.setDisabled(true)
 			)
 			.setDisabled(this.sameDest);
@@ -83,7 +85,6 @@ export class CreateFileModal extends Modal {
 			.setDesc("The name of the created file.")
 			.addText((text) =>
 				text.setValue(this.fileToGenerate.Name).onChange((value) => {
-					console.log(value);
 					this.fileToGenerate.Name = value;
 				})
 			);
