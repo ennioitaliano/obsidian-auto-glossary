@@ -5,35 +5,22 @@ import { FileType, NotesOrder } from "utils";
 
 export class CreateFileModal extends Modal {
 	option: FileType;
-	includeFiles: boolean;
-	overwrite: boolean;
 	sameDest: boolean;
-	fileName: string;
-	chosenFolder: TFolder;
-	fileOrder: NotesOrder;
-	destFolder: TFolder;
+
+	fileToGenerate: GeneratedFile;
 
 	onSubmit: (fileToGenerate: GeneratedFile) => void;
 
 	constructor(
 		app: App,
 		settings: AutoGlossarySettings,
-		fileName: string,
-		chosenFolder: string,
+		fileToGenerate: GeneratedFile,
 		onSubmit: (fileToGenerate: GeneratedFile) => void
 	) {
 		super(app);
 		this.onSubmit = onSubmit;
-		this.overwrite = settings.fileOverwrite;
 		this.sameDest = settings.sameDest;
-		this.destFolder = app.vault.getAbstractFileByPath(
-			settings.fileDest
-		) as TFolder;
-		this.fileOrder = settings.fileOrder;
-		this.chosenFolder = this.app.vault.getAbstractFileByPath(
-			chosenFolder
-		) as TFolder;
-		this.fileName = fileName;
+		this.fileToGenerate = fileToGenerate;
 	}
 
 	onOpen() {
@@ -41,7 +28,9 @@ export class CreateFileModal extends Modal {
 
 		contentEl.createEl("h1", { text: "AutoGlossary" });
 
-		new Setting(contentEl).setName("Folder: " + this.chosenFolder);
+		new Setting(contentEl).setName(
+			"Folder: " + this.fileToGenerate.ChosenFolder.path
+		);
 		/*.setDesc("The folder to get the files indexed from.")
 		.addText((text) =>
 				text
@@ -61,7 +50,8 @@ export class CreateFileModal extends Modal {
 					this.sameDest = value;
 					destination.setDisabled(value);
 					if (value) {
-						this.destFolder = this.chosenFolder;
+						this.fileToGenerate.DestFolder =
+							this.fileToGenerate.ChosenFolder;
 					}
 				})
 			);
@@ -76,11 +66,14 @@ export class CreateFileModal extends Modal {
 			.addText((text) =>
 				text
 					.onChange((value) => {
-						this.destFolder = app.vault.getAbstractFileByPath(
-							value
-						) as TFolder;
+						this.fileToGenerate.DestFolder =
+							app.vault.getAbstractFileByPath(value) as TFolder;
 					})
-					.setValue(this.destFolder.name)
+					.setValue(
+						this.fileToGenerate.DestFolder
+							? this.fileToGenerate.DestFolder.name
+							: this.fileToGenerate.ChosenFolder.name
+					)
 					.setDisabled(true)
 			)
 			.setDisabled(this.sameDest);
@@ -89,11 +82,10 @@ export class CreateFileModal extends Modal {
 			.setName("File name")
 			.setDesc("The name of the created file.")
 			.addText((text) =>
-				text
-					.onChange((value) => {
-						this.fileName = value;
-					})
-					.setValue(this.fileName)
+				text.setValue(this.fileToGenerate.Name).onChange((value) => {
+					console.log(value);
+					this.fileToGenerate.Name = value;
+				})
 			);
 
 		new Setting(contentEl)
@@ -102,9 +94,11 @@ export class CreateFileModal extends Modal {
 				"Include files generated with AutoGlossary in new glossaries and indexes."
 			)
 			.addToggle((toggle) =>
-				toggle.setValue(this.includeFiles).onChange((value) => {
-					this.includeFiles = value;
-				})
+				toggle
+					.setValue(this.fileToGenerate.IncludeFiles)
+					.onChange((value) => {
+						this.fileToGenerate.IncludeFiles = value;
+					})
 			);
 
 		new Setting(contentEl)
@@ -113,9 +107,11 @@ export class CreateFileModal extends Modal {
 				"If turned on, if a file with the same name and location already exists, it will be overwritten. Default behavior can be changed in the plugin settings."
 			)
 			.addToggle((toggle) =>
-				toggle.setValue(this.overwrite).onChange((value) => {
-					this.overwrite = value;
-				})
+				toggle
+					.setValue(this.fileToGenerate.Overwrite)
+					.onChange((value) => {
+						this.fileToGenerate.Overwrite = value;
+					})
 			);
 
 		new Setting(contentEl)
@@ -136,9 +132,9 @@ export class CreateFileModal extends Modal {
 					.addOption("ctime_old", "Creation time - Oldest to newest")
 					.addOption("alphabetical", "Alphabetical")
 					.addOption("alphabetical_rev", "Alphabetical - Reverse")
-					.setValue(this.fileOrder)
+					.setValue(this.fileToGenerate.NotesOrder)
 					.onChange((chosen: NotesOrder) => {
-						this.fileOrder = chosen;
+						this.fileToGenerate.NotesOrder = chosen;
 					})
 			);
 
@@ -147,22 +143,13 @@ export class CreateFileModal extends Modal {
 				.setButtonText("Submit")
 				.setCta()
 				.onClick(() => {
-					if (!this.fileName) {
-						this.fileName = this.option;
+					if (!this.fileToGenerate.Name) {
+						this.fileToGenerate.Name = this.option;
 					}
 
 					this.close();
 
-					this.onSubmit(
-						new GeneratedFile({
-							name: this.fileName,
-							chosenFolder: this.chosenFolder,
-							includeFiles: this.includeFiles,
-							overwrite: this.overwrite,
-							notesOrder: this.fileOrder,
-							destFolder: this.destFolder,
-						})
-					);
+					this.onSubmit(this.fileToGenerate);
 				})
 		);
 	}

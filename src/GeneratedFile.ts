@@ -14,9 +14,9 @@ export class GeneratedFile {
 	private name: string;
 	private finalPath: string;
 	private chosenFolder: TFolder;
-	private includeFiles?: boolean;
-	private overwrite?: boolean;
-	private notesOrder?: NotesOrder;
+	private includeFiles: boolean;
+	private overwrite: boolean;
+	private notesOrder: NotesOrder;
 	private destFolder?: TFolder;
 
 	createText(
@@ -47,6 +47,7 @@ export class GeneratedFile {
 	}) {
 		this.name = name;
 		this.chosenFolder = chosenFolder;
+
 		if (settings) {
 			this.includeFiles = settings.includeFiles;
 			this.overwrite = settings.fileOverwrite;
@@ -56,11 +57,11 @@ export class GeneratedFile {
 				: (app.vault.getAbstractFileByPath(
 						settings.fileDest
 					) as TFolder);
-		} else {
-			this.notesOrder = notesOrder;
-			this.destFolder = destFolder;
+		} else if (includeFiles && overwrite && notesOrder && destFolder) {
 			this.includeFiles = includeFiles;
 			this.overwrite = overwrite;
+			this.notesOrder = notesOrder;
+			this.destFolder = destFolder;
 		}
 
 		this.FinalPath = name;
@@ -89,20 +90,40 @@ export class GeneratedFile {
 		return this.chosenFolder;
 	}
 
-	get NotesOrder(): NotesOrder | undefined {
+	set NotesOrder(notesOrder: NotesOrder) {
+		this.notesOrder = notesOrder;
+	}
+
+	get NotesOrder(): NotesOrder {
 		return this.notesOrder;
 	}
 
-	get IncludeFiles(): boolean | undefined {
+	set IncludeFiles(includeFiles: boolean) {
+		this.includeFiles = includeFiles;
+	}
+
+	get IncludeFiles(): boolean {
 		return this.includeFiles;
 	}
 
-	get Overwrite(): boolean | undefined {
+	set Overwrite(overwrite: boolean) {
+		this.overwrite = overwrite;
+	}
+
+	get Overwrite(): boolean {
 		return this.overwrite;
+	}
+
+	set Name(name: string) {
+		this.name = name;
 	}
 
 	get Name(): string {
 		return this.name;
+	}
+
+	set DestFolder(destFolder: TFolder | undefined) {
+		this.destFolder = destFolder;
 	}
 
 	get DestFolder(): TFolder | undefined {
