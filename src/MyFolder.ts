@@ -9,7 +9,7 @@ export class MyFolder implements TFolder {
 	depth?: number;
 
 	isRoot(): boolean {
-		throw new Error("Method not implemented.");
+		return TFolder.prototype.isRoot.call(this);
 	}
 
 	constructor(tFolder: TFolder, depth?: number) {

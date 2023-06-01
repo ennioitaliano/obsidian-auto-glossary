@@ -103,6 +103,7 @@ export default class autoGlossary extends Plugin {
 								new CreateFileModal(
 									this.app,
 									this.settings,
+									// It still calls writeFile on a GeneratedFile
 									(fileToGenerate: Index) => {
 										fileToGenerate.writeFile();
 									},
@@ -125,6 +126,7 @@ export default class autoGlossary extends Plugin {
 								new CreateFileModal(
 									this.app,
 									this.settings,
+									// It still calls writeFile on a GeneratedFile
 									(fileToGenerate: Glossary) => {
 										fileToGenerate.writeFile();
 									},
@@ -147,6 +149,7 @@ export default class autoGlossary extends Plugin {
 								new CreateFileModal(
 									this.app,
 									this.settings,
+									// It still calls writeFile on a GeneratedFile
 									(fileToGenerate: GlossaryIndex) => {
 										fileToGenerate.writeFile();
 									},
@@ -167,6 +170,7 @@ export default class autoGlossary extends Plugin {
 				new CreateFileModal(
 					this.app,
 					this.settings,
+					// It still calls writeFile on a GeneratedFile
 					(fileToGenerate: Index) => {
 						fileToGenerate.writeFile();
 					},
@@ -184,6 +188,7 @@ export default class autoGlossary extends Plugin {
 				new CreateFileModal(
 					this.app,
 					this.settings,
+					// It still calls writeFile on a GeneratedFile
 					(fileToGenerate: Glossary) => {
 						fileToGenerate.writeFile();
 					},
@@ -201,6 +206,7 @@ export default class autoGlossary extends Plugin {
 				new CreateFileModal(
 					this.app,
 					this.settings,
+					// It still calls writeFile on a GeneratedFile
 					(fileToGenerate: GlossaryIndex) => {
 						fileToGenerate.writeFile();
 					},
