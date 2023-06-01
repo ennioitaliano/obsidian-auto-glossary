@@ -1,4 +1,4 @@
-import { MyFolder } from "MyFolder";
+import { MyFolder, AutoGlossarySettings, NotesOrder } from "./modules";
 import {
 	DataAdapter,
 	Notice,
@@ -6,8 +6,6 @@ import {
 	TFolder,
 	normalizePath,
 } from "obsidian";
-import { AutoGlossarySettings } from "settings";
-import { NotesOrder } from "utils";
 
 export class GeneratedFile {
 	private name: string;
@@ -54,7 +52,7 @@ export class GeneratedFile {
 				? chosenFolder
 				: (app.vault.getAbstractFileByPath(
 						settings.fileDest
-					) as TFolder);
+				) as TFolder);
 		} else if (includeFiles && overwrite && notesOrder && destFolder) {
 			this.includeFiles = includeFiles;
 			this.overwrite = overwrite;

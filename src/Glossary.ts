@@ -1,6 +1,6 @@
-import { GeneratedFile } from "GeneratedFile";
-import { MyFolder } from "MyFolder";
+import { GeneratedFile, MyFolder } from "./modules";
 import { TAbstractFile, TFile } from "obsidian";
+
 export class Glossary extends GeneratedFile {
 	async createText(filesAndFolders: TAbstractFile[]): Promise<string> {
 		const glossaryEntries = filesAndFolders.map((absFile) => {

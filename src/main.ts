@@ -1,11 +1,10 @@
 import { Plugin, TFolder } from "obsidian";
-
-import { CreateFileModal } from "./CreateFileModal";
-import { AutoGlossarySettings, DEFAULT_SETTINGS, SettingTab } from "settings";
-import { Index } from "Index";
-import { Glossary } from "Glossary";
-import { GlossaryIndex } from "GlossaryIndex";
-import { MyFolder } from "MyFolder";
+import {
+	AutoGlossarySettings,
+	DEFAULT_SETTINGS,
+	SettingTab,
+	MyFolder,
+} from "./modules";
 
 export default class autoGlossary extends Plugin {
 	// SETTINGS
@@ -31,14 +30,9 @@ export default class autoGlossary extends Plugin {
 					menu.addItem((item) => {
 						item.setTitle("New index")
 							.setIcon("list")
-							.onClick(async () => {
-								//POSSIBILITY TO IMPLEMENT CALL LIKE FOLDER.INDEX() TO CREATE INDEX IN FOLDER
-								new Index({
-									name: folder.name + "_Index",
-									chosenFolder: new MyFolder(folder),
-									settings: this.settings,
-								}).writeFile();
-							});
+							.onClick(async () =>
+								new MyFolder(folder).index(this.settings)
+							);
 					});
 				}
 			})
@@ -50,13 +44,9 @@ export default class autoGlossary extends Plugin {
 					menu.addItem((item) => {
 						item.setTitle("New glossary")
 							.setIcon("layout-list")
-							.onClick(async () => {
-								new Glossary({
-									name: folder.name + "_Glossary",
-									chosenFolder: new MyFolder(folder),
-									settings: this.settings,
-								}).writeFile();
-							});
+							.onClick(async () =>
+								new MyFolder(folder).glossary(this.settings)
+							);
 					});
 				}
 			})
@@ -68,13 +58,11 @@ export default class autoGlossary extends Plugin {
 					menu.addItem((item) => {
 						item.setTitle("New index+glossary")
 							.setIcon("list-ordered")
-							.onClick(async () => {
-								new GlossaryIndex({
-									name: folder.name + "_GlossaryIndex",
-									chosenFolder: new MyFolder(folder),
-									settings: this.settings,
-								}).writeFile();
-							});
+							.onClick(async () =>
+								new MyFolder(folder).glossaryIndex(
+									this.settings
+								)
+							);
 					});
 				}
 			})
@@ -86,19 +74,12 @@ export default class autoGlossary extends Plugin {
 					menu.addItem((item) => {
 						item.setTitle("Advanced index")
 							.setIcon("list")
-							.onClick(async () => {
-								new CreateFileModal(
+							.onClick(async () =>
+								new MyFolder(folder).advancedIndex(
 									this.app,
-									this.settings,
-									new Index({
-										name: folder.name + "_Index",
-										chosenFolder: new MyFolder(folder),
-										settings: this.settings,
-									}),
-									(fileToGenerate: Index) =>
-										fileToGenerate.writeFile()
-								).open();
-							});
+									this.settings
+								)
+							);
 					});
 				}
 			})
@@ -110,19 +91,12 @@ export default class autoGlossary extends Plugin {
 					menu.addItem((item) => {
 						item.setTitle("Advanced glossary")
 							.setIcon("layout-list")
-							.onClick(async () => {
-								new CreateFileModal(
+							.onClick(async () =>
+								new MyFolder(folder).advancedGlossary(
 									this.app,
-									this.settings,
-									new Glossary({
-										name: folder.name + "_Glossary",
-										chosenFolder: new MyFolder(folder),
-										settings: this.settings,
-									}),
-									(fileToGenerate: Glossary) =>
-										fileToGenerate.writeFile()
-								).open();
-							});
+									this.settings
+								)
+							);
 					});
 				}
 			})
@@ -134,19 +108,12 @@ export default class autoGlossary extends Plugin {
 					menu.addItem((item) => {
 						item.setTitle("Advanced index+glossary")
 							.setIcon("list-ordered")
-							.onClick(async () => {
-								new CreateFileModal(
+							.onClick(async () =>
+								new MyFolder(folder).advancedGlossary(
 									this.app,
-									this.settings,
-									new GlossaryIndex({
-										name: folder.name + "_GlossaryIndex",
-										chosenFolder: new MyFolder(folder),
-										settings: this.settings,
-									}),
-									(fileToGenerate: GlossaryIndex) =>
-										fileToGenerate.writeFile()
-								).open();
-							});
+									this.settings
+								)
+							);
 					});
 				}
 			})
@@ -156,55 +123,33 @@ export default class autoGlossary extends Plugin {
 		this.addCommand({
 			id: "index-root",
 			name: "Create index in root folder",
-			callback: async () => {
-				new CreateFileModal(
+			callback: async () =>
+				new MyFolder(this.app.vault.getRoot()).advancedIndex(
 					this.app,
-					this.settings,
-					new Index({
-						settings: this.settings,
-						name: this.app.vault.getName() + "_Index",
-						chosenFolder: new MyFolder(this.app.vault.getRoot()),
-					}),
-					(fileToGenerate) => fileToGenerate.writeFile()
-				).open();
-			},
+					this.settings
+				),
 		});
 
 		// Command to create glossary in root folder
 		this.addCommand({
 			id: "glossary-root",
 			name: "Create glossary in root folder",
-			callback: async () => {
-				new CreateFileModal(
+			callback: async () =>
+				new MyFolder(this.app.vault.getRoot()).advancedGlossary(
 					this.app,
-					this.settings,
-					new Glossary({
-						name: this.app.vault.getName() + "_Glossary",
-						chosenFolder: new MyFolder(this.app.vault.getRoot()),
-						settings: this.settings,
-					}),
-					(fileToGenerate: Glossary) => fileToGenerate.writeFile()
-				).open();
-			},
+					this.settings
+				),
 		});
 
 		// Command to create index in root folder
 		this.addCommand({
 			id: "glossaryIndex-root",
 			name: "Create a glossary with index in root folder",
-			callback: async () => {
-				new CreateFileModal(
+			callback: async () =>
+				new MyFolder(this.app.vault.getRoot()).advancedGlossaryIndex(
 					this.app,
-					this.settings,
-					new GlossaryIndex({
-						name: this.app.vault.getName() + "_GlossaryIndex",
-						chosenFolder: new MyFolder(this.app.vault.getRoot()),
-						settings: this.settings,
-					}),
-					(fileToGenerate: GlossaryIndex) =>
-						fileToGenerate.writeFile()
-				).open();
-			},
+					this.settings
+				),
 		});
 
 		// SETTINGS

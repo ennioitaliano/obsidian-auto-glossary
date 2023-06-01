@@ -1,7 +1,6 @@
-import { GeneratedFile } from "GeneratedFile";
-import { Glossary } from "Glossary";
-import { Index } from "Index";
+import { GeneratedFile, Glossary, Index } from "./modules";
 import { TAbstractFile } from "obsidian";
+
 export class GlossaryIndex extends GeneratedFile {
 	index = new Index({
 		name: super.Name,
