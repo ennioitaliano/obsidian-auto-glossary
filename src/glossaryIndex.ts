@@ -21,22 +21,10 @@ export class GlossaryIndex extends GeneratedFile {
 		destFolder: super.DestFolder,
 	});
 
-	async createText(
-		filesAndFolders: TAbstractFile[],
-		chosenFolderName: string,
-		fileName: string
-	): Promise<string> {
-		const indexText = await this.index.createText(
-			filesAndFolders,
-			chosenFolderName,
-			fileName,
-			true
-		);
+	async createText(filesAndFolders: TAbstractFile[]): Promise<string> {
+		const indexText = await this.index.createText(filesAndFolders, true);
 
-		const glossaryText = await this.glossary.createText(
-			filesAndFolders,
-			chosenFolderName
-		);
+		const glossaryText = await this.glossary.createText(filesAndFolders);
 
 		const finalText = `${indexText}\n\n***\n\n${glossaryText}`;
 

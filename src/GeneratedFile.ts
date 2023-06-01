@@ -3,7 +3,6 @@ import {
 	DataAdapter,
 	Notice,
 	TAbstractFile,
-	TFile,
 	TFolder,
 	normalizePath,
 } from "obsidian";
@@ -12,7 +11,7 @@ import { NotesOrder } from "utils";
 
 export class GeneratedFile {
 	private name: string;
-	private chosenFolder: TFolder;
+	private chosenFolder: MyFolder;
 	private includeFiles: boolean;
 	private overwrite: boolean;
 	private notesOrder: NotesOrder;
@@ -20,8 +19,6 @@ export class GeneratedFile {
 
 	createText(
 		filesAndFolders: TAbstractFile[],
-		chosenFolderName: string,
-		fileName?: string,
 		isForGlossary?: boolean
 	): Promise<string> {
 		throw new Error("Method not implemented.");
@@ -37,7 +34,7 @@ export class GeneratedFile {
 		destFolder,
 	}: {
 		name: string;
-		chosenFolder: TFolder;
+		chosenFolder: MyFolder;
 		settings?: AutoGlossarySettings;
 		includeFiles?: boolean;
 		overwrite?: boolean;
@@ -46,6 +43,8 @@ export class GeneratedFile {
 	}) {
 		this.name = name;
 		this.chosenFolder = chosenFolder;
+
+		console.log(this.chosenFolder instanceof MyFolder);
 
 		if (settings) {
 			this.includeFiles = settings.includeFiles;
@@ -64,7 +63,7 @@ export class GeneratedFile {
 		}
 	}
 
-	get ChosenFolder(): TFolder {
+	get ChosenFolder(): MyFolder {
 		return this.chosenFolder;
 	}
 
@@ -122,6 +121,7 @@ export class GeneratedFile {
 
 	async writeFile() {
 		const adapter: DataAdapter = app.vault.adapter;
+
 		const frontmatter = `---\ntags: obsidian-auto-glossary\n---\n`;
 
 		const fileExistsBool = await this.exists();
@@ -133,34 +133,25 @@ export class GeneratedFile {
 				`${finalPath} file already exists. Try again with overwrite enabled or a different file name.`
 			);
 		} else {
-			const filesAndFolders = await this.getFilesAndFolders(
-				this.chosenFolder
+			const filesAndFolders = await this.chosenFolder.getChildren(
+				this.IncludeFiles
 			);
 
-			const chosenFolderName = this.chosenFolder.name;
-
-			const text = await this.createText(
-				filesAndFolders,
-				chosenFolderName,
-				this.Name
-			);
+			const text = await this.createText(filesAndFolders);
 
 			const completeText = frontmatter + text;
 
 			adapter.write(finalPath, completeText);
+			//app.vault.create(finalPath, completeText);
 
 			new Notice(
-				fileExistsBool
-					? `${finalPath} updated`
-					: `${finalPath} created`
+				fileExistsBool ? `${finalPath} updated` : `${finalPath} created`
 			);
 		}
 	}
 
 	getFinalPath(): string {
 		let path = "";
-
-		console.log(this.destFolder);
 
 		if (this.destFolder) {
 			path = this.destFolder.path;
@@ -174,41 +165,22 @@ export class GeneratedFile {
 		return normalizedPath + ".md";
 	}
 
-	async getFilesAndFolders(
-		startingFolder: TFolder,
-		depth?: number
-	): Promise<TAbstractFile[]> {
-		const rootFolder: TFolder | null =
-			startingFolder ?? app.vault.getRoot();
+	heading(folder: MyFolder): string {
+		let heading = "";
+		if (folder.depth !== undefined) {
+			if (folder.depth <= 3) {
+				let hLevel = "##";
 
-		let filesAndFoldersArray: TAbstractFile[] = [];
-		const currentDepth = depth ?? 0;
-
-		for (const child of rootFolder.children) {
-			if (child instanceof TFile) {
-				if (child.extension === "md") {
-					const fileContent = await app.vault.cachedRead(child);
-					if (
-						!this.includeFiles &&
-						!fileContent.contains(
-							"---\ntags: obsidian-auto-glossary\n---\n"
-						)
-					) {
-						filesAndFoldersArray.unshift(child);
-					} else if (this.includeFiles) {
-						filesAndFoldersArray.unshift(child);
-					}
+				for (let i = 0; i < folder.depth; i++) {
+					hLevel += "#";
 				}
-			} else if (child instanceof TFolder) {
-				const myFolder = new MyFolder(child, currentDepth);
-				filesAndFoldersArray.push(myFolder);
 
-				filesAndFoldersArray = await filesAndFoldersArray.concat(
-					await this.getFilesAndFolders(child, currentDepth + 1)
-				);
+				heading = `${hLevel} ${folder.name}`;
+			} else {
+				heading = `\n**${folder.name}**\n`;
 			}
 		}
 
-		return filesAndFoldersArray;
+		return heading;
 	}
 }

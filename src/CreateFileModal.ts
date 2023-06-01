@@ -73,8 +73,6 @@ export class CreateFileModal extends Modal {
 					.onChange((value) => {
 						this.fileToGenerate.DestFolder =
 							app.vault.getAbstractFileByPath(value) as TFolder;
-
-						console.log(this.fileToGenerate.DestFolder);
 					})
 					.setDisabled(true)
 			)

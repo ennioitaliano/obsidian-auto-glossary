@@ -5,6 +5,7 @@ import { AutoGlossarySettings, DEFAULT_SETTINGS, SettingTab } from "settings";
 import { Index } from "Index";
 import { Glossary } from "Glossary";
 import { GlossaryIndex } from "GlossaryIndex";
+import { MyFolder } from "MyFolder";
 
 export default class autoGlossary extends Plugin {
 	// SETTINGS
@@ -31,9 +32,10 @@ export default class autoGlossary extends Plugin {
 						item.setTitle("New index")
 							.setIcon("list")
 							.onClick(async () => {
+								//POSSIBILITY TO IMPLEMENT CALL LIKE FOLDER.INDEX() TO CREATE INDEX IN FOLDER
 								new Index({
 									name: folder.name + "_Index",
-									chosenFolder: folder,
+									chosenFolder: new MyFolder(folder),
 									settings: this.settings,
 								}).writeFile();
 							});
@@ -51,7 +53,7 @@ export default class autoGlossary extends Plugin {
 							.onClick(async () => {
 								new Glossary({
 									name: folder.name + "_Glossary",
-									chosenFolder: folder,
+									chosenFolder: new MyFolder(folder),
 									settings: this.settings,
 								}).writeFile();
 							});
@@ -69,7 +71,7 @@ export default class autoGlossary extends Plugin {
 							.onClick(async () => {
 								new GlossaryIndex({
 									name: folder.name + "_GlossaryIndex",
-									chosenFolder: folder,
+									chosenFolder: new MyFolder(folder),
 									settings: this.settings,
 								}).writeFile();
 							});
@@ -90,7 +92,7 @@ export default class autoGlossary extends Plugin {
 									this.settings,
 									new Index({
 										name: folder.name + "_Index",
-										chosenFolder: folder,
+										chosenFolder: new MyFolder(folder),
 										settings: this.settings,
 									}),
 									(fileToGenerate: Index) =>
@@ -114,7 +116,7 @@ export default class autoGlossary extends Plugin {
 									this.settings,
 									new Glossary({
 										name: folder.name + "_Glossary",
-										chosenFolder: folder,
+										chosenFolder: new MyFolder(folder),
 										settings: this.settings,
 									}),
 									(fileToGenerate: Glossary) =>
@@ -138,7 +140,7 @@ export default class autoGlossary extends Plugin {
 									this.settings,
 									new GlossaryIndex({
 										name: folder.name + "_GlossaryIndex",
-										chosenFolder: folder,
+										chosenFolder: new MyFolder(folder),
 										settings: this.settings,
 									}),
 									(fileToGenerate: GlossaryIndex) =>
@@ -161,7 +163,7 @@ export default class autoGlossary extends Plugin {
 					new Index({
 						settings: this.settings,
 						name: this.app.vault.getName() + "_Index",
-						chosenFolder: this.app.vault.getRoot(),
+						chosenFolder: new MyFolder(this.app.vault.getRoot()),
 					}),
 					(fileToGenerate) => fileToGenerate.writeFile()
 				).open();
@@ -178,7 +180,7 @@ export default class autoGlossary extends Plugin {
 					this.settings,
 					new Glossary({
 						name: this.app.vault.getName() + "_Glossary",
-						chosenFolder: this.app.vault.getRoot(),
+						chosenFolder: new MyFolder(this.app.vault.getRoot()),
 						settings: this.settings,
 					}),
 					(fileToGenerate: Glossary) => fileToGenerate.writeFile()
@@ -196,7 +198,7 @@ export default class autoGlossary extends Plugin {
 					this.settings,
 					new GlossaryIndex({
 						name: this.app.vault.getName() + "_GlossaryIndex",
-						chosenFolder: this.app.vault.getRoot(),
+						chosenFolder: new MyFolder(this.app.vault.getRoot()),
 						settings: this.settings,
 					}),
 					(fileToGenerate: GlossaryIndex) =>
