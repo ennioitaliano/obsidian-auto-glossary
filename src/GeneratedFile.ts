@@ -12,7 +12,7 @@ import { NotesOrder } from "utils";
 
 export class GeneratedFile {
 	private name: string;
-	private completePath: string;
+	private finalPath: string;
 	private chosenFolder: TFolder;
 	private includeFiles?: boolean;
 	private overwrite?: boolean;
@@ -63,26 +63,26 @@ export class GeneratedFile {
 			this.overwrite = overwrite;
 		}
 
-		this.CompletePath = name;
+		this.FinalPath = name;
 	}
 
-	set CompletePath(name: string) {
-		let completePath = "";
+	set FinalPath(fileName: string) {
+		let path = "";
 
 		if (this.destFolder) {
-			completePath = this.destFolder.path;
+			path = this.destFolder.path;
 		} else {
-			completePath = this.chosenFolder.path;
+			path = this.chosenFolder.path;
 		}
 
-		const fileName = name ?? typeof this;
-		const normalizedPath = normalizePath(`${completePath}/${fileName}`);
+		//const fileName = fileName ?? typeof this;
+		const normalizedPath = normalizePath(`${path}/${fileName}`);
 
-		this.completePath = normalizedPath + ".md";
+		this.finalPath = normalizedPath + ".md";
 	}
 
-	get CompletePath(): string {
-		return this.completePath;
+	get FinalPath(): string {
+		return this.finalPath;
 	}
 
 	get ChosenFolder(): TFolder {
@@ -110,15 +110,15 @@ export class GeneratedFile {
 	}
 
 	getFileName(): string {
-		return this.completePath.split("/").pop() ?? "";
+		return this.finalPath.split("/").pop() ?? "";
 	}
 
 	async exists(): Promise<boolean> {
 		const adapter: DataAdapter = app.vault.adapter;
-		const result = await adapter.exists(this.completePath);
+		const result = await adapter.exists(this.finalPath);
 
 		if (result) {
-			console.log(`File ${this.completePath} already exists`);
+			console.log(`File ${this.finalPath} already exists`);
 		}
 
 		return result;
@@ -132,7 +132,7 @@ export class GeneratedFile {
 
 		if (fileExistsBool && !this.overwrite) {
 			new Notice(
-				`${this.CompletePath} file already exists. Try again with overwrite enabled or a different file name.`
+				`${this.FinalPath} file already exists. Try again with overwrite enabled or a different file name.`
 			);
 		} else {
 			const filesAndFolders = await this.getFilesAndFolders(
@@ -149,12 +149,12 @@ export class GeneratedFile {
 
 			const completeText = frontmatter + text;
 
-			adapter.write(this.CompletePath, completeText);
+			adapter.write(this.FinalPath, completeText);
 
 			new Notice(
 				fileExistsBool
-					? `${this.CompletePath} updated`
-					: `${this.CompletePath} created`
+					? `${this.FinalPath} updated`
+					: `${this.FinalPath} created`
 			);
 		}
 	}
