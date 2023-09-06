@@ -4,7 +4,7 @@ import {
 	GlossaryIndex,
 	AutoGlossarySettings,
 	CreateFileModal,
-} from "modules";
+} from "old/modules_OLD";
 import { App, TAbstractFile, TFile, TFolder, Vault } from "obsidian";
 export class MyFolder implements TFolder {
 	name: string;

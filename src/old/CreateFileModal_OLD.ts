@@ -1,7 +1,7 @@
-import { GeneratedFile } from "GeneratedFile";
+import { GeneratedFile } from "old/GeneratedFile_old";
 import { App, Modal, Setting, TFolder } from "obsidian";
-import { AutoGlossarySettings } from "settings";
-import { FileType, NotesOrder } from "utils";
+import { AutoGlossarySettings } from "old/settings_OLD";
+import { FileType, NotesOrder } from "old/utils_OLD";
 
 export class CreateFileModal extends Modal {
 	option: FileType;

@@ -1,6 +1,6 @@
-import autoGlossary from "main";
+import autoGlossary from "old/main_OLD";
 import { App, PluginSettingTab, Setting } from "obsidian";
-import { NotesOrder } from "./modules";
+import { NotesOrder } from "./modules_OLD";
 
 export interface AutoGlossarySettings {
 	includeFiles: boolean;
