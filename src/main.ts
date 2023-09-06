@@ -1,10 +1,9 @@
 import { Plugin, TFolder } from "obsidian";
-import {
-	AutoGlossarySettings,
-	DEFAULT_SETTINGS,
-	SettingTab,
-	MyFolder,
-} from "./modules";
+
+import { CreateFileModal } from "./modal";
+import { createFile } from "./glossaryIndex";
+import { getEnumFT, getEnumFO, fileType } from "./utils";
+import { AutoGlossarySettings, DEFAULT_SETTINGS, SettingTab } from "settings";
 
 export default class autoGlossary extends Plugin {
 	// SETTINGS
@@ -30,9 +29,20 @@ export default class autoGlossary extends Plugin {
 					menu.addItem((item) => {
 						item.setTitle("New index")
 							.setIcon("list")
-							.onClick(async () =>
-								new MyFolder(folder).index(this.settings)
-							);
+							.onClick(async () => {
+								createFile(
+									this.app,
+									fileType.i,
+									this.settings.fileInclusion,
+									this.settings.fileOverwrite,
+									folder.name + "_Index",
+									folder.path,
+									getEnumFO(this.settings.fileOrder),
+									this.settings.sameDest
+										? ""
+										: this.settings.fileDest
+								);
+							});
 					});
 				}
 			})
@@ -44,9 +54,20 @@ export default class autoGlossary extends Plugin {
 					menu.addItem((item) => {
 						item.setTitle("New glossary")
 							.setIcon("layout-list")
-							.onClick(async () =>
-								new MyFolder(folder).glossary(this.settings)
-							);
+							.onClick(async () => {
+								createFile(
+									this.app,
+									fileType.g,
+									this.settings.fileInclusion,
+									this.settings.fileOverwrite,
+									folder.name + "_Glossary",
+									folder.path,
+									getEnumFO(this.settings.fileOrder),
+									this.settings.sameDest
+										? ""
+										: this.settings.fileDest
+								);
+							});
 					});
 				}
 			})
@@ -58,11 +79,20 @@ export default class autoGlossary extends Plugin {
 					menu.addItem((item) => {
 						item.setTitle("New index+glossary")
 							.setIcon("list-ordered")
-							.onClick(async () =>
-								new MyFolder(folder).glossaryIndex(
-									this.settings
-								)
-							);
+							.onClick(async () => {
+								createFile(
+									this.app,
+									fileType.gi,
+									this.settings.fileInclusion,
+									this.settings.fileOverwrite,
+									folder.name + "_GlossaryIndex",
+									folder.path,
+									getEnumFO(this.settings.fileOrder),
+									this.settings.sameDest
+										? ""
+										: this.settings.fileDest
+								);
+							});
 					});
 				}
 			})
@@ -74,12 +104,37 @@ export default class autoGlossary extends Plugin {
 					menu.addItem((item) => {
 						item.setTitle("Advanced index")
 							.setIcon("list")
-							.onClick(async () =>
-								new MyFolder(folder).advancedIndex(
+							.onClick(async () => {
+								new CreateFileModal(
 									this.app,
-									this.settings
-								)
-							);
+									this.settings.fileOverwrite,
+									this.settings.sameDest,
+									this.settings.fileDest,
+									this.settings.fileOrder,
+									(
+										option,
+										overwrite,
+										fileName,
+										chosenFolder,
+										fileOrder,
+										destFolder
+									) => {
+										createFile(
+											this.app,
+											getEnumFT(option),
+											this.settings.fileInclusion,
+											overwrite,
+											fileName,
+											chosenFolder,
+											getEnumFO(fileOrder),
+											destFolder
+										);
+									},
+									folder.path,
+									folder.name + "_Index",
+									fileType.i
+								).open();
+							});
 					});
 				}
 			})
@@ -91,12 +146,37 @@ export default class autoGlossary extends Plugin {
 					menu.addItem((item) => {
 						item.setTitle("Advanced glossary")
 							.setIcon("layout-list")
-							.onClick(async () =>
-								new MyFolder(folder).advancedGlossary(
+							.onClick(async () => {
+								new CreateFileModal(
 									this.app,
-									this.settings
-								)
-							);
+									this.settings.fileOverwrite,
+									this.settings.sameDest,
+									this.settings.fileDest,
+									this.settings.fileOrder,
+									(
+										option,
+										overwrite,
+										fileName,
+										chosenFolder,
+										fileOrder,
+										destFolder
+									) => {
+										createFile(
+											this.app,
+											getEnumFT(option),
+											this.settings.fileInclusion,
+											overwrite,
+											fileName,
+											chosenFolder,
+											getEnumFO(fileOrder),
+											destFolder
+										);
+									},
+									folder.path,
+									folder.name + "_Glossary",
+									fileType.g
+								).open();
+							});
 					});
 				}
 			})
@@ -108,49 +188,71 @@ export default class autoGlossary extends Plugin {
 					menu.addItem((item) => {
 						item.setTitle("Advanced index+glossary")
 							.setIcon("list-ordered")
-							.onClick(async () =>
-								new MyFolder(folder).advancedGlossary(
+							.onClick(async () => {
+								new CreateFileModal(
 									this.app,
-									this.settings
-								)
-							);
+									this.settings.fileOverwrite,
+									this.settings.sameDest,
+									this.settings.fileDest,
+									this.settings.fileOrder,
+									(
+										option,
+										overwrite,
+										fileName,
+										chosenFolder,
+										fileOrder,
+										destFolder
+									) => {
+										createFile(
+											this.app,
+											getEnumFT(option),
+											this.settings.fileInclusion,
+											overwrite,
+											fileName,
+											chosenFolder,
+											getEnumFO(fileOrder),
+											destFolder
+										);
+									},
+									folder.path,
+									folder.name + "_GlossaryIndex",
+									fileType.gi
+								).open();
+							});
 					});
 				}
 			})
 		);
 
-		// Command to create index in root folder
-		this.addCommand({
-			id: "index-root",
-			name: "Create index in root folder",
-			callback: async () =>
-				new MyFolder(this.app.vault.getRoot()).advancedIndex(
+		/*this.addCommand({
+			id: "create-glossary",
+			name: "Create glossary",
+			callback: () => {
+				new CreateFileModal(
 					this.app,
-					this.settings
-				),
-		});
-
-		// Command to create glossary in root folder
-		this.addCommand({
-			id: "glossary-root",
-			name: "Create glossary in root folder",
-			callback: async () =>
-				new MyFolder(this.app.vault.getRoot()).advancedGlossary(
-					this.app,
-					this.settings
-				),
-		});
-
-		// Command to create index in root folder
-		this.addCommand({
-			id: "glossaryIndex-root",
-			name: "Create a glossary with index in root folder",
-			callback: async () =>
-				new MyFolder(this.app.vault.getRoot()).advancedGlossaryIndex(
-					this.app,
-					this.settings
-				),
-		});
+					this.settings.fileOverwrite,
+					(
+						option,
+						fileName,
+						chosenFolder,
+						fileOrder,
+						destFolder,
+						overwrite
+					) => {
+						createFile(
+							this.app,
+							getEnumFT(option),
+							this.settings.fileInclusion,
+							fileName,
+							overwrite,
+							chosenFolder,
+							getEnumFO(fileOrder),
+							destFolder
+						);
+					}
+				).open();
+			},
+		});*/
 
 		// SETTINGS
 		// This adds a settings tab so the user can configure various aspects of the plugin
@@ -172,6 +274,6 @@ export default class autoGlossary extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
-		console.info("Settings saved.");
+		console.log("Settings saved.");
 	}
 }

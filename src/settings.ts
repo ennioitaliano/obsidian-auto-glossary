@@ -1,17 +1,16 @@
 import autoGlossary from "main";
 import { App, PluginSettingTab, Setting } from "obsidian";
-import { NotesOrder } from "./modules";
 
 export interface AutoGlossarySettings {
-	includeFiles: boolean;
+	fileInclusion: boolean;
 	sameDest: boolean;
 	fileDest: string;
 	fileOverwrite: boolean;
-	fileOrder: NotesOrder;
+	fileOrder: string;
 }
 
 export const DEFAULT_SETTINGS: AutoGlossarySettings = {
-	includeFiles: false,
+	fileInclusion: false,
 	sameDest: true,
 	fileDest: "",
 	fileOverwrite: false,
@@ -34,16 +33,16 @@ export class SettingTab extends PluginSettingTab {
 		containerEl.createEl("h2", { text: "Auto Glossary Settings" });
 
 		new Setting(containerEl)
-			.setName("Files inclusion")
+			.setName("File inclusion")
 			.setDesc(
 				"Include previously generated files in glossaries and indexes."
 			)
 			.addToggle((toggle) =>
 				toggle
-					.setValue(this.plugin.settings.includeFiles)
+					.setValue(this.plugin.settings.fileInclusion)
 					.onChange(async (value) => {
-						console.log("includeFiles switched to " + value);
-						this.plugin.settings.includeFiles = value;
+						console.log("fileInclusion switched to " + value);
+						this.plugin.settings.fileInclusion = value;
 						await this.plugin.saveSettings();
 					})
 			);
@@ -122,7 +121,7 @@ export class SettingTab extends PluginSettingTab {
 					.addOption("alphabetical", "Alphabetical")
 					.addOption("alphabetical_rev", "Alphabetical - Reverse")
 					.setValue(this.plugin.settings.fileOrder)
-					.onChange(async (chosen: NotesOrder) => {
+					.onChange(async (chosen) => {
 						console.log("fileOrder switched to " + chosen);
 						this.plugin.settings.fileOrder = chosen;
 						await this.plugin.saveSettings();
