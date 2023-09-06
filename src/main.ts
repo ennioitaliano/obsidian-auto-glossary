@@ -1,11 +1,12 @@
 import { Plugin } from "obsidian";
-import { AutoGlossarySettings, DEFAULT_SETTINGS } from "old/settings_OLD";
+import { AutoGlossarySettings, DEFAULT_SETTINGS, SettingTab } from "settings/settings";
 
 export default class AutoGlossaryPlugin extends Plugin {
 	settings: AutoGlossarySettings;
 
 	async onload() {
 		await this.loadSettings();
+		this.addSettingTab(new SettingTab(this.app, this));
 	}
 
 	onunload() {}

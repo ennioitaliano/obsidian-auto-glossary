@@ -1,5 +1,5 @@
 export * from "./CreateFileModal_OLD";
-export * from "./settings_OLD";
+export * from "../settings/settings";
 export * from "..";
 export * from "../glossary";
 export * from "../glossary_index";
