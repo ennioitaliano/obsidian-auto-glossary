@@ -1,8 +1,10 @@
-export * from "./CreateFileModal_OLD";
+export * from "modal";
 export * from "../settings/settings";
-export * from "..";
-export * from "../glossary";
-export * from "../glossary_index";
+// export * from "..";
+export * from "index";
+export * from "glossary";
+export * from "glossary_index";
 export * from "./my_folder_OLD";
-export * from "../generated_file";
+export * from "generated_file";
 export * from "./utils_OLD";
+export * from "main";

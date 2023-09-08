@@ -22,7 +22,7 @@ export class MyFolder implements TFolder {
 		this.name = tFolder.name;
 		this.path = tFolder.path;
 		this.children = tFolder.children;
-		this.parent = tFolder.parent;
+		this.parent = tFolder.parent ?? this.vault.getRoot();
 		this.vault = tFolder.vault;
 		this.depth = depth;
 	}
@@ -59,27 +59,15 @@ export class MyFolder implements TFolder {
 	}
 
 	index(settings: AutoGlossarySettings) {
-		new Index({
-			settings,
-			name: this.name + "_Index",
-			chosenFolder: this,
-		}).writeFile();
+		new Index(this.name + "_Index", this, settings); //.writeFile();
 	}
 
 	glossary(settings: AutoGlossarySettings) {
-		new Glossary({
-			settings,
-			name: this.name + "_Glossary",
-			chosenFolder: this,
-		}).writeFile();
+		new Glossary(this.name + "_Glossary", this, settings); //.writeFile();
 	}
 
 	glossaryIndex(settings: AutoGlossarySettings) {
-		new GlossaryIndex({
-			settings,
-			name: this.name + "_GlossaryIndex",
-			chosenFolder: this,
-		}).writeFile();
+		new GlossaryIndex(this.name + "_GlossaryIndex", this, settings); //.writeFile();
 	}
 
 	advancedIndex(app: App, settings: AutoGlossarySettings) {
@@ -87,14 +75,12 @@ export class MyFolder implements TFolder {
 		new CreateFileModal(
 			app,
 			settings,
-			new Index({
-				name:
-					(this.name == "" ? app.vault.getName() : this.name) +
-					"_Index",
-				chosenFolder: this,
-				settings,
-			}),
-			(fileToGenerate: Index) => fileToGenerate.writeFile()
+			new Index(
+				(this.name == "" ? app.vault.getName() : this.name) + "_Index",
+				this,
+				settings
+			),
+			(fileToGenerate: Index) => fileToGenerate //.writeFile()
 		).open();
 	}
 
@@ -102,14 +88,13 @@ export class MyFolder implements TFolder {
 		new CreateFileModal(
 			app,
 			settings,
-			new Glossary({
-				name:
-					(this.name == "" ? app.vault.getName() : this.name) +
+			new Glossary(
+				(this.name == "" ? app.vault.getName() : this.name) +
 					"_Glossary",
-				chosenFolder: new MyFolder(this),
-				settings,
-			}),
-			(fileToGenerate: Glossary) => fileToGenerate.writeFile()
+				new MyFolder(this),
+				settings
+			),
+			(fileToGenerate: Glossary) => fileToGenerate //.writeFile()
 		).open();
 	}
 
@@ -117,14 +102,13 @@ export class MyFolder implements TFolder {
 		new CreateFileModal(
 			app,
 			settings,
-			new GlossaryIndex({
-				name:
-					(this.name == "" ? app.vault.getName() : this.name) +
+			new GlossaryIndex(
+				(this.name == "" ? app.vault.getName() : this.name) +
 					"_GlossaryIndex",
-				chosenFolder: new MyFolder(this),
-				settings,
-			}),
-			(fileToGenerate: GlossaryIndex) => fileToGenerate.writeFile()
+				new MyFolder(this),
+				settings
+			),
+			(fileToGenerate: GlossaryIndex) => fileToGenerate //.writeFile()
 		).open();
 	}
 }

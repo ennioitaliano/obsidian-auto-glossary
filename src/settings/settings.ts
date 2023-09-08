@@ -1,4 +1,4 @@
-import autoGlossary from "old/main_OLD";
+import autoGlossary from "main";
 import { App, PluginSettingTab, Setting } from "obsidian";
 import { NotesOrder } from "../old/modules_OLD";
 import { FolderSuggest } from "./folder_suggester";
@@ -30,26 +30,26 @@ export class SettingTab extends PluginSettingTab {
 	display(): void {
 		this.containerEl.empty();
 
-		this.createHeader();
-		this.createSettingsDescription();
-		this.createFileInclusionSetting();
-		this.createDestinationSetting();
-		this.createOverwriteFilesSetting();
-		this.createFileOrderSetting();
-		this.createResetToDefaultButton();
+		this.header();
+		this.description();
+		this.fileInclusion();
+		this.destination();
+		this.filesOverwrite();
+		this.notesOrder();
+		this.reset();
 	}
 
-	private createHeader(): void {
+	private header(): void {
 		this.containerEl.createEl("h2", { text: "Auto Glossary Settings" });
 	}
 
-	private createSettingsDescription(): void {
+	private description(): void {
 		this.containerEl.createEl("p", {
 			text: "These settings will be applied during the quick generation of a file with this plugin. You can use different values from the advanced generation.",
 		});
 	}
 
-	private createFileInclusionSetting(): void {
+	private fileInclusion(): void {
 		new Setting(this.containerEl)
 			.setName("Files inclusion")
 			.setDesc("Include files generated with this plugin in new ones.")
@@ -63,7 +63,7 @@ export class SettingTab extends PluginSettingTab {
 			);
 	}
 
-	private createDestinationSetting(): void {
+	private destination(): void {
 		new Setting(this.containerEl)
 			.setName("Same destination as folder")
 			.setDesc(
@@ -103,7 +103,7 @@ export class SettingTab extends PluginSettingTab {
 			});
 	}
 
-	private createOverwriteFilesSetting(): void {
+	private filesOverwrite(): void {
 		new Setting(this.containerEl)
 			.setName("Overwrite existing files")
 			.setDesc("If on, files with the same name will be overwritten.")
@@ -117,7 +117,7 @@ export class SettingTab extends PluginSettingTab {
 			);
 	}
 
-	private createFileOrderSetting(): void {
+	private notesOrder(): void {
 		new Setting(this.containerEl)
 			.setName("File order")
 			.setDesc("The order for the notes in the generated file.")
@@ -144,7 +144,7 @@ export class SettingTab extends PluginSettingTab {
 			);
 	}
 
-	private createResetToDefaultButton(): void {
+	private reset(): void {
 		new Setting(this.containerEl)
 			.setName("Reset to default")
 			.setDesc("Reset plugin settings to the default values.")

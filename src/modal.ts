@@ -1,7 +1,5 @@
-import { GeneratedFile } from "old/GeneratedFile_old";
-import { App, Modal, Setting, TFolder } from "obsidian";
-import { AutoGlossarySettings } from "settings/settings";
-import { FileType, NotesOrder } from "old/utils_OLD";
+import { App, Modal, Setting } from "obsidian";
+import { AutoGlossarySettings, FileType, NotesOrder, GeneratedFile } from "old/modules_OLD";
 
 export class CreateFileModal extends Modal {
 	option: FileType;
@@ -24,23 +22,31 @@ export class CreateFileModal extends Modal {
 	}
 
 	onOpen() {
-		const { contentEl } = this;
+		// const { contentEl } = this;
 
-		contentEl.createEl("h1", { text: "AutoGlossary" });
+		this.header();
+		// this.description();
+		this.folder();
+		this.destination();
+		this.name();
+		this.filesInclusion();
+		this.filesOverwrite();
+		this.notesOrder();
+		this.generate();
+	}
 
-		new Setting(contentEl).setName(
-			"Folder: " + this.fileToGenerate.ChosenFolder.path
+	private header(): void {
+		this.contentEl.createEl("h1", { text: "AutoGlossary" });
+	}
+
+	private folder(): void {
+		new Setting(this.contentEl).setName(
+			"Folder: " + this.fileToGenerate.Folder.path
 		);
-		/*.setDesc("The folder to get the files indexed from.")
-		.addText((text) =>
-				text
-					.onChange((value) => {
-						this.chosenFolder = value;
-					})
-					.setValue(this.chosenFolder)
-			);*/
+	}
 
-		new Setting(contentEl)
+	private destination(): void {
+		new Setting(this.contentEl)
 			.setName("Same destination as folder")
 			.setDesc(
 				"If on, the file will be created in the same folder specified above and the 'Destination' field will be disabled."
@@ -50,13 +56,13 @@ export class CreateFileModal extends Modal {
 					this.sameDest = value;
 					destination.setDisabled(value);
 					if (value) {
-						this.fileToGenerate.DestFolder =
-							this.fileToGenerate.ChosenFolder;
+						this.fileToGenerate.Settings.destination =
+							this.fileToGenerate.Folder.path;
 					}
 				})
 			);
 
-		const destination = new Setting(contentEl);
+		const destination = new Setting(this.contentEl);
 
 		destination
 			.setName("Destination")
@@ -66,19 +72,21 @@ export class CreateFileModal extends Modal {
 			.addText((text) =>
 				text
 					.setValue(
-						this.fileToGenerate.DestFolder
-							? this.fileToGenerate.DestFolder.path
-							: this.fileToGenerate.ChosenFolder.path
+						this.fileToGenerate.Settings.destination
+							? this.fileToGenerate.Settings.destination
+							: this.fileToGenerate.Folder.path
 					)
 					.onChange((value) => {
-						this.fileToGenerate.DestFolder =
-							app.vault.getAbstractFileByPath(value) as TFolder;
+						this.fileToGenerate.Settings.destination = value;
+						// = app.vault.getAbstractFileByPath(value) as TFolder;
 					})
 					.setDisabled(true)
 			)
 			.setDisabled(this.sameDest);
+	}
 
-		new Setting(contentEl)
+	private name(): void {
+		new Setting(this.contentEl)
 			.setName("File name")
 			.setDesc("The name of the created file.")
 			.addText((text) =>
@@ -86,34 +94,40 @@ export class CreateFileModal extends Modal {
 					this.fileToGenerate.Name = value;
 				})
 			);
+	}
 
-		new Setting(contentEl)
+	private filesInclusion(): void {
+		new Setting(this.contentEl)
 			.setName("Files inclusion")
 			.setDesc(
 				"Include files generated with AutoGlossary in new glossaries and indexes."
 			)
 			.addToggle((toggle) =>
 				toggle
-					.setValue(this.fileToGenerate.IncludeFiles)
+					.setValue(this.fileToGenerate.Settings.filesInclusion)
 					.onChange((value) => {
-						this.fileToGenerate.IncludeFiles = value;
+						this.fileToGenerate.Settings.filesInclusion = value;
 					})
 			);
+	}
 
-		new Setting(contentEl)
+	private filesOverwrite(): void {
+		new Setting(this.contentEl)
 			.setName("Overwrite existing file")
 			.setDesc(
 				"If turned on, if a file with the same name and location already exists, it will be overwritten. Default behavior can be changed in the plugin settings."
 			)
 			.addToggle((toggle) =>
 				toggle
-					.setValue(this.fileToGenerate.Overwrite)
+					.setValue(this.fileToGenerate.Settings.fileOverwrite)
 					.onChange((value) => {
-						this.fileToGenerate.Overwrite = value;
+						this.fileToGenerate.Settings.fileOverwrite = value;
 					})
 			);
+	}
 
-		new Setting(contentEl)
+	private notesOrder(): void {
+		new Setting(this.contentEl)
 			.setName("File order")
 			.setDesc("The order for the files to be indexed.")
 			.addDropdown((drop) =>
@@ -131,13 +145,15 @@ export class CreateFileModal extends Modal {
 					.addOption("ctime_old", "Creation time - Oldest to newest")
 					.addOption("alphabetical", "Alphabetical")
 					.addOption("alphabetical_rev", "Alphabetical - Reverse")
-					.setValue(this.fileToGenerate.NotesOrder)
+					.setValue(this.fileToGenerate.Settings.fileOrder)
 					.onChange((chosen: NotesOrder) => {
-						this.fileToGenerate.NotesOrder = chosen;
+						this.fileToGenerate.Settings.fileOrder = chosen;
 					})
 			);
+	}
 
-		new Setting(contentEl).addButton((btn) =>
+	private generate(): void {
+		new Setting(this.contentEl).addButton((btn) =>
 			btn
 				.setButtonText("Submit")
 				.setCta()
