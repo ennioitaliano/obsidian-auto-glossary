@@ -1,13 +1,10 @@
 import { Plugin, TFolder } from "obsidian";
-// import { MyFolder } from "old/my_folder_OLD";
-// import { AutoGlossarySettings, DEFAULT_SETTINGS, SettingTab } from "settings/settings";
 import {
-	MyFolder,
 	AutoGlossarySettings,
 	DEFAULT_SETTINGS,
 	SettingTab,
-	CreateFileModal,
-	Index,
+	MyFolder,
+	Index
 } from "./old/modules_OLD";
 
 export default class AutoGlossaryPlugin extends Plugin {
@@ -16,6 +13,33 @@ export default class AutoGlossaryPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 		this.addSettingTab(new SettingTab(this.app, this));
+
+		this.registerEvent(
+			this.app.workspace.on("file-menu", (menu, folder) => {
+				if (folder instanceof TFolder) {
+					menu.addItem((item) => {
+						item.setTitle("New index")
+							.setIcon("list")
+							.onClick(async () => {
+								// new MyFolder(folder).index(this.settings)
+								// new Index(
+								// 	folder.name + "_index",
+								// 	new MyFolder(folder),
+								// 	this.settings
+								// )
+								const myF = new MyFolder(folder)
+								new Index(
+									folder.name + "_index",
+									myF,
+									this.settings
+								)
+								console.log("Index")
+							}
+							);
+					});
+				}
+			})
+		);
 	}
 
 	onunload() {}

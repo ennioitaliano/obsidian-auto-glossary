@@ -11,10 +11,10 @@
 // 	private name: string;
 // 	private folder: MyFolder;
 // 	private settings: AutoGlossarySettings;
-	// private fileInclusion: boolean;
-	// private overwrite: boolean;
-	// private notesOrder: NotesOrder;
-	// private destination?: TFolder;
+// 	private fileInclusion: boolean;
+// 	private overwrite: boolean;
+// 	private notesOrder: NotesOrder;
+// 	private destination?: TFolder;
 
 // 	createText(
 // 		filesAndFolders: TAbstractFile[],
@@ -23,11 +23,11 @@
 // 		throw new Error("Method not implemented.");
 // 	}
 
-	// constructor(name: string, folder: MyFolder, settings: AutoGlossarySettings) {
-	// 	this.name = name;
-	// 	this.folder = folder;
-	// 	this.settings = settings;
-	// }
+// 	constructor(name: string, folder: MyFolder, settings: AutoGlossarySettings) {
+// 		this.name = name;
+// 		this.folder = folder;
+// 		this.settings = settings;
+// 	}
 
 
 // 	constructor({
@@ -70,7 +70,7 @@
 // 	}
 
 // 	get contentsFolder(): MyFolder {
-// 		return this.contents;
+// 		return this.folder;
 // 	}
 
 // 	set NotesOrder(notesOrder: NotesOrder) {
@@ -139,7 +139,7 @@
 // 				`${finalPath} file already exists. Try again with overwrite enabled or a different file name.`
 // 			);
 // 		} else {
-// 			const filesAndFolders = await this.contents.getChildren(
+// 			const filesAndFolders = await this.folder.getChildren(
 // 				this.IncludeFiles
 // 			);
 
@@ -162,7 +162,7 @@
 // 		if (this.destination) {
 // 			path = this.destination.path;
 // 		} else {
-// 			path = this.contents.path;
+// 			path = this.folder.path;
 // 		}
 
 // 		//const fileName = fileName ?? typeof this;
@@ -196,7 +196,7 @@
 // 		fileType: string
 // 	): string {
 // 		const text = filesAndFoldersStrings.join("\n");
-// 		const finalText = `## ${this.contents.name} ${fileType}\n${text}`;
+// 		const finalText = `## ${this.folder.name} ${fileType}\n${text}`;
 // 		return finalText;
 // 	}
-}
+// }
