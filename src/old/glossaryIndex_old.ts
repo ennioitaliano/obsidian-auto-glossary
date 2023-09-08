@@ -1,7 +1,7 @@
-import { GeneratedFile, Glossary, Index } from "./modules_OLD";
-import { TAbstractFile } from "obsidian";
+// import { GeneratedFile, Glossary, Index } from "./modules_OLD";
+// import { TAbstractFile } from "obsidian";
 
-export class GlossaryIndex_old extends GeneratedFile {
+// export class GlossaryIndex_old extends GeneratedFile {
 	// index = new Index({
 	// 	name: super.Name,
 	// 	chosenFolder: super.ChosenFolder,
@@ -29,4 +29,4 @@ export class GlossaryIndex_old extends GeneratedFile {
 
 	// 	return finalText;
 	// }
-}
+// }

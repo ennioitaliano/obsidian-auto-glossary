@@ -1,7 +1,7 @@
-import { GeneratedFile, MyFolder } from "./modules_OLD";
-import { TAbstractFile, TFile } from "obsidian";
+// import { GeneratedFile, MyFolder } from "./modules_OLD";
+// import { TAbstractFile, TFile } from "obsidian";
 
-export class Index_old extends GeneratedFile {
+// export class Index_old extends GeneratedFile {
 	// async createText(
 	// 	filesAndFolders: TAbstractFile[],
 	// 	isForGlossary?: boolean

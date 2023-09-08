@@ -1,16 +1,16 @@
-import { MyFolder, AutoGlossarySettings, NotesOrder } from "./modules_OLD";
-import {
-	DataAdapter,
-	Notice,
-	TAbstractFile,
-	TFolder,
-	normalizePath,
-} from "obsidian";
+// import { MyFolder, AutoGlossarySettings, NotesOrder } from "./modules_OLD";
+// import {
+// 	DataAdapter,
+// 	Notice,
+// 	TAbstractFile,
+// 	TFolder,
+// 	normalizePath,
+// } from "obsidian";
 
-export class GeneratedFile_old {
-	private name: string;
-	private folder: MyFolder;
-	private settings: AutoGlossarySettings;
+// export class GeneratedFile_old {
+// 	private name: string;
+// 	private folder: MyFolder;
+// 	private settings: AutoGlossarySettings;
 	// private fileInclusion: boolean;
 	// private overwrite: boolean;
 	// private notesOrder: NotesOrder;
@@ -23,11 +23,11 @@ export class GeneratedFile_old {
 // 		throw new Error("Method not implemented.");
 // 	}
 
-	constructor(name: string, folder: MyFolder, settings: AutoGlossarySettings) {
-		this.name = name;
-		this.folder = folder;
-		this.settings = settings;
-	}
+	// constructor(name: string, folder: MyFolder, settings: AutoGlossarySettings) {
+	// 	this.name = name;
+	// 	this.folder = folder;
+	// 	this.settings = settings;
+	// }
 
 
 // 	constructor({
