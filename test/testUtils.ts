@@ -1,7 +1,7 @@
 import * as assert from "node:assert/strict";
 // @ts-ignore - TODO: this import is correct for beforeEach, this should be investigated
-import { describe, it, beforeEach } from "node:test";
-import { TFile, FileStats } from "obsidian";
+import { describe, it, beforeEach, mock } from "node:test";
+import { App, TFile, FileStats } from "obsidian";
 import { cloneDeep } from "lodash";
 
 import * as utils from "../src/utils";
@@ -203,5 +203,49 @@ describe("sortFiles", () => {
       // Note: basename is a unique identifier used here
       assert.equal(testFiles[i].basename, TEST_FILES[i].basename);
     }
+  });
+
+  describe("fileExists", () => {
+    let filename: string;
+
+    beforeEach(() => {
+      filename = "testFile.txt";
+    });
+
+    it("successfully checks that a file exists", async () => {
+      // TODO: remove these anys by improving typing
+      const app: App = <any>{
+        vault: <any>{
+          adapter: <any>{
+            exists: mock.fn((filename: string) => {
+              return true;
+            }),
+          }
+        }
+      };
+      const exists: boolean = await utils.fileExists(app, filename);
+
+      // TODO: improve typing by avoiding typing
+      assert.equal(1, (<mock>app.vault.adapter.exists).mock.callCount())
+      assert.equal(true, exists);
+    });
+
+    it("successfully checks that a file doesn't exist", async () => {
+      // TODO: remove these anys by improving typing
+      const app: App = <any>{
+        vault: <any>{
+          adapter: <any>{
+            exists: mock.fn((filename: string) => {
+              return false;
+            }),
+          }
+        }
+      };
+      const exists: boolean = await utils.fileExists(app, filename);
+
+      // TODO: improve typing by avoiding typing
+      assert.equal(1, (<mock>app.vault.adapter.exists).mock.callCount())
+      assert.equal(false, exists);
+    });
   });
 });
