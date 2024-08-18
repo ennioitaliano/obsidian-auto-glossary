@@ -206,100 +206,104 @@ describe("sortFiles", () => {
     }
   });
 
-  describe("fileExists", () => {
-    let filename: string;
+  it("should throw on undefined file list", () => {
+    assert.throws(() => utils.sortFiles(<any>undefined, utils.fileOrder.ctime_new));
+  });
+});
 
-    beforeEach(() => {
-      filename = "testFile.txt";
-    });
+describe("fileExists", () => {
+  let filename: string;
 
-    it("successfully checks that a file exists", async () => {
-      // TODO: remove these anys by improving typing
-      const app: App = <any>{
-        vault: <any>{
-          adapter: <any>{
-            exists: mock.fn((filename: string) => {
-              return true;
-            }),
-          }
-        }
-      };
-      const exists: boolean = await utils.fileExists(app, filename);
-
-      // TODO: improve typing by avoiding typing
-      assert.equal(1, (<mock>app.vault.adapter.exists).mock.callCount())
-      assert.equal(true, exists);
-    });
-
-    it("successfully checks that a file doesn't exist", async () => {
-      // TODO: remove these anys by improving typing
-      const app: App = <any>{
-        vault: <any>{
-          adapter: <any>{
-            exists: mock.fn((filename: string) => {
-              return false;
-            }),
-          }
-        }
-      };
-      const exists: boolean = await utils.fileExists(app, filename);
-
-      // TODO: improve typing by avoiding typing
-      assert.equal(1, (<mock>app.vault.adapter.exists).mock.callCount())
-      assert.equal(false, exists);
-    });
+  beforeEach(() => {
+    filename = "testFile.txt";
   });
 
-  describe("cleanFiles", () => {
-    let testFiles: Array<TFile>;
-
-    beforeEach(() => {
-      testFiles = cloneDeep(TEST_FILES);
-    });
-
-    it("successfully cleans file", async () => {
-      const containsMock: mock = mock.fn(() => {
-        return false;
-      });
-      const app: App = <any>{
-        vault: <any>{
-          cachedRead: mock.fn(() => {
-            return {
-              contains: containsMock,
-            };
+  it("successfully checks that a file exists", async () => {
+    // TODO: remove these anys by improving typing
+    const app: App = <any>{
+      vault: <any>{
+        adapter: <any>{
+          exists: mock.fn((filename: string) => {
+            return true;
           }),
         }
-      };
-
-      const cleanedFiles: Array<TFile> = await utils.cleanFiles(app, testFiles);
-
-      assert.equal(testFiles.length, (<mock>app.vault.cachedRead).mock.callCount());
-      assert.equal(testFiles.length, containsMock.mock.callCount());
-      assert.equal(testFiles.length, cleanedFiles.length);
-      for (let fileIdx = 0; fileIdx < testFiles.length; fileIdx++) {
-        assert.equal(testFiles[fileIdx], cleanedFiles[fileIdx]);
       }
-    });
+    };
+    const exists: boolean = await utils.fileExists(app, filename);
 
-    it("avoids cleaning obsidian glossary files", async () => {
-      const containsMock: mock = mock.fn(() => {
-        return true;
-      });
-      const app: App = <any>{
-        vault: <any>{
-          cachedRead: mock.fn(() => {
-            return {
-              contains: containsMock,
-            };
+    // TODO: improve typing by avoiding typing
+    assert.equal(1, (<mock>app.vault.adapter.exists).mock.callCount())
+    assert.equal(true, exists);
+  });
+
+  it("successfully checks that a file doesn't exist", async () => {
+    // TODO: remove these anys by improving typing
+    const app: App = <any>{
+      vault: <any>{
+        adapter: <any>{
+          exists: mock.fn((filename: string) => {
+            return false;
           }),
         }
-      };
+      }
+    };
+    const exists: boolean = await utils.fileExists(app, filename);
 
-      const cleanedFiles: Array<TFile> = await utils.cleanFiles(app, testFiles);
+    // TODO: improve typing by avoiding typing
+    assert.equal(1, (<mock>app.vault.adapter.exists).mock.callCount())
+    assert.equal(false, exists);
+  });
+});
 
-      assert.equal(testFiles.length, (<mock>app.vault.cachedRead).mock.callCount());
-      assert.equal(testFiles.length, containsMock.mock.callCount());
-      assert.equal(0, cleanedFiles.length);
+describe("cleanFiles", () => {
+  let testFiles: Array<TFile>;
+
+  beforeEach(() => {
+    testFiles = cloneDeep(TEST_FILES);
+  });
+
+  it("successfully cleans file", async () => {
+    const containsMock: mock = mock.fn(() => {
+      return false;
     });
+    const app: App = <any>{
+      vault: <any>{
+        cachedRead: mock.fn(() => {
+          return {
+            contains: containsMock,
+          };
+        }),
+      }
+    };
+
+    const cleanedFiles: Array<TFile> = await utils.cleanFiles(app, testFiles);
+
+    assert.equal(testFiles.length, (<mock>app.vault.cachedRead).mock.callCount());
+    assert.equal(testFiles.length, containsMock.mock.callCount());
+    assert.equal(testFiles.length, cleanedFiles.length);
+    for (let fileIdx = 0; fileIdx < testFiles.length; fileIdx++) {
+      assert.equal(testFiles[fileIdx], cleanedFiles[fileIdx]);
+    }
+  });
+
+  it("avoids cleaning obsidian glossary files", async () => {
+    const containsMock: mock = mock.fn(() => {
+      return true;
+    });
+    const app: App = <any>{
+      vault: <any>{
+        cachedRead: mock.fn(() => {
+          return {
+            contains: containsMock,
+          };
+        }),
+      }
+    };
+
+    const cleanedFiles: Array<TFile> = await utils.cleanFiles(app, testFiles);
+
+    assert.equal(testFiles.length, (<mock>app.vault.cachedRead).mock.callCount());
+    assert.equal(testFiles.length, containsMock.mock.callCount());
+    assert.equal(0, cleanedFiles.length);
   });
 });

@@ -107,8 +107,6 @@ export async function cleanFiles(
 	return cleanedNotes;
 }
 
-// TODO: remove after finding final branching condition
-/* c8 ignore next */
 export function sortFiles(notesTFile: TFile[], fileOrder: fileOrder) {
 	switch (fileOrder) {
 		case "ctime_new":
