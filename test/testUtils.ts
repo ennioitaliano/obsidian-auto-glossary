@@ -1,5 +1,5 @@
-import * as assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import * as assert from "node:assert/strict";
+import { describe, it, beforeEach } from "node:test";
 import { TFile, FileStats } from "obsidian";
 import { cloneDeep } from "lodash";
 
@@ -23,24 +23,24 @@ const createTFile = (fileNum: number, name: string, stat: FileStats): TFile => {
 /*********************
  *     CONSTANTS     *
  *********************/
-const testFileName: Array<string> = ["testFile1", "testFile3", "testFile2", "testFile3"];
-const testFiles: TFile[]  = [
-  createTFile(1, testFileName[0], {
+const TEST_FILENAME: Array<string> = ["testFile1", "testFile3", "testFile2", "testFile3"];
+const TEST_FILES: TFile[]  = [
+  createTFile(1, TEST_FILENAME[0], {
     ctime: 5,
     mtime: 10,
     size: 50,
   }),
-  createTFile(1, testFileName[1], {
+  createTFile(2, TEST_FILENAME[1], {
     ctime: 10,
     mtime: 5,
     size: 8,
   }),
-  createTFile(1, testFileName[2], {
+  createTFile(3, TEST_FILENAME[2], {
     ctime: 7,
     mtime: 10,
     size: 1,
   }),
-  createTFile(1, testFileName[3], {
+  createTFile(4, TEST_FILENAME[3], {
     ctime: 15,
     mtime: 15,
     size: 15,
@@ -97,107 +97,110 @@ describe("getEnumFO", () => {
     assert.equal(utils.fileOrder.alphabetical_rev, result);
   });
 
-  describe("sortFiles", () => {
-    it(`sorts ${utils.fileOrder.ctime_new} files correctly`, () => {
-      const files: TFile[] = cloneDeep(testFiles);
-      utils.sortFiles(files, utils.fileOrder.ctime_new);
+});
 
-      assert.equal(4, files.length);
+describe("sortFiles", () => {
+  let testFiles: Array<TFile>;
+  let testFilenames: Array<string>;
 
-      const expectedCTimes: Array<number> = [15, 10, 7, 5];
-      for (let i = 0; i < expectedCTimes.length; i++)
-      {
-        assert.equal(expectedCTimes[i], files[i].stat.ctime);
-      }
-    });
+  beforeEach(() => {
+    testFiles = cloneDeep(TEST_FILES);
+    testFilenames = cloneDeep(TEST_FILENAME);
+  });
 
-    it(`sorts by ${utils.fileOrder.ctime_old} files correctly`, () => {
-      const files: TFile[] = cloneDeep(testFiles);
-      utils.sortFiles(files, utils.fileOrder.ctime_old);
+  it(`sorts ${utils.fileOrder.ctime_new} files correctly`, () => {
+    utils.sortFiles(testFiles, utils.fileOrder.ctime_new);
 
-      assert.equal(4, files.length);
+    assert.equal(4, testFiles.length);
 
-      const expectedCTimes: Array<number> = [5, 7 , 10, 15];
-      for (let i = 0; i < expectedCTimes.length; i++)
-      {
-        assert.equal(expectedCTimes[i], files[i].stat.ctime);
-      }
-    });
+    const expectedCTimes: Array<number> = [15, 10, 7, 5];
+    for (let i = 0; i < expectedCTimes.length; i++)
+    {
+      assert.equal(expectedCTimes[i], testFiles[i].stat.ctime);
+    }
+  });
 
-    it(`sorts by ${utils.fileOrder.alphabetical} files correctly`, () => {
-      const files: TFile[] = cloneDeep(testFiles);
-      utils.sortFiles(files, utils.fileOrder.alphabetical);
+  it(`sorts by ${utils.fileOrder.ctime_old} files correctly`, () => {
+    utils.sortFiles(testFiles, utils.fileOrder.ctime_old);
 
-      assert.equal(4, files.length);
+    assert.equal(4, testFiles.length);
 
-      const expectedFilenameSort = testFileName.sort();
-      for (let i = 0; i < expectedFilenameSort.length; i++)
-      {
-        assert.equal(expectedFilenameSort[i], files[i].name);
-      }
-    });
+    const expectedCTimes: Array<number> = [5, 7 , 10, 15];
+    for (let i = 0; i < expectedCTimes.length; i++)
+    {
+      assert.equal(expectedCTimes[i], testFiles[i].stat.ctime);
+    }
+  });
 
-    it(`sorts by ${utils.fileOrder.alphabetical_rev} files correctly`, () => {
-      const files: TFile[] = cloneDeep(testFiles);
-      utils.sortFiles(files, utils.fileOrder.alphabetical_rev);
+  it(`sorts by ${utils.fileOrder.alphabetical} files correctly`, () => {
+    utils.sortFiles(testFiles, utils.fileOrder.alphabetical);
 
-      assert.equal(4, files.length);
+    assert.equal(4, testFiles.length);
 
-      const expectedFilenameSort = testFileName.sort().reverse();
-      for (let i = 0; i < expectedFilenameSort.length; i++)
-      {
-        assert.equal(expectedFilenameSort[i], files[i].name);
-      }
-    });
+    const expectedFilenameSort = testFilenames.sort();
+    for (let i = 0; i < expectedFilenameSort.length; i++)
+    {
+      assert.equal(expectedFilenameSort[i], testFiles[i].name);
+    }
+  });
 
-    it(`sorts by ${utils.fileOrder.mtime_new} files correctly`, () => {
-      const files: TFile[] = cloneDeep(testFiles);
-      utils.sortFiles(files, utils.fileOrder.mtime_new);
+  it(`sorts by ${utils.fileOrder.alphabetical_rev} files correctly`, () => {
+    utils.sortFiles(testFiles, utils.fileOrder.alphabetical_rev);
 
-      assert.equal(4, files.length);
+    assert.equal(4, testFiles.length);
 
-      const expectedMTimes = [15, 10, 10, 5];
-      for (let i = 0; i < expectedMTimes.length; i++)
-      {
-        assert.equal(expectedMTimes[i], files[i].stat.mtime);
-      }
-    });
+    const expectedFilenameSort = testFilenames.sort().reverse();
+    for (let i = 0; i < expectedFilenameSort.length; i++)
+    {
+      assert.equal(expectedFilenameSort[i], testFiles[i].name);
+    }
+  });
 
-    it(`sorts by ${utils.fileOrder.mtime_old} files correctly`, () => {
-      const files: TFile[] = cloneDeep(testFiles);
-      utils.sortFiles(files, utils.fileOrder.mtime_old);
+  it(`sorts by ${utils.fileOrder.mtime_new} files correctly`, () => {
+    utils.sortFiles(testFiles, utils.fileOrder.mtime_new);
 
-      assert.equal(4, files.length);
+    assert.equal(4, testFiles.length);
 
-      const expectedMTimes = [5, 10, 10, 15];
-      for (let i = 0; i < expectedMTimes.length; i++)
-      {
-        assert.equal(expectedMTimes[i], files[i].stat.mtime);
-      }
-    });
+    const expectedMTimes = [15, 10, 10, 5];
+    for (let i = 0; i < expectedMTimes.length; i++)
+    {
+      assert.equal(expectedMTimes[i], testFiles[i].stat.mtime);
+    }
+  });
 
-    it(`${utils.fileOrder.default} does not sort files`, () => {
-      const files: TFile[] = cloneDeep(testFiles);
-      utils.sortFiles(files, utils.fileOrder.default);
+  it(`sorts by ${utils.fileOrder.mtime_old} files correctly`, () => {
+    utils.sortFiles(testFiles, utils.fileOrder.mtime_old);
 
-      assert.equal(4, files.length);
+    assert.equal(4, testFiles.length);
 
-      for (let i = 0; i < files.length; i++)
-      {
-        assert.equal(files[i], files[i]);
-      }
-    });
-    
-    it("Unrecognized file order does not sort files", () => {
-      const files: TFile[] = cloneDeep(testFiles);
-      utils.sortFiles(files, <utils.fileOrder>"unknown");
+    const expectedMTimes = [5, 10, 10, 15];
+    for (let i = 0; i < expectedMTimes.length; i++)
+    {
+      assert.equal(expectedMTimes[i], testFiles[i].stat.mtime);
+    }
+  });
 
-      assert.equal(4, files.length);
+  it(`${utils.fileOrder.default} does not sort files`, () => {
+    utils.sortFiles(testFiles, utils.fileOrder.default);
 
-      for (let i = 0; i < files.length; i++)
-      {
-        assert.equal(files[i], files[i]);
-      }
-    });
+    assert.equal(4, testFiles.length);
+
+    for (let i = 0; i < testFiles.length; i++)
+    {
+      // Note: basename is a unique identifier used here
+      assert.equal(testFiles[i].basename, TEST_FILES[i].basename);
+    }
+  });
+  
+  it("Unrecognized file order does not sort files", () => {
+    utils.sortFiles(testFiles, <utils.fileOrder>"unknown");
+
+    assert.equal(4, testFiles.length);
+
+    for (let i = 0; i < testFiles.length; i++)
+    {
+      // Note: basename is a unique identifier used here
+      assert.equal(testFiles[i].basename, TEST_FILES[i].basename);
+    }
   });
 });
