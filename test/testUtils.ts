@@ -2,6 +2,7 @@ import * as assert from "node:assert/strict";
 // @ts-ignore - TODO: this import is correct for beforeEach, this should be investigated
 import { describe, it, beforeEach, mock } from "node:test";
 import { App, TFile, FileStats } from "obsidian";
+import * as obsidian from "obsidian" 
 import { cloneDeep } from "lodash";
 
 import * as utils from "../src/utils";
@@ -246,6 +247,59 @@ describe("sortFiles", () => {
       // TODO: improve typing by avoiding typing
       assert.equal(1, (<mock>app.vault.adapter.exists).mock.callCount())
       assert.equal(false, exists);
+    });
+  });
+
+  describe("cleanFiles", () => {
+    let testFiles: Array<TFile>;
+
+    beforeEach(() => {
+      testFiles = cloneDeep(TEST_FILES);
+    });
+
+    it("successfully cleans file", async () => {
+      const containsMock: mock = mock.fn(() => {
+        return false;
+      });
+      const app: App = <any>{
+        vault: <any>{
+          cachedRead: mock.fn(() => {
+            return {
+              contains: containsMock,
+            };
+          }),
+        }
+      };
+
+      const cleanedFiles: Array<TFile> = await utils.cleanFiles(app, testFiles);
+
+      assert.equal(testFiles.length, (<mock>app.vault.cachedRead).mock.callCount());
+      assert.equal(testFiles.length, containsMock.mock.callCount());
+      assert.equal(testFiles.length, cleanedFiles.length);
+      for (let fileIdx = 0; fileIdx < testFiles.length; fileIdx++) {
+        assert.equal(testFiles[fileIdx], cleanedFiles[fileIdx]);
+      }
+    });
+
+    it("avoids cleaning obsidian glossary files", async () => {
+      const containsMock: mock = mock.fn(() => {
+        return true;
+      });
+      const app: App = <any>{
+        vault: <any>{
+          cachedRead: mock.fn(() => {
+            return {
+              contains: containsMock,
+            };
+          }),
+        }
+      };
+
+      const cleanedFiles: Array<TFile> = await utils.cleanFiles(app, testFiles);
+
+      assert.equal(testFiles.length, (<mock>app.vault.cachedRead).mock.callCount());
+      assert.equal(testFiles.length, containsMock.mock.callCount());
+      assert.equal(0, cleanedFiles.length);
     });
   });
 });
