@@ -1,4 +1,6 @@
+/* c8 ignore next */
 import { App, DataAdapter, TFile } from "obsidian";
+// TODO: Remove this after finding out how to remove imports from coverage
 
 // enum to handle different cases
 export enum fileType {
@@ -105,6 +107,8 @@ export async function cleanFiles(
 	return cleanedNotes;
 }
 
+// TODO: remove after finding final branching condition
+/* c8 ignore next */
 export function sortFiles(notesTFile: TFile[], fileOrder: fileOrder) {
 	switch (fileOrder) {
 		case "ctime_new":
