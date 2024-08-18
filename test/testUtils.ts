@@ -1,4 +1,5 @@
 import * as assert from "node:assert/strict";
+// @ts-ignore - TODO: this import is correct for beforeEach, this should be investigated
 import { describe, it, beforeEach } from "node:test";
 import { TFile, FileStats } from "obsidian";
 import { cloneDeep } from "lodash";
