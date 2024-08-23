@@ -1,11 +1,14 @@
 import * as assert from "node:assert/strict";
 // @ts-ignore - TODO: this import is correct for beforeEach, this should be investigated
-import { describe, it, beforeEach, mock } from "node:test";
-import { App, TFile, FileStats } from "obsidian";
-import * as obsidian from "obsidian" 
+import { describe, it, beforeEach } from "node:test";
+import { TFile, FileStats } from "obsidian";
 import { cloneDeep } from "lodash";
 
 import * as utils from "../src/utils";
+import { SinonStub } from "sinon";
+import { AppWrapper } from "interfaces/AppWrapper";
+import * as sinon from "sinon";
+
 
 /*********************
  *       UTILS       *
@@ -219,38 +222,22 @@ describe("fileExists", () => {
   });
 
   it("successfully checks that a file exists", async () => {
-    // TODO: remove these anys by improving typing
-    const app: App = <any>{
-      vault: <any>{
-        adapter: <any>{
-          exists: mock.fn((filename: string) => {
-            return true;
-          }),
-        }
-      }
-    };
-    const exists: boolean = await utils.fileExists(app, filename);
+    const fakeApp: AppWrapper = new AppWrapper();
+    sinon.stub(fakeApp.vault.adapter, "exists").resolves(true);
+    const exists: boolean = await utils.fileExists(fakeApp, filename);
 
     // TODO: improve typing by avoiding typing
-    assert.equal(1, (<mock>app.vault.adapter.exists).mock.callCount())
+    assert.equal(1, (<SinonStub>fakeApp.vault.adapter.exists).callCount);
     assert.equal(true, exists);
   });
 
   it("successfully checks that a file doesn't exist", async () => {
-    // TODO: remove these anys by improving typing
-    const app: App = <any>{
-      vault: <any>{
-        adapter: <any>{
-          exists: mock.fn((filename: string) => {
-            return false;
-          }),
-        }
-      }
-    };
-    const exists: boolean = await utils.fileExists(app, filename);
+    const fakeApp: AppWrapper = new AppWrapper();
+    sinon.stub(fakeApp.vault.adapter, "exists").resolves(false);
+    const exists: boolean = await utils.fileExists(fakeApp, filename);
 
     // TODO: improve typing by avoiding typing
-    assert.equal(1, (<mock>app.vault.adapter.exists).mock.callCount())
+    assert.equal(1, (<SinonStub>fakeApp.vault.adapter.exists).callCount);
     assert.equal(false, exists);
   });
 });
@@ -263,23 +250,12 @@ describe("cleanFiles", () => {
   });
 
   it("successfully cleans file", async () => {
-    const containsMock: mock = mock.fn(() => {
-      return false;
-    });
-    const app: App = <any>{
-      vault: <any>{
-        cachedRead: mock.fn(() => {
-          return {
-            contains: containsMock,
-          };
-        }),
-      }
-    };
+    const fakeApp: AppWrapper = new AppWrapper();
+    sinon.stub(fakeApp.vault, "cachedRead").resolves("Read Content");
 
-    const cleanedFiles: Array<TFile> = await utils.cleanFiles(app, testFiles);
+    const cleanedFiles: Array<TFile> = await utils.cleanFiles(fakeApp, testFiles);
 
-    assert.equal(testFiles.length, (<mock>app.vault.cachedRead).mock.callCount());
-    assert.equal(testFiles.length, containsMock.mock.callCount());
+    assert.equal(testFiles.length, (<SinonStub>fakeApp.vault.cachedRead).callCount);
     assert.equal(testFiles.length, cleanedFiles.length);
     for (let fileIdx = 0; fileIdx < testFiles.length; fileIdx++) {
       assert.equal(testFiles[fileIdx], cleanedFiles[fileIdx]);
@@ -287,23 +263,12 @@ describe("cleanFiles", () => {
   });
 
   it("avoids cleaning obsidian glossary files", async () => {
-    const containsMock: mock = mock.fn(() => {
-      return true;
-    });
-    const app: App = <any>{
-      vault: <any>{
-        cachedRead: mock.fn(() => {
-          return {
-            contains: containsMock,
-          };
-        }),
-      }
-    };
+    const fakeApp: AppWrapper = new AppWrapper();
+    sinon.stub(fakeApp.vault, "cachedRead").resolves("---\ntags: obsidian-auto-glossary\n---\n");
 
-    const cleanedFiles: Array<TFile> = await utils.cleanFiles(app, testFiles);
+    const cleanedFiles: Array<TFile> = await utils.cleanFiles(fakeApp, testFiles);
 
-    assert.equal(testFiles.length, (<mock>app.vault.cachedRead).mock.callCount());
-    assert.equal(testFiles.length, containsMock.mock.callCount());
+    assert.equal(testFiles.length, (<SinonStub>fakeApp.vault.cachedRead).callCount);
     assert.equal(0, cleanedFiles.length);
   });
 });

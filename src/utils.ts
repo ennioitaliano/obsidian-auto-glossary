@@ -1,4 +1,6 @@
 /* c8 ignore next */
+import { AppWrapper } from "interfaces/AppWrapper";
+import { DataAdapterWrapper } from "interfaces/DataAdapterWrapper";
 import { App, DataAdapter, TFile } from "obsidian";
 // TODO: Remove this after finding out how to remove imports from coverage
 
@@ -79,8 +81,8 @@ export function getEnumFO(value: string): fileOrder {
 	return result;
 }
 
-export async function fileExists(app: App, fileName: string): Promise<boolean> {
-	const adapter: DataAdapter = app.vault.adapter;
+export async function fileExists(app: AppWrapper, fileName: string): Promise<boolean> {
+	const adapter: DataAdapterWrapper = app.vault.adapter;
 	const result = await adapter.exists(fileName + ".md");
 
 	if (result) {
@@ -91,15 +93,15 @@ export async function fileExists(app: App, fileName: string): Promise<boolean> {
 }
 
 export async function cleanFiles(
-	app: App,
+	app: AppWrapper,
 	notesTFiles: TFile[]
 ): Promise<TFile[]> {
 	const { vault } = app;
 	const cleanedNotes: TFile[] = [];
 
 	notesTFiles.forEach(async (file: TFile) => {
-		const fileContent = await vault.cachedRead(file);
-		if (!fileContent.contains("---\ntags: obsidian-auto-glossary\n---\n")) {
+		const fileContent: string = await vault.cachedRead(file);
+		if (!fileContent.includes("---\ntags: obsidian-auto-glossary\n---\n")) {
 			cleanedNotes.push(file);
 		}
 	});
@@ -107,6 +109,7 @@ export async function cleanFiles(
 	return cleanedNotes;
 }
 
+/* c8 ignore next */
 export function sortFiles(notesTFile: TFile[], fileOrder: fileOrder) {
 	switch (fileOrder) {
 		case "ctime_new":
