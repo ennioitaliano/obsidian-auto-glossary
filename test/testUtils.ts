@@ -1,13 +1,11 @@
-import * as assert from "node:assert/strict";
-// @ts-ignore - TODO: this import is correct for beforeEach, this should be investigated
 import { describe, it, beforeEach } from "node:test";
+import assert from "node:assert/strict"
 import { TFile, FileStats } from "obsidian";
 import { cloneDeep } from "lodash";
 
 import * as utils from "../src/utils";
-import { createStubInstance, SinonStubbedInstance, SinonStub, stub } from "sinon";
+import { createStubInstance, SinonStubbedInstance } from "sinon";
 import { DataAdapterMock } from "./mocks/DataAdapterMock";
-import { VaultWrapper } from "interfaces/VaultWrapper";
 import { VaultMock } from "./mocks/VaultMock";
 
 
