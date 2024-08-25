@@ -19,7 +19,7 @@ export async function createArrays(
 	const notes: string[] = [];
 
 	if (!fileInclusion) {
-		notesTFile = await cleanFiles(app, notesTFile);
+		notesTFile = await cleanFiles(app.vault, notesTFile);
 	}
 
 	if (fileOrder) {
@@ -96,7 +96,7 @@ export async function createFile(
 		completeFileName = normalizePath(requestedFile);
 	}
 
-	const fileExistsBool = await fileExists(app, completeFileName);
+	const fileExistsBool = await fileExists(app.vault.adapter, completeFileName);
 	const adapter: DataAdapter = app.vault.adapter;
 
 	console.log("destFolder: " + destFolder);

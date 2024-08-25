@@ -1,7 +1,7 @@
 /* c8 ignore next */
-import { AppWrapper } from "interfaces/AppWrapper";
 import { DataAdapterWrapper } from "interfaces/DataAdapterWrapper";
-import { App, DataAdapter, TFile } from "obsidian";
+import { VaultWrapper } from "interfaces/VaultWrapper";
+import { TFile } from "obsidian";
 // TODO: Remove this after finding out how to remove imports from coverage
 
 // enum to handle different cases
@@ -81,8 +81,7 @@ export function getEnumFO(value: string): fileOrder {
 	return result;
 }
 
-export async function fileExists(app: AppWrapper, fileName: string): Promise<boolean> {
-	const adapter: DataAdapterWrapper = app.vault.adapter;
+export async function fileExists(adapter: DataAdapterWrapper, fileName: string): Promise<boolean> {
 	const result = await adapter.exists(fileName + ".md");
 
 	if (result) {
@@ -93,10 +92,9 @@ export async function fileExists(app: AppWrapper, fileName: string): Promise<boo
 }
 
 export async function cleanFiles(
-	app: AppWrapper,
+	vault: VaultWrapper,
 	notesTFiles: TFile[]
 ): Promise<TFile[]> {
-	const { vault } = app;
 	const cleanedNotes: TFile[] = [];
 
 	notesTFiles.forEach(async (file: TFile) => {

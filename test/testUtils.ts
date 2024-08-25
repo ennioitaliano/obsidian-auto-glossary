@@ -5,9 +5,10 @@ import { TFile, FileStats } from "obsidian";
 import { cloneDeep } from "lodash";
 
 import * as utils from "../src/utils";
-import { SinonStub } from "sinon";
-import { AppWrapper } from "interfaces/AppWrapper";
-import * as sinon from "sinon";
+import { createStubInstance, SinonStubbedInstance, SinonStub, stub } from "sinon";
+import { DataAdapterMock } from "./mocks/DataAdapterMock";
+import { VaultWrapper } from "interfaces/VaultWrapper";
+import { VaultMock } from "./mocks/VaultMock";
 
 
 /*********************
@@ -222,22 +223,20 @@ describe("fileExists", () => {
   });
 
   it("successfully checks that a file exists", async () => {
-    const fakeApp: AppWrapper = new AppWrapper();
-    sinon.stub(fakeApp.vault.adapter, "exists").resolves(true);
-    const exists: boolean = await utils.fileExists(fakeApp, filename);
+    const mockAdapter: SinonStubbedInstance<DataAdapterMock>  = createStubInstance(DataAdapterMock);
+    mockAdapter.exists.resolves(true);
+    const exists: boolean = await utils.fileExists(mockAdapter, filename);
 
-    // TODO: improve typing by avoiding typing
-    assert.equal(1, (<SinonStub>fakeApp.vault.adapter.exists).callCount);
+    assert.equal(1, mockAdapter.exists.callCount);
     assert.equal(true, exists);
   });
 
   it("successfully checks that a file doesn't exist", async () => {
-    const fakeApp: AppWrapper = new AppWrapper();
-    sinon.stub(fakeApp.vault.adapter, "exists").resolves(false);
-    const exists: boolean = await utils.fileExists(fakeApp, filename);
+    const mockAdapter: SinonStubbedInstance<DataAdapterMock> = createStubInstance(DataAdapterMock);
+    mockAdapter.exists.resolves(false);
+    const exists: boolean = await utils.fileExists(mockAdapter, filename);
 
-    // TODO: improve typing by avoiding typing
-    assert.equal(1, (<SinonStub>fakeApp.vault.adapter.exists).callCount);
+    assert.equal(1, mockAdapter.exists.callCount);
     assert.equal(false, exists);
   });
 });
@@ -250,25 +249,24 @@ describe("cleanFiles", () => {
   });
 
   it("successfully cleans file", async () => {
-    const fakeApp: AppWrapper = new AppWrapper();
-    sinon.stub(fakeApp.vault, "cachedRead").resolves("Read Content");
+    const mockVault: SinonStubbedInstance<VaultMock> = createStubInstance(VaultMock);
+    mockVault.cachedRead.resolves("No matching string");
 
-    const cleanedFiles: Array<TFile> = await utils.cleanFiles(fakeApp, testFiles);
+    const cleanedFiles: Array<TFile> = await utils.cleanFiles(mockVault, testFiles);
 
-    assert.equal(testFiles.length, (<SinonStub>fakeApp.vault.cachedRead).callCount);
-    assert.equal(testFiles.length, cleanedFiles.length);
+    assert.equal(testFiles.length, mockVault.cachedRead.callCount);
     for (let fileIdx = 0; fileIdx < testFiles.length; fileIdx++) {
       assert.equal(testFiles[fileIdx], cleanedFiles[fileIdx]);
     }
   });
 
   it("avoids cleaning obsidian glossary files", async () => {
-    const fakeApp: AppWrapper = new AppWrapper();
-    sinon.stub(fakeApp.vault, "cachedRead").resolves("---\ntags: obsidian-auto-glossary\n---\n");
+    const mockVault: SinonStubbedInstance<VaultMock> = createStubInstance(VaultMock);
+    mockVault.cachedRead.resolves("---\ntags: obsidian-auto-glossary\n---\n");
 
-    const cleanedFiles: Array<TFile> = await utils.cleanFiles(fakeApp, testFiles);
+    const cleanedFiles: Array<TFile> = await utils.cleanFiles(mockVault, testFiles);
 
-    assert.equal(testFiles.length, (<SinonStub>fakeApp.vault.cachedRead).callCount);
+    assert.equal(testFiles.length, mockVault.cachedRead.callCount);
     assert.equal(0, cleanedFiles.length);
   });
 });

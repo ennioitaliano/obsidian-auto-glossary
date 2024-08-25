@@ -1,6 +1,4 @@
 
-export class DataAdapterWrapper {
-    async exists(normalizedPath: string, sensitive?: boolean): Promise<boolean> {
-        return true;
-    }
+export interface DataAdapterWrapper {
+    exists(normalizedPath: string, sensitive?: boolean): Promise<boolean>;
 }
