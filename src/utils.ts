@@ -1,8 +1,7 @@
-/* c8 ignore next */
+
 import { DataAdapterWrapper } from "interfaces/DataAdapterWrapper";
 import { VaultWrapper } from "interfaces/VaultWrapper";
 import { TFile } from "obsidian";
-// TODO: Remove this after finding out how to remove imports from coverage
 
 // enum to handle different cases
 export enum fileType {
