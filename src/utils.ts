@@ -1,4 +1,7 @@
-import { App, DataAdapter, TFile } from "obsidian";
+
+import { DataAdapterWrapper } from "interfaces/DataAdapterWrapper";
+import { VaultWrapper } from "interfaces/VaultWrapper";
+import { TFile } from "obsidian";
 
 // enum to handle different cases
 export enum fileType {
@@ -77,8 +80,7 @@ export function getEnumFO(value: string): fileOrder {
 	return result;
 }
 
-export async function fileExists(app: App, fileName: string): Promise<boolean> {
-	const adapter: DataAdapter = app.vault.adapter;
+export async function fileExists(adapter: DataAdapterWrapper, fileName: string): Promise<boolean> {
 	const result = await adapter.exists(fileName + ".md");
 
 	if (result) {
@@ -89,15 +91,14 @@ export async function fileExists(app: App, fileName: string): Promise<boolean> {
 }
 
 export async function cleanFiles(
-	app: App,
+	vault: VaultWrapper,
 	notesTFiles: TFile[]
 ): Promise<TFile[]> {
-	const { vault } = app;
 	const cleanedNotes: TFile[] = [];
 
 	notesTFiles.forEach(async (file: TFile) => {
-		const fileContent = await vault.cachedRead(file);
-		if (!fileContent.contains("---\ntags: obsidian-auto-glossary\n---\n")) {
+		const fileContent: string = await vault.cachedRead(file);
+		if (!fileContent.includes("---\ntags: obsidian-auto-glossary\n---\n")) {
 			cleanedNotes.push(file);
 		}
 	});
@@ -105,6 +106,7 @@ export async function cleanFiles(
 	return cleanedNotes;
 }
 
+/* c8 ignore next */
 export function sortFiles(notesTFile: TFile[], fileOrder: fileOrder) {
 	switch (fileOrder) {
 		case "ctime_new":
