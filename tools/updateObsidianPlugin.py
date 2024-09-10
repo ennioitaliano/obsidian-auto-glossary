@@ -23,4 +23,7 @@ shutil.copy("../styles.css", buildDir)
 shutil.copy("../main.js", buildDir)
 shutil.copy("../manifest.json", buildDir)
 
+obsidianPluginExists = os.path.isdir(obsidianPath)
+if (obsidianPluginExists):
+    shutil.rmtree(obsidianPath)
 shutil.move(buildDir, obsidianPath)
