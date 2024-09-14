@@ -6,7 +6,7 @@ Auto Glossary is an Obsidian plugin to generate a [glossary](https://en.wikipedi
 ![](https://github.com/ennioitaliano/obsidian-glossy/assets/47503625/64f06472-88ba-4b09-828c-73fb1aa0cf5f)
 
 ## How to install
-You can install this plugin directly within Obsidian or you can copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/obsidian-auto-glossary/`.
+You can install this plugin directly within Obsidian or you can copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/auto-glossary/`.
 
 ## Usage
 You can create the file you want by right-clicking on a folder in Obsidian.
