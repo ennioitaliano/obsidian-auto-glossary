@@ -2,8 +2,11 @@ import { Plugin, TFolder } from "obsidian";
 
 import { CreateFileModal } from "./modal";
 import { createFile } from "./glossaryIndex";
-import { getEnumFT, getEnumFO, fileType } from "./utils";
+import { getEnumFT, getEnumFO, fileType, getIndexFiles } from "./utils";
 import { AutoGlossarySettings, DEFAULT_SETTINGS, SettingTab } from "settings";
+import { FileSystemAdapter } from "obsidian";
+import chokidar from "chokidar";
+import { EventName, EVENTS } from "chokidar/handler";
 
 export default class autoGlossary extends Plugin {
 	// SETTINGS
@@ -23,9 +26,40 @@ export default class autoGlossary extends Plugin {
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass("my-plugin-ribbon-class");*/
 
+
+		const adapter = this.app.vault.adapter as FileSystemAdapter;
+		const indexFiles = await getIndexFiles(adapter);
+		console.log("indexFiles: ", indexFiles);
+
+		console.log("index watch path: ", indexFiles[0]);
+		// TODO: this needs to work for any amount of index files (loop it)
+		// TODO: Need to not hardcode the filename
+		// TODO: Need to not hardcode the filepath
+		chokidar.watch(indexFiles[0]).on("all", async (event: EventName, path: string) => {
+			console.log(`%s: %s`, event, path);
+			// TODO: use enum
+			if (event == "add" || event == "unlink" || event == "change") {
+				console.log("Adding");
+				createFile(
+					this.app,
+					fileType.i,
+					this.settings.fileInclusion,
+					true,
+					"Folder2_Index",
+					"Folder1/Folder2",
+					getEnumFO(this.settings.fileOrder),
+					this.settings.sameDest ? "" : this.settings.fileDest
+				);
+			}
+		});
+
 		this.registerEvent(
 			this.app.workspace.on("file-menu", (menu, folder) => {
 				if (folder instanceof TFolder) {
+					const indexFilename: string = folder.name + "_Index";
+					const destFolder: string = this.settings.sameDest ? "" : this.settings.fileDest;
+					console.log("indexFilename: ", indexFilename);
+					console.log("folder.path: ", folder.path);
 					menu.addItem((item) => {
 						item.setTitle("New index")
 							.setIcon("list")
@@ -35,12 +69,10 @@ export default class autoGlossary extends Plugin {
 									fileType.i,
 									this.settings.fileInclusion,
 									this.settings.fileOverwrite,
-									folder.name + "_Index",
+									indexFilename,
 									folder.path,
 									getEnumFO(this.settings.fileOrder),
-									this.settings.sameDest
-										? ""
-										: this.settings.fileDest
+									destFolder
 								);
 							});
 					});

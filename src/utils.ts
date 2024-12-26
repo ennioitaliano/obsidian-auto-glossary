@@ -1,16 +1,21 @@
 
 import { DataAdapterWrapper } from "interfaces/DataAdapterWrapper";
 import { VaultWrapper } from "interfaces/VaultWrapper";
-import { TFile } from "obsidian";
+import { TFile, FileSystemAdapter } from "obsidian";
+import fs from "fs";
 
-// enum to handle different cases
+/**
+ * Enum to handle different cases
+ */
 export enum fileType {
 	i = "index",
 	g = "glossary",
 	gi = "glossaryIndex",
 }
 
-// enum to handle different orders
+/**
+ * Enum to handle different orders
+ */
 export enum fileOrder {
 	default = "default",
 	mtime_new = "mtime_new",
@@ -21,6 +26,79 @@ export enum fileOrder {
 	alphabetical_rev = "alphabetical_rev",
 }
 
+/**
+ * TODO: docs
+ * Should return a list of all paths to match indexes (using the filename, would it be better to use tags? Not sure.)
+ */
+export async function getIndexFiles(adapter: FileSystemAdapter, path: string = "/"): Promise<Array<string>> {
+	const foundIndexPaths = [];
+	// TODO: This should find a base index file or glossary
+	const directoryList = await adapter.list(path);	
+	console.log("obsidian directoryList: ", directoryList);
+
+	// Look for indexes in all user created folders, recursively
+	const userFolderNames = getUserCreatedFolders(directoryList.folders);
+	if (userFolderNames.length > 0) {
+		for (let i = 0; i < userFolderNames.length; i++) {
+			// console.log("Folder name: ", userFolderNames[i]);
+			// const newPath = path + userFolderNames[i];
+			// console.log("newPath: ", newPath);
+			foundIndexPaths.push(...await getIndexFiles(adapter, userFolderNames[i]));
+		}
+	}
+
+	const userFilenames = getUserCreatedFiles(directoryList.files);
+
+	for (const filename of userFilenames) {
+		// TODO: this doesn't really need the path (since filename includes), this should be improved
+		if (isIndexFile(filename, path)) {
+			foundIndexPaths.push(adapter.getBasePath() + "/" + path);
+		}
+	}
+
+	return foundIndexPaths;	
+}
+
+/** TODO: docs */
+function extractFolderName(path: string): string {
+	const pathSegments: Array<string> = path.split("/");
+	if (pathSegments.length === 0) {
+		throw Error("Expected path length of at least one, but got: " + path);
+	}
+	return pathSegments[pathSegments.length - 1];
+}
+
+/**
+ * TODO: docs
+ * This pattern has to exist somewhere else, since this file gets created, we should investigate that and see if the coupling is worth it
+ */
+function isIndexFile(filepath: string, folderPath: string): boolean {
+	const expectedIndexName = extractFolderName(folderPath) + "_Index";
+	return filepath.contains(expectedIndexName);
+}
+
+/**
+ * TODO: docs here
+ * Also, all of this logic for finding the index files should probably be extracted out to it's own file and class
+ * @param fileList 
+ * @returns 
+ */
+function getUserCreatedFiles(fileList: Array<string>): Array<string> {
+	// TODO: Remove hardcoded value to constant
+	return fileList.filter((filename: string) => { return filename !== ".DS_Store"; })	;
+}
+
+/** TODO: docs
+ * Also, all of this logic for finding the index files should probably be extracted out to it's own file and class
+ */
+function getUserCreatedFolders(folderList: Array<string>): Array<string> {
+	// TODO: Remove hardcoded value to constant
+	return folderList.filter((folderName: string) => { return folderName !== ".obsidian"; });
+}
+
+/**
+ * TODO: comments here
+ */
 // function to get the file type enum key from the string
 export function getEnumFT(value: string): fileType {
 	let result: fileType;
@@ -43,6 +121,9 @@ export function getEnumFT(value: string): fileType {
 	return result;
 }
 
+/**
+ * TODO: comments here
+ */
 // function to get the file order enum key from the string
 export function getEnumFO(value: string): fileOrder {
 	let result: fileOrder;
@@ -80,6 +161,9 @@ export function getEnumFO(value: string): fileOrder {
 	return result;
 }
 
+/**
+ * TODO: comments here
+ */
 export async function fileExists(adapter: DataAdapterWrapper, fileName: string): Promise<boolean> {
 	const result = await adapter.exists(fileName + ".md");
 
@@ -90,6 +174,9 @@ export async function fileExists(adapter: DataAdapterWrapper, fileName: string):
 	return result;
 }
 
+/**
+ * TODO: comments here
+ */
 export async function cleanFiles(
 	vault: VaultWrapper,
 	notesTFiles: TFile[]
@@ -106,6 +193,9 @@ export async function cleanFiles(
 	return cleanedNotes;
 }
 
+/**
+ * TODO: comments here
+ */
 /* c8 ignore next */
 export function sortFiles(notesTFile: TFile[], fileOrder: fileOrder) {
 	switch (fileOrder) {
