@@ -37,7 +37,8 @@ export default class autoGlossary extends Plugin {
 		// TODO: Need to not hardcode the filepath
 		chokidar.watch(indexFiles[0]).on("all", async (event: EventName, path: string) => {
 			console.log(`%s: %s`, event, path);
-			// TODO: use enum
+			// TODO: use event enum
+			// TODO: this doesn't account for directory additions and deletions, does it need to?
 			if (event == "add" || event == "unlink" || event == "change") {
 				console.log("Adding");
 				createFile(
