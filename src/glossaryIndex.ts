@@ -65,45 +65,49 @@ export async function createArrays(
 	return [indexText, glossaryText];
 }
 
+export function createFilename(filename: string, requestedFile: string, destFolder?: string, chosenFolder?: string): string {
+	let completeFilename: string  = ""
+	if (destFolder) {
+		if (filename) {
+			completeFilename = normalizePath(destFolder + "/" + filename);
+		} else {
+			completeFilename = normalizePath(destFolder + "/" + requestedFile);
+		}
+	} else if (chosenFolder) {
+		if (filename) {
+			completeFilename = normalizePath(chosenFolder + "/" + filename);
+		} else {
+			completeFilename = normalizePath(
+				chosenFolder + "/" + requestedFile
+			);
+		}
+	} else {
+		completeFilename = normalizePath(requestedFile);
+	}
+	return completeFilename;
+}
+
 // This takes in which type of file we want to create and an optional fileName
 export async function createFile(
 	app: App,
 	requestedFile: fileType,
 	fileInclusion: boolean,
 	fileOverwrite: boolean,
-	fileName: string,
+	filename: string,
 	chosenFolder?: string,
 	fileOrder?: fileOrder,
 	destFolder?: string
 ) {
-	let completeFileName = "";
-
-	if (destFolder) {
-		if (fileName) {
-			completeFileName = normalizePath(destFolder + "/" + fileName);
-		} else {
-			completeFileName = normalizePath(destFolder + "/" + requestedFile);
-		}
-	} else if (chosenFolder) {
-		if (fileName) {
-			completeFileName = normalizePath(chosenFolder + "/" + fileName);
-		} else {
-			completeFileName = normalizePath(
-				chosenFolder + "/" + requestedFile
-			);
-		}
-	} else {
-		completeFileName = normalizePath(requestedFile);
-	}
+	let completeFileName = createFilename(filename, requestedFile, destFolder, chosenFolder);
 
 	const fileExistsBool = await fileExists(app.vault.adapter, completeFileName);
 	const adapter: DataAdapter = app.vault.adapter;
 
-	console.log("destFolder: " + destFolder);
-	console.log("fileName: " + fileName);
-	console.log("requestedFile: " + requestedFile);
-	console.log("chosenFolder: " + chosenFolder);
-	console.log("completeFileName: " + completeFileName);
+	// console.log("destFolder: " + destFolder);
+	// console.log("fileName: " + filename);
+	// console.log("requestedFile: " + requestedFile);
+	// console.log("chosenFolder: " + chosenFolder);
+	// console.log("completeFileName: " + completeFileName);
 
 	if (fileExistsBool && !fileOverwrite) {
 		new Notice(`${completeFileName} file already exists. Try again with overwrite enabled or a different file name.`);
@@ -114,11 +118,12 @@ export async function createFile(
 				app,
 				requestedFile,
 				fileInclusion,
-				fileName,
+				filename,
 				chosenFolder,
 				fileOrder
 			)
 		);
+		console.log("completeFileName: ", completeFileName);
 		new Notice(`${completeFileName} file updated`);
 	}
 }
