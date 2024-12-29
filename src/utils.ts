@@ -2,7 +2,6 @@
 import { DataAdapterWrapper } from "interfaces/DataAdapterWrapper";
 import { VaultWrapper } from "interfaces/VaultWrapper";
 import { TFile, FileSystemAdapter } from "obsidian";
-import fs from "fs";
 
 /**
  * Enum to handle different cases
@@ -34,15 +33,11 @@ export async function getIndexFiles(adapter: FileSystemAdapter, path: string = "
 	const foundIndexPaths = [];
 	// TODO: This should find a base index file or glossary
 	const directoryList = await adapter.list(path);	
-	console.log("obsidian directoryList: ", directoryList);
 
 	// Look for indexes in all user created folders, recursively
 	const userFolderNames = getUserCreatedFolders(directoryList.folders);
 	if (userFolderNames.length > 0) {
 		for (let i = 0; i < userFolderNames.length; i++) {
-			// console.log("Folder name: ", userFolderNames[i]);
-			// const newPath = path + userFolderNames[i];
-			// console.log("newPath: ", newPath);
 			foundIndexPaths.push(...await getIndexFiles(adapter, userFolderNames[i]));
 		}
 	}
@@ -52,7 +47,7 @@ export async function getIndexFiles(adapter: FileSystemAdapter, path: string = "
 	for (const filename of userFilenames) {
 		// TODO: this doesn't really need the path (since filename includes), this should be improved
 		if (isIndexFile(filename, path)) {
-			foundIndexPaths.push(adapter.getBasePath() + "/" + path);
+			foundIndexPaths.push(filename);
 		}
 	}
 
