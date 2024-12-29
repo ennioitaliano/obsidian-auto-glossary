@@ -91,7 +91,10 @@ export function createFilename(filename: string, requestedFile: string, destFold
 	return completeFilename;
 }
 
-// This takes in which type of file we want to create and an optional fileName
+/**
+ * This takes in which type of file we want to create and an optional fileName
+ * TODO: add docs here
+ */ 
 export async function createFile(
 	app: App,
 	requestedFile: fileType,
@@ -100,7 +103,8 @@ export async function createFile(
 	filename: string,
 	chosenFolder?: string,
 	fileOrder?: fileOrder,
-	destFolder?: string
+	destFolder?: string,
+	triggerNotice: boolean = true,
 ) {
 	let completeFileName = createFilename(filename, requestedFile, destFolder, chosenFolder);
 
@@ -121,7 +125,9 @@ export async function createFile(
 				fileOrder
 			)
 		);
-		new Notice(`${completeFileName} file updated`);
+		if (triggerNotice) {
+			new Notice(`${completeFileName} file updated`);
+		}
 	}
 }
 
@@ -187,7 +193,8 @@ export function setupDirectoryWatcher(changedPath: string, watchPath: string, in
 				indexFilename,
 				watchPath,
 				getEnumFO(settings.fileOrder),
-				settings.sameDest ? "" : settings.fileDest
+				settings.sameDest ? "" : settings.fileDest,
+				false
 			);
 		}
 	});
