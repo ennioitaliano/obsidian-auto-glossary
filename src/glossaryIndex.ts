@@ -5,7 +5,11 @@ import {
 	fileExists,
 	sortFiles,
 	fileOrder,
+	getEnumFO,
 } from "./utils";
+import chokidar from "chokidar";
+import { EventName } from "chokidar/handler";
+import { AutoGlossarySettings } from "settings";
 
 export async function createArrays(
 	app: App,
@@ -103,12 +107,6 @@ export async function createFile(
 	const fileExistsBool = await fileExists(app.vault.adapter, completeFileName);
 	const adapter: DataAdapter = app.vault.adapter;
 
-	// console.log("destFolder: " + destFolder);
-	// console.log("fileName: " + filename);
-	// console.log("requestedFile: " + requestedFile);
-	// console.log("chosenFolder: " + chosenFolder);
-	// console.log("completeFileName: " + completeFileName);
-
 	if (fileExistsBool && !fileOverwrite) {
 		new Notice(`${completeFileName} file already exists. Try again with overwrite enabled or a different file name.`);
 	} else {
@@ -123,7 +121,6 @@ export async function createFile(
 				fileOrder
 			)
 		);
-		console.log("completeFileName: ", completeFileName);
 		new Notice(`${completeFileName} file updated`);
 	}
 }
@@ -161,4 +158,37 @@ async function createText(
 	}
 
 	return text;
+}
+
+/**
+ * TODO: Docs
+ * @param changedPath 
+ * @param watchPath 
+ * @param indexFilename 
+ */
+export function setupDirectoryWatcher(changedPath: string, watchPath: string, indexFilename: string, settings: AutoGlossarySettings) {
+	const directoryWatcher = chokidar.watch(changedPath).on("all", async (event: EventName, path: string) => {
+		// TODO: use event enum
+		if (event == "add" || event == "unlink" || event == "change") {
+			// Indicates that the index file has been deleted
+			if (path.contains(indexFilename) && event == "unlink") {
+				// Unwatch the directory path
+				directoryWatcher.unwatch(changedPath);
+
+				// Index is being removed, so do not re-create it by updating it
+				return;
+			}
+
+			createFile(
+				this.app,
+				fileType.i,
+				settings.fileInclusion,
+				true,
+				indexFilename,
+				watchPath,
+				getEnumFO(settings.fileOrder),
+				settings.sameDest ? "" : settings.fileDest
+			);
+		}
+	});
 }
