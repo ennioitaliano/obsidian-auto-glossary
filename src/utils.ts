@@ -170,7 +170,10 @@ export async function fileExists(adapter: DataAdapterWrapper, fileName: string):
 }
 
 /**
- * TODO: comments here
+ * Removes auto glossary tagged files
+ * @param vault - The obsidian vault
+ * @param notesTFiles - The notes to filter through
+ * @returns an array of all notes that do not contain the plugin tag
  */
 export async function cleanFiles(
 	vault: VaultWrapper,
@@ -178,8 +181,10 @@ export async function cleanFiles(
 ): Promise<TFile[]> {
 	const cleanedNotes: TFile[] = [];
 
+	// TODO: Pretty sure this can just be done with a JS filter
 	notesTFiles.forEach(async (file: TFile) => {
 		const fileContent: string = await vault.cachedRead(file);
+		// TODO: This tag should be a constant somewhere
 		if (!fileContent.includes("---\ntags: obsidian-auto-glossary\n---\n")) {
 			cleanedNotes.push(file);
 		}
@@ -189,7 +194,9 @@ export async function cleanFiles(
 }
 
 /**
- * TODO: comments here
+ * Sorts a list of files
+ * @param notesTFile - The list of files to sort
+ * @param fileOrder - The order criteria
  */
 /* c8 ignore next */
 export function sortFiles(notesTFile: TFile[], fileOrder: fileOrder) {

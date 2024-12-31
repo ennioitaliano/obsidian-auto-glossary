@@ -11,6 +11,26 @@ import chokidar from "chokidar";
 import { EventName } from "chokidar/handler";
 import { AutoGlossarySettings } from "settings";
 
+/**
+ * TODO: This whole function needs to be refactored, it does far too many things
+ * 
+ * This function:
+ * 1) Searches for all notes
+ * 2) Filters out plugin created notes based on fileInclusion param
+ * 3) Sorts notes based on the fileOrder parameter
+ * 4) Filters out all notes not in the chosen directory (skips this step if no directory is chosen)
+ * 5) Loops through all remaining notes and creates all index and glossary strings for each note, appending them to their respected arrays
+ * 6) Joins all index and glossary array strings into an index string and glossary string respectively (removing commas between them)
+ * 7) Returns an array of strings where the first index is index string and the second index is the glossary string
+ * 
+ * @param app - The obsidian app object
+ * @param requestedFile - 
+ * @param fileInclusion - If true, plugin files will be included
+ * @param fileName - The index/glossary filename
+ * @param chosenFolder - The directory get the obsidian notes from
+ * @param fileOrder - The ordering of the files in the index
+ * @returns A list of strings filled with 
+ */
 export async function createArrays(
 	app: App,
 	requestedFile: fileType,
@@ -18,7 +38,7 @@ export async function createArrays(
 	fileName?: string,
 	chosenFolder?: string,
 	fileOrder?: fileOrder
-): Promise<string[]> {
+): Promise<Array<string>> {
 	let notesTFile = app.vault.getMarkdownFiles();
 	const notes: string[] = [];
 
@@ -69,6 +89,14 @@ export async function createArrays(
 	return [indexText, glossaryText];
 }
 
+/**
+ * TODO: docs
+ * @param filename 
+ * @param requestedFile 
+ * @param destFolder 
+ * @param chosenFolder 
+ * @returns 
+ */
 export function createFilename(filename: string, requestedFile: string, destFolder?: string, chosenFolder?: string): string {
 	let completeFilename: string  = ""
 	if (destFolder) {
@@ -92,8 +120,16 @@ export function createFilename(filename: string, requestedFile: string, destFold
 }
 
 /**
- * This takes in which type of file we want to create and an optional fileName
- * TODO: add docs here
+ * Creates a file based on passed in options
+ * @param app - The obsidian app
+ * @param requestedFile - The type of file to create
+ * @param fileInclusion - If true, it will include files created by the plugin (has plugin tag)
+ * @param fileOverwrite - If true, will overwrite an existing file in a the specified directory
+ * @param filename - The name of the file to create
+ * @param chosenFolder - TODO
+ * @param fileOrder - If present, determines how to sort
+ * @param destFolder - TODO
+ * @param triggerNotice - If true, will trigger an obsidian notice indicating the file has been updated
  */ 
 export async function createFile(
 	app: App,
@@ -131,6 +167,16 @@ export async function createFile(
 	}
 }
 
+/**
+ * TODO: docs
+ * @param app 
+ * @param requestedFile 
+ * @param fileInclusion 
+ * @param fileName 
+ * @param chosenFolder 
+ * @param fileOrder 
+ * @returns 
+ */
 async function createText(
 	app: App,
 	requestedFile: fileType,
