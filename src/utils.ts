@@ -26,8 +26,11 @@ export enum fileOrder {
 }
 
 /**
- * TODO: docs
- * Should return a list of all paths to match indexes (using the filename, would it be better to use tags? Not sure.)
+ * Gets index files (based on default names)
+ * @param adapter - The obsidian adapter
+ * @param path - The path to get files from (defaults to '/')
+ * @returns A list of detected index file paths
+ * TODO: this should use plugin tags instead, there should be an example where this is done in the codebase
  */
 export async function getIndexFiles(adapter: FileSystemAdapter, path: string = "/"): Promise<Array<string>> {
 	const foundIndexPaths = [];
@@ -54,7 +57,11 @@ export async function getIndexFiles(adapter: FileSystemAdapter, path: string = "
 	return foundIndexPaths;	
 }
 
-/** TODO: docs */
+/**
+ * Extracts the deepest folder name in a path
+ * @param path - The path to extract the name from
+ * @returns The folder name
+ */
 function extractFolderName(path: string): string {
 	const pathSegments: Array<string> = path.split("/");
 	if (pathSegments.length === 0) {
@@ -64,7 +71,10 @@ function extractFolderName(path: string): string {
 }
 
 /**
- * TODO: docs
+ * Determines if the file is an created index file (based on the default index name {FolderName}_Index)
+ * @param filepath - The filepath to check
+ * @param folderPath - The full path to the folder 
+ * @returns True if the filepath passes, 
  * This pattern has to exist somewhere else, since this file gets created, we should investigate that and see if the coupling is worth it
  */
 function isIndexFile(filepath: string, folderPath: string): boolean {
@@ -73,18 +83,21 @@ function isIndexFile(filepath: string, folderPath: string): boolean {
 }
 
 /**
- * TODO: docs here
- * Also, all of this logic for finding the index files should probably be extracted out to it's own file and class
- * @param fileList 
- * @returns 
+ * Gets all user created files (non-obsidian created files)
+ * @param fileList - A list of file paths to filter through
+ * @returns A list of files that were not created by obsidian
+ * TODO: Also, all of this logic for finding the index files should probably be extracted out to it's own file and class
  */
 function getUserCreatedFiles(fileList: Array<string>): Array<string> {
 	// TODO: Remove hardcoded value to constant
 	return fileList.filter((filename: string) => { return filename !== ".DS_Store"; })	;
 }
 
-/** TODO: docs
- * Also, all of this logic for finding the index files should probably be extracted out to it's own file and class
+/**
+ * Gets all user created folders (non-obsidian created folders)
+ * @param folderList - A list of folder paths to filter through
+ * @returns A list of directories with obsidian created folders removed
+ * TODO: All of this logic for finding the index files should probably be extracted out to it's own file and class
  */
 function getUserCreatedFolders(folderList: Array<string>): Array<string> {
 	// TODO: Remove hardcoded value to constant
@@ -92,9 +105,10 @@ function getUserCreatedFolders(folderList: Array<string>): Array<string> {
 }
 
 /**
- * TODO: comments here
+ * Function to get the file type enum key from the string
+ * @param value - The value to get
+ * @return an enum that corresponds to that value
  */
-// function to get the file type enum key from the string
 export function getEnumFT(value: string): fileType {
 	let result: fileType;
 
@@ -117,9 +131,11 @@ export function getEnumFT(value: string): fileType {
 }
 
 /**
- * TODO: comments here
+ * Function to get the file order enum key from a string
+ * @param value - The raw string value
+ * TODO: This function should throw if no value is found rather than returning an undefined value
+ * @returns If the string matches, the corresponding fileOrder enum is returned, otherwise an empty value is returned
  */
-// function to get the file order enum key from the string
 export function getEnumFO(value: string): fileOrder {
 	let result: fileOrder;
 	if (!value) {
@@ -157,13 +173,16 @@ export function getEnumFO(value: string): fileOrder {
 }
 
 /**
- * TODO: comments here
+ * Checks to see if a file exists
+ * @param adapter - The obsidian data adapter object
+ * @param filename - The filename to check
+ * @returns true if the file exists, false otherwise
  */
-export async function fileExists(adapter: DataAdapterWrapper, fileName: string): Promise<boolean> {
-	const result = await adapter.exists(fileName + ".md");
+export async function fileExists(adapter: DataAdapterWrapper, filename: string): Promise<boolean> {
+	const result = await adapter.exists(filename + ".md");
 
 	if (result) {
-		console.log("Already existing file " + fileName + ".md");
+		console.log("Already existing file " + filename + ".md");
 	}
 
 	return result;
@@ -197,6 +216,7 @@ export async function cleanFiles(
  * Sorts a list of files
  * @param notesTFile - The list of files to sort
  * @param fileOrder - The order criteria
+ * TODO: get this function covered at some point
  */
 /* c8 ignore next */
 export function sortFiles(notesTFile: TFile[], fileOrder: fileOrder) {
