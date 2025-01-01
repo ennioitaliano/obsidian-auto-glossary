@@ -90,12 +90,12 @@ export async function createArrays(
 }
 
 /**
- * TODO: docs
- * @param filename 
- * @param requestedFile 
- * @param destFolder 
- * @param chosenFolder 
- * @returns 
+ * Creates the filename
+ * @param filename - the filename to create
+ * @param requestedFile - the type of file to create
+ * @param destFolder - TODO
+ * @param chosenFolder - TODO
+ * @returns A string representing the filename
  */
 export function createFilename(filename: string, requestedFile: string, destFolder?: string, chosenFolder?: string): string {
 	let completeFilename: string  = ""
@@ -213,19 +213,20 @@ async function createText(
 }
 
 /**
- * TODO: Docs
- * @param changedPath 
- * @param watchPath 
- * @param indexFilename 
+ * Sets up a directory watcher
+ * @param fullPath - The full watch path
+ * @param relativeObsidianPath - The relative obsidian path 
+ * @param indexFilename - The name of the index file to watch
+ * @param settings - The auto glossary settings
  */
-export function setupDirectoryWatcher(changedPath: string, watchPath: string, indexFilename: string, settings: AutoGlossarySettings) {
-	const directoryWatcher = chokidar.watch(changedPath).on("all", async (event: EventName, path: string) => {
+export function setupDirectoryWatcher(fullPath: string, relativeObsidianPath: string, indexFilename: string, settings: AutoGlossarySettings) {
+	const directoryWatcher = chokidar.watch(fullPath).on("all", async (event: EventName, path: string) => {
 		// TODO: use event enum
 		if (event == "add" || event == "unlink" || event == "change") {
 			// Indicates that the index file has been deleted
 			if (path.contains(indexFilename) && event == "unlink") {
 				// Unwatch the directory path
-				directoryWatcher.unwatch(changedPath);
+				directoryWatcher.unwatch(fullPath);
 
 				// Index is being removed, so do not re-create it by updating it
 				return;
@@ -237,7 +238,7 @@ export function setupDirectoryWatcher(changedPath: string, watchPath: string, in
 				settings.fileInclusion,
 				true,
 				indexFilename,
-				watchPath,
+				relativeObsidianPath,
 				getEnumFO(settings.fileOrder),
 				settings.sameDest ? "" : settings.fileDest,
 				false
