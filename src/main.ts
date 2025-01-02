@@ -1,9 +1,10 @@
 import { Plugin, TFolder } from "obsidian";
 
 import { CreateFileModal } from "./modal";
-import { createFile } from "./glossaryIndex";
-import { getEnumFT, getEnumFO, fileType } from "./utils";
+import { createFile, setupDirectoryWatcher } from "./glossaryIndex";
+import { getEnumFT, getEnumFO, fileType, getIndexFiles } from "./utils";
 import { AutoGlossarySettings, DEFAULT_SETTINGS, SettingTab } from "settings";
+import { FileSystemAdapter } from "obsidian";
 
 export default class autoGlossary extends Plugin {
 	// SETTINGS
@@ -23,9 +24,32 @@ export default class autoGlossary extends Plugin {
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass("my-plugin-ribbon-class");*/
 
+		const adapter = this.app.vault.adapter as FileSystemAdapter;
+		const indexFilePaths = await getIndexFiles(adapter);
+
+		for (let path of indexFilePaths) {
+			const pathTokens = path.split("/");
+			// TODO: This is sooo ugly, needs to be fixed up
+			const filename: string | undefined = pathTokens.pop()?.split(".").shift();
+			if (filename === undefined) {
+				// Invalid filename
+				return;
+			}
+
+			// Remove the filename so just the directory exists
+			const obsidianRelativePath = pathTokens.join("/");
+
+			const fullPath = adapter.getBasePath() + "/" + obsidianRelativePath;
+
+			// TODO: investigate the settings property
+			setupDirectoryWatcher(fullPath, obsidianRelativePath, filename, this.settings);
+		}
+
 		this.registerEvent(
 			this.app.workspace.on("file-menu", (menu, folder) => {
 				if (folder instanceof TFolder) {
+					const indexFilename: string = folder.name + "_Index";
+					const destFolder: string = this.settings.sameDest ? "" : this.settings.fileDest;
 					menu.addItem((item) => {
 						item.setTitle("New index")
 							.setIcon("list")
@@ -35,13 +59,14 @@ export default class autoGlossary extends Plugin {
 									fileType.i,
 									this.settings.fileInclusion,
 									this.settings.fileOverwrite,
-									folder.name + "_Index",
+									indexFilename,
 									folder.path,
 									getEnumFO(this.settings.fileOrder),
-									this.settings.sameDest
-										? ""
-										: this.settings.fileDest
+									destFolder
 								);
+
+								// TODO: investigate settings properties
+								setupDirectoryWatcher(adapter.getBasePath() + "/" + folder.path, folder.path, indexFilename, this.settings);
 							});
 					});
 				}

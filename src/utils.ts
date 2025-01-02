@@ -1,16 +1,20 @@
 
 import { DataAdapterWrapper } from "interfaces/DataAdapterWrapper";
 import { VaultWrapper } from "interfaces/VaultWrapper";
-import { TFile } from "obsidian";
+import { TFile, FileSystemAdapter } from "obsidian";
 
-// enum to handle different cases
+/**
+ * Enum to handle different cases
+ */
 export enum fileType {
 	i = "index",
 	g = "glossary",
 	gi = "glossaryIndex",
 }
 
-// enum to handle different orders
+/**
+ * Enum to handle different orders
+ */
 export enum fileOrder {
 	default = "default",
 	mtime_new = "mtime_new",
@@ -21,7 +25,90 @@ export enum fileOrder {
 	alphabetical_rev = "alphabetical_rev",
 }
 
-// function to get the file type enum key from the string
+/**
+ * Gets index files (based on default names)
+ * @param adapter - The obsidian adapter
+ * @param path - The path to get files from (defaults to '/')
+ * @returns A list of detected index file paths
+ * TODO: this should use plugin tags instead, there should be an example where this is done in the codebase
+ */
+export async function getIndexFiles(adapter: FileSystemAdapter, path: string = "/"): Promise<Array<string>> {
+	const foundIndexPaths = [];
+	// TODO: This should find a base index file or glossary
+	const directoryList = await adapter.list(path);	
+
+	// Look for indexes in all user created folders, recursively
+	const userFolderNames = getUserCreatedFolders(directoryList.folders);
+	if (userFolderNames.length > 0) {
+		for (let i = 0; i < userFolderNames.length; i++) {
+			foundIndexPaths.push(...await getIndexFiles(adapter, userFolderNames[i]));
+		}
+	}
+
+	const userFilenames = getUserCreatedFiles(directoryList.files);
+
+	for (const filename of userFilenames) {
+		// TODO: this doesn't really need the path (since filename includes), this should be improved
+		if (isIndexFile(filename, path)) {
+			foundIndexPaths.push(filename);
+		}
+	}
+
+	return foundIndexPaths;	
+}
+
+/**
+ * Extracts the deepest folder name in a path
+ * @param path - The path to extract the name from
+ * @returns The folder name
+ */
+function extractFolderName(path: string): string {
+	const pathSegments: Array<string> = path.split("/");
+	if (pathSegments.length === 0) {
+		throw Error("Expected path length of at least one, but got: " + path);
+	}
+	return pathSegments[pathSegments.length - 1];
+}
+
+/**
+ * Determines if the file is an created index file (based on the default index name {FolderName}_Index)
+ * @param filepath - The filepath to check
+ * @param folderPath - The full path to the folder 
+ * @returns True if the filepath passes, 
+ * This pattern has to exist somewhere else, since this file gets created, we should investigate that and see if the coupling is worth it
+ */
+function isIndexFile(filepath: string, folderPath: string): boolean {
+	const expectedIndexName = extractFolderName(folderPath) + "_Index";
+	return filepath.contains(expectedIndexName);
+}
+
+/**
+ * Gets all user created files (non-obsidian created files)
+ * @param fileList - A list of file paths to filter through
+ * @returns A list of files that were not created by obsidian
+ * TODO: Also, all of this logic for finding the index files should probably be extracted out to it's own file and class
+ */
+function getUserCreatedFiles(fileList: Array<string>): Array<string> {
+	// TODO: Remove hardcoded value to constant
+	return fileList.filter((filename: string) => { return filename !== ".DS_Store"; })	;
+}
+
+/**
+ * Gets all user created folders (non-obsidian created folders)
+ * @param folderList - A list of folder paths to filter through
+ * @returns A list of directories with obsidian created folders removed
+ * TODO: All of this logic for finding the index files should probably be extracted out to it's own file and class
+ */
+function getUserCreatedFolders(folderList: Array<string>): Array<string> {
+	// TODO: Remove hardcoded value to constant
+	return folderList.filter((folderName: string) => { return folderName !== ".obsidian"; });
+}
+
+/**
+ * Function to get the file type enum key from the string
+ * @param value - The value to get
+ * @return an enum that corresponds to that value
+ */
 export function getEnumFT(value: string): fileType {
 	let result: fileType;
 
@@ -43,7 +130,12 @@ export function getEnumFT(value: string): fileType {
 	return result;
 }
 
-// function to get the file order enum key from the string
+/**
+ * Function to get the file order enum key from a string
+ * @param value - The raw string value
+ * TODO: This function should throw if no value is found rather than returning an undefined value
+ * @returns If the string matches, the corresponding fileOrder enum is returned, otherwise an empty value is returned
+ */
 export function getEnumFO(value: string): fileOrder {
 	let result: fileOrder;
 	if (!value) {
@@ -80,24 +172,38 @@ export function getEnumFO(value: string): fileOrder {
 	return result;
 }
 
-export async function fileExists(adapter: DataAdapterWrapper, fileName: string): Promise<boolean> {
-	const result = await adapter.exists(fileName + ".md");
+/**
+ * Checks to see if a file exists
+ * @param adapter - The obsidian data adapter object
+ * @param filename - The filename to check
+ * @returns true if the file exists, false otherwise
+ */
+export async function fileExists(adapter: DataAdapterWrapper, filename: string): Promise<boolean> {
+	const result = await adapter.exists(filename + ".md");
 
 	if (result) {
-		console.log("Already existing file " + fileName + ".md");
+		console.log("Already existing file " + filename + ".md");
 	}
 
 	return result;
 }
 
+/**
+ * Removes auto glossary tagged files
+ * @param vault - The obsidian vault
+ * @param notesTFiles - The notes to filter through
+ * @returns an array of all notes that do not contain the plugin tag
+ */
 export async function cleanFiles(
 	vault: VaultWrapper,
 	notesTFiles: TFile[]
 ): Promise<TFile[]> {
 	const cleanedNotes: TFile[] = [];
 
+	// TODO: Pretty sure this can just be done with a JS filter
 	notesTFiles.forEach(async (file: TFile) => {
 		const fileContent: string = await vault.cachedRead(file);
+		// TODO: This tag should be a constant somewhere
 		if (!fileContent.includes("---\ntags: obsidian-auto-glossary\n---\n")) {
 			cleanedNotes.push(file);
 		}
@@ -106,6 +212,12 @@ export async function cleanFiles(
 	return cleanedNotes;
 }
 
+/**
+ * Sorts a list of files
+ * @param notesTFile - The list of files to sort
+ * @param fileOrder - The order criteria
+ * TODO: get this function covered at some point
+ */
 /* c8 ignore next */
 export function sortFiles(notesTFile: TFile[], fileOrder: fileOrder) {
 	switch (fileOrder) {
