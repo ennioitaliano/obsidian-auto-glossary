@@ -93,8 +93,8 @@ export async function createArrays(
  * Creates the filename
  * @param filename - the filename to create
  * @param requestedFile - the type of file to create
- * @param destFolder - TODO
- * @param chosenFolder - TODO
+ * @param destFolder - Destination folder of the index/glossary
+ * @param chosenFolder - Folder to create an index/glossary of
  * @returns A string representing the filename
  */
 export function createFilename(filename: string, requestedFile: string, destFolder?: string, chosenFolder?: string): string {
@@ -126,9 +126,9 @@ export function createFilename(filename: string, requestedFile: string, destFold
  * @param fileInclusion - If true, it will include files created by the plugin (has plugin tag)
  * @param fileOverwrite - If true, will overwrite an existing file in a the specified directory
  * @param filename - The name of the file to create
- * @param chosenFolder - TODO
+ * @param chosenFolder - The folder chosen to get index/glossary contents from
  * @param fileOrder - If present, determines how to sort
- * @param destFolder - TODO
+ * @param destFolder - The destination folder for the index/glossary to live
  * @param triggerNotice - If true, will trigger an obsidian notice indicating the file has been updated
  */ 
 export async function createFile(
@@ -168,20 +168,20 @@ export async function createFile(
 }
 
 /**
- * TODO: docs
- * @param app 
- * @param requestedFile 
- * @param fileInclusion 
- * @param fileName 
- * @param chosenFolder 
- * @param fileOrder 
- * @returns 
+ * Creates text that will be used to write to the index/glossary files
+ * @param app - The obsidian app object
+ * @param requestedFile - The type of file to create
+ * @param fileInclusion - If true, it will include files created by the plugin (has plugin tag)
+ * @param filename - The name of the file to create
+ * @param chosenFolder - The chosen folder to get the index/glossary contents from
+ * @param fileOrder - If present, determines how to sort file entries in the index/glossary
+ * @returns a string to write to the index/glossary file
  */
 async function createText(
 	app: App,
 	requestedFile: fileType,
 	fileInclusion: boolean,
-	fileName?: string,
+	filename?: string,
 	chosenFolder?: string,
 	fileOrder?: fileOrder
 ): Promise<string> {
@@ -189,7 +189,7 @@ async function createText(
 		app,
 		requestedFile,
 		fileInclusion,
-		fileName,
+		filename,
 		chosenFolder,
 		fileOrder
 	);
