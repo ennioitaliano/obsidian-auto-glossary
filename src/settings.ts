@@ -1,14 +1,21 @@
 import autoGlossary from "main";
 import { App, PluginSettingTab, Setting } from "obsidian";
 
+/** Settings used for the creation of the index/glossary file */
 export interface AutoGlossarySettings {
+	/** If true, includes files created by the plugin */
 	fileInclusion: boolean;
+	/** If true, indicates the same directory that was chosen to get contents for index/glossary will also be used as the destination of the newly created index/glossary file */
 	sameDest: boolean;
+	/** The path destination that the index/glossary will be created in (sameDest must be false) */
 	fileDest: string;
+	/** If true, the newly created index/glossary file will overwrite a file if it already exists */
 	fileOverwrite: boolean;
+	/** A string representing the fileOrder enum type, indicates what type file ordering should be use in the creation of the index/glossary */
 	fileOrder: string;
 }
 
+/** Default settings for index and glossary file creation */
 export const DEFAULT_SETTINGS: AutoGlossarySettings = {
 	fileInclusion: false,
 	sameDest: true,
