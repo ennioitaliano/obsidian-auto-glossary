@@ -22,12 +22,12 @@
 		"@typescript-eslint/parser": "5.29.0",
 		"builtin-modules": "3.3.0",
 		"c8": "~10.1.2",
-		"esbuild": "0.14.47",
+		"esbuild": "0.25.4",
 		"lodash": "~4.17.21",
 		"obsidian": "^1.6.6",
 		"sinon": "~18.0.0",
 		"tslib": "2.4.0",
-		"tsx": "~4.17.0",
+		"tsx": "~4.19.4",
 		"typescript": "4.7.4"
 	}
 }
