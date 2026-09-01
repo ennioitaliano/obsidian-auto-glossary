@@ -24,15 +24,7 @@ export class VaultMock {
 		throw new Error("Not implemented");
 	}
 
-	getMarkdownFiles(): TFile[] {
-		throw new Error("Not implemented");
-	}
-
-	getFiles(): TFile[] {
-		throw new Error("Not implemented");
-	}
-
-	getAllLoadedFiles(): TAbstractFile[] {
+	getRoot(): TFolder {
 		throw new Error("Not implemented");
 	}
 }

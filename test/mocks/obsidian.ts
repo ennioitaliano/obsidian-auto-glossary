@@ -83,11 +83,6 @@ export class PluginSettingTab {
 			empty: () => {},
 		} as unknown as HTMLElement;
 	}
-	getControlValue(key: string): unknown {
-		return undefined;
-	}
-	setControlValue(key: string, value: unknown): void | Promise<void> {}
-	refreshDomState(): void {}
 	display(): void {}
 }
 

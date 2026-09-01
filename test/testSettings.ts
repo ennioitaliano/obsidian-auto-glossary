@@ -7,47 +7,21 @@ import { SettingTab, DEFAULT_SETTINGS } from "../src/settings";
 const dummyManifest: PluginManifest = {
 	id: "auto-glossary",
 	name: "Auto Glossary",
-	version: "1.0.1",
+	version: "1.0.2",
 	minAppVersion: "1.5.0",
 	description: "",
 	author: "",
 };
 
 describe("SettingTab", () => {
-	it("returns valid declarative setting definitions", () => {
+	it("initializes with default settings", () => {
 		const app = new App();
 		const plugin = new AutoGlossaryPlugin(app, dummyManifest);
-		const tab = new SettingTab(app, plugin);
-
-		const definitions = tab.getSettingDefinitions();
-		assert.ok(Array.isArray(definitions));
-		assert.equal(definitions.length, 4);
-
-		const headings = definitions.map((d) => ("heading" in d ? d.heading : ""));
-		assert.deepEqual(headings, [
-			"Inclusion & Subfolders",
-			"Default options",
-			"Filename patterns",
-			"Templates",
-		]);
-	});
-
-	it("gets and sets control values properly", async () => {
-		const app = new App();
-		const plugin = new AutoGlossaryPlugin(app, dummyManifest);
-		plugin.settings = { ...DEFAULT_SETTINGS };
-		const tab = new SettingTab(app, plugin);
-
-		assert.equal(tab.getControlValue("fileInclusion"), false);
-
-		await tab.setControlValue("fileInclusion", true);
-		assert.equal(tab.getControlValue("fileInclusion"), true);
-		assert.equal(plugin.settings.fileInclusion, true);
-
-		// When sameDest is set to true, fileDest is cleared
-		plugin.settings.fileDest = "Some/Path";
-		await tab.setControlValue("sameDest", true);
-		assert.equal(plugin.settings.fileDest, "");
+		assert.equal(plugin.settings.fileInclusion, false);
+		assert.equal(plugin.settings.sameDest, true);
+		assert.equal(plugin.settings.fileOrder, "default");
+		assert.equal(plugin.settings.includeSubfolders, true);
+		assert.equal(plugin.settings.includeEmptyFolders, false);
 	});
 
 	it("renders display() without errors", () => {

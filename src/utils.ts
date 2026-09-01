@@ -36,60 +36,41 @@ export const fileOrder = {
 } as const;
 export type fileOrder = FileOrder;
 
-// Function to get the file type enum key from the string
+const FILE_TYPE_MAP: Record<string, FileType> = {
+	index: FileType.Index,
+	i: FileType.Index,
+	glossary: FileType.Glossary,
+	g: FileType.Glossary,
+	glossaryindex: FileType.GlossaryIndex,
+	gi: FileType.GlossaryIndex,
+};
+
+// Function to get the file type enum key from the string or enum
 export function getEnumFT(value?: string | FileType): FileType {
 	if (!value) {
 		return FileType.GlossaryIndex;
 	}
-	if (value === FileType.Glossary || value === FileType.Index || value === FileType.GlossaryIndex) {
-		return value;
-	}
-
-	switch (value.toLowerCase()) {
-		case "glossary":
-			return FileType.Glossary;
-		case "index":
-			return FileType.Index;
-		case "glossaryindex":
-		default:
-			return FileType.GlossaryIndex;
-	}
+	const normalized = String(value).toLowerCase();
+	return FILE_TYPE_MAP[normalized] ?? FileType.GlossaryIndex;
 }
 
-// Function to get the file order enum key from the string
+const FILE_ORDER_MAP: Record<string, FileOrder> = {
+	default: FileOrder.Default,
+	mtime_new: FileOrder.MtimeNew,
+	mtime_old: FileOrder.MtimeOld,
+	ctime_new: FileOrder.CtimeNew,
+	ctime_old: FileOrder.CtimeOld,
+	alphabetical: FileOrder.Alphabetical,
+	alphabetical_rev: FileOrder.AlphabeticalRev,
+};
+
+// Function to get the file order enum key from the string or enum
 export function getEnumFO(value?: string | FileOrder): FileOrder {
 	if (!value) {
 		return FileOrder.Default;
 	}
-	if (
-		value === FileOrder.Default ||
-		value === FileOrder.MtimeNew ||
-		value === FileOrder.MtimeOld ||
-		value === FileOrder.CtimeNew ||
-		value === FileOrder.CtimeOld ||
-		value === FileOrder.Alphabetical ||
-		value === FileOrder.AlphabeticalRev
-	) {
-		return value;
-	}
-
-	switch (value.toLowerCase()) {
-		case "mtime_new":
-			return FileOrder.MtimeNew;
-		case "mtime_old":
-			return FileOrder.MtimeOld;
-		case "ctime_new":
-			return FileOrder.CtimeNew;
-		case "ctime_old":
-			return FileOrder.CtimeOld;
-		case "alphabetical":
-			return FileOrder.Alphabetical;
-		case "alphabetical_rev":
-			return FileOrder.AlphabeticalRev;
-		case "default":
-		default:
-			return FileOrder.Default;
-	}
+	const normalized = String(value).toLowerCase();
+	return FILE_ORDER_MAP[normalized] ?? FileOrder.Default;
 }
 
 // Function to format filenames based on a user-defined pattern

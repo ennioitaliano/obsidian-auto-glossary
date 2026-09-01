@@ -31,20 +31,53 @@ const makeTFolder = (path: string): TFolder => {
 	return folder;
 };
 
+const setupMockFolderTree = (
+	mockVault: SinonStubbedInstance<VaultMock>,
+	items: (TFile | TFolder)[]
+): TFolder => {
+	const root = makeTFolder("");
+	root.path = "";
+	root.name = "Vault";
+	root.children = items;
+
+	mockVault.getRoot.returns(root);
+	mockVault.getAbstractFileByPath.callsFake((path: string): TAbstractFile | null => {
+		const norm = path.replace(/^\/+/, "").replace(/\/+$/, "");
+		if (!norm) return root;
+
+		const findInFolder = (folder: TFolder, targetPath: string): TAbstractFile | null => {
+			if (folder.path === targetPath) return folder;
+			for (const child of folder.children) {
+				if (child.path === targetPath) return child;
+				if (child instanceof TFolder) {
+					const found = findInFolder(child, targetPath);
+					if (found) return found;
+				}
+			}
+			return null;
+		};
+
+		return findInFolder(root, norm);
+	});
+	return root;
+};
+
 describe("glossaryIndex - createArrays & createText", () => {
 	let mockVault: SinonStubbedInstance<VaultMock>;
 	let mockApp: App;
-	let testFiles: TFile[];
 
 	beforeEach(() => {
 		mockVault = createStubInstance(VaultMock);
-		testFiles = [
-			makeTFile("Alpha", "Folder/Alpha.md"),
-			makeTFile("Beta", "Folder/Beta.md"),
-			makeTFile("Gamma", "OtherFolder/Gamma.md"),
-		];
+		const folder1 = makeTFolder("Folder");
+		const alpha = makeTFile("Alpha", "Folder/Alpha.md");
+		const beta = makeTFile("Beta", "Folder/Beta.md");
+		folder1.children = [alpha, beta];
 
-		mockVault.getMarkdownFiles.returns(testFiles);
+		const folder2 = makeTFolder("OtherFolder");
+		const gamma = makeTFile("Gamma", "OtherFolder/Gamma.md");
+		folder2.children = [gamma];
+
+		setupMockFolderTree(mockVault, [folder1, folder2]);
 		mockVault.cachedRead.resolves("Note content without auto-glossary tag");
 
 		mockApp = {
@@ -127,11 +160,10 @@ describe("glossaryIndex - createArrays & createText", () => {
 	});
 
 	it("supports disabling subfolders (includeSubfolders: false)", async () => {
-		const rootFiles = [
-			makeTFile("RootNote", "RootNote.md"),
-			makeTFile("Alpha", "Folder/Alpha.md"),
-		];
-		mockVault.getMarkdownFiles.returns(rootFiles);
+		const rootNote = makeTFile("RootNote", "RootNote.md");
+		const folder = makeTFolder("Folder");
+		folder.children = [makeTFile("Alpha", "Folder/Alpha.md")];
+		setupMockFolderTree(mockVault, [rootNote, folder]);
 
 		const [indexText] = await createArrays(
 			mockApp,
@@ -155,7 +187,7 @@ describe("glossaryIndex - createArrays & createText", () => {
 			Object.assign(makeTFile("doc", "doc.pdf"), { extension: "pdf", name: "doc.pdf" }),
 			Object.assign(makeTFile("archive", "archive.zip"), { extension: "zip", name: "archive.zip" }),
 		];
-		mockVault.getFiles.returns(mixedFiles);
+		setupMockFolderTree(mockVault, mixedFiles);
 
 		const [indexText, glossaryText] = await createArrays(
 			mockApp,
@@ -180,12 +212,10 @@ describe("glossaryIndex - createArrays & createText", () => {
 	});
 
 	it("handles empty folder inclusion and omission in glossary", async () => {
-		const files = [makeTFile("Alpha", "Folder/Alpha.md")];
-		mockVault.getMarkdownFiles.returns(files);
-		mockVault.getAllLoadedFiles.returns([
-			makeTFolder("Folder"),
-			makeTFolder("EmptyFolder"),
-		]);
+		const folder = makeTFolder("Folder");
+		folder.children = [makeTFile("Alpha", "Folder/Alpha.md")];
+		const emptyFolder = makeTFolder("EmptyFolder");
+		setupMockFolderTree(mockVault, [folder, emptyFolder]);
 
 		const [indexText, glossaryText] = await createArrays(
 			mockApp,
@@ -240,10 +270,17 @@ describe("glossaryIndex - createFile", () => {
 		mockVault = createStubInstance(VaultMock);
 		createdFiles = new Map<string, string>();
 
-		mockVault.getMarkdownFiles.returns([
-			makeTFile("Alpha", "Folder/Alpha.md"),
-			makeTFile("Beta", "Folder/Beta.md"),
-		]);
+		const folder = makeTFolder("Folder");
+		const alpha = makeTFile("Alpha", "Folder/Alpha.md");
+		const beta = makeTFile("Beta", "Folder/Beta.md");
+		folder.children = [alpha, beta];
+
+		const root = makeTFolder("");
+		root.path = "";
+		root.name = "Vault";
+		root.children = [folder];
+
+		mockVault.getRoot.returns(root);
 		mockVault.cachedRead.callsFake(async (file: TFile): Promise<string> => {
 			return createdFiles.get(file.path) ?? "Content";
 		});
@@ -253,7 +290,22 @@ describe("glossaryIndex - createFile", () => {
 				const file = makeTFile(path.replace(/\.md$/, ""), path);
 				return file;
 			}
-			return null;
+			const norm = path.replace(/^\/+/, "").replace(/\/+$/, "");
+			if (!norm) return root;
+
+			const findInFolder = (f: TFolder, targetPath: string): TAbstractFile | null => {
+				if (f.path === targetPath) return f;
+				for (const child of f.children) {
+					if (child.path === targetPath) return child;
+					if (child instanceof TFolder) {
+						const found = findInFolder(child, targetPath);
+						if (found) return found;
+					}
+				}
+				return null;
+			};
+
+			return findInFolder(root, norm);
 		});
 
 		mockVault.create.callsFake(async (path: string, data: string): Promise<TFile> => {

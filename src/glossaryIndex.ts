@@ -101,45 +101,44 @@ export async function createArrays(
 ): Promise<[string, string]> {
 	let files: TFile[] = [];
 
-	// Filter files within the specified folder
+	// Resolve the target folder (or root folder if empty)
 	const rawChosen = chosenFolder ? normalizePath(chosenFolder) : "";
 	const normalizedChosenFolder = rawChosen === "/" || rawChosen === "." ? "" : rawChosen;
 
+	let targetFolder: TFolder | null = null;
 	if (normalizedChosenFolder) {
-		const targetFolder = app.vault.getAbstractFileByPath(normalizedChosenFolder);
-		if (targetFolder instanceof TFolder) {
-			const collectFiles = (folder: TFolder): TFile[] => {
-				const result: TFile[] = [];
+		const abstractTarget = app.vault.getAbstractFileByPath(normalizedChosenFolder);
+		if (abstractTarget instanceof TFolder) {
+			targetFolder = abstractTarget;
+		}
+	} else if (typeof app.vault.getRoot === "function") {
+		targetFolder = app.vault.getRoot();
+	}
+
+	const knownFolderPaths: string[] = [];
+	if (targetFolder) {
+		const collectFromFolder = (folder: TFolder): TFile[] => {
+			const result: TFile[] = [];
+			if (folder.path && folder.path !== "/" && folder.path !== ".") {
+				knownFolderPaths.push(folder.path);
+			}
+			if (folder.children && Array.isArray(folder.children)) {
 				for (const child of folder.children) {
 					if (child instanceof TFile) {
 						result.push(child);
-					} else if (child instanceof TFolder && options?.includeSubfolders !== false) {
-						result.push(...collectFiles(child));
+					} else if (child instanceof TFolder) {
+						if (child.path && child.path !== "/" && child.path !== ".") {
+							knownFolderPaths.push(child.path);
+						}
+						if (options?.includeSubfolders !== false) {
+							result.push(...collectFromFolder(child));
+						}
 					}
 				}
-				return result;
-			};
-			files = collectFiles(targetFolder);
-		} else {
-			if (options?.includeNonMarkdown && typeof app.vault.getFiles === "function") {
-				files = app.vault.getFiles();
-			} else if (typeof app.vault.getMarkdownFiles === "function") {
-				files = app.vault.getMarkdownFiles();
-			} else if (typeof app.vault.getFiles === "function") {
-				files = app.vault.getFiles();
 			}
-			files = files.filter((file) => {
-				return file.path.startsWith(normalizedChosenFolder + "/");
-			});
-		}
-	} else {
-		if (options?.includeNonMarkdown && typeof app.vault.getFiles === "function") {
-			files = app.vault.getFiles();
-		} else if (typeof app.vault.getMarkdownFiles === "function") {
-			files = app.vault.getMarkdownFiles();
-		} else if (typeof app.vault.getFiles === "function") {
-			files = app.vault.getFiles();
-		}
+			return result;
+		};
+		files = collectFromFolder(targetFolder);
 	}
 
 	files = filterFiles(
@@ -163,24 +162,6 @@ export async function createArrays(
 
 	const fileTypeEnum = getEnumFT(requestedFile);
 	const isGlossaryIndex = fileTypeEnum === FileType.GlossaryIndex;
-
-	let knownFolderPaths: string[] | undefined;
-	if (options?.includeEmptyFolders && typeof app.vault.getAllLoadedFiles === "function") {
-		try {
-			const loaded = app.vault.getAllLoadedFiles();
-			knownFolderPaths = loaded
-				.filter(
-					(f): f is TFolder =>
-						f instanceof TFolder ||
-						"children" in f ||
-						(!("extension" in f) && !("basename" in f) && "path" in f)
-				)
-				.map((f) => f.path)
-				.filter((p) => p && p !== "/" && p !== ".");
-		} catch {
-			knownFolderPaths = undefined;
-		}
-	}
 
 	const folderName = normalizedChosenFolder ? normalizedChosenFolder.split("/").pop() || "Vault" : "Vault";
 
