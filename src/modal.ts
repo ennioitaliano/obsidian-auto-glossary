@@ -1,4 +1,4 @@
-import { App, Modal, Setting } from "obsidian";
+import { App, Modal, normalizePath, Setting } from "obsidian";
 import { FileOrder, FileType } from "./utils";
 
 export interface ModalInclusionOptions {
@@ -63,7 +63,8 @@ export class CreateFileModal extends Modal {
 		this.sameDest = sameDest;
 		this.destFolder = destFolder ? destFolder : "";
 		this.fileOrder = fileOrder ? fileOrder : FileOrder.Default;
-		this.chosenFolder = passedFolder ? passedFolder : "";
+		const rawNorm = passedFolder ? normalizePath(passedFolder) : "";
+		this.chosenFolder = rawNorm === "/" || rawNorm === "." ? "" : rawNorm;
 		this.fileName = passedName ? passedName : "";
 		this.option = passedOption ? passedOption : FileType.GlossaryIndex;
 		this.templatePath = passedTemplate ? passedTemplate : "";
@@ -109,7 +110,7 @@ export class CreateFileModal extends Modal {
 			.setDesc("The folder where the generated file will be saved.")
 			.addText((text) =>
 				text
-					.setPlaceholder("e.g. Glossaries/Indices")
+					.setPlaceholder(this.chosenFolder || "Vault root")
 					.setValue(this.destFolder)
 					.onChange((value) => {
 						this.destFolder = value.trim();
@@ -271,13 +272,15 @@ export class CreateFileModal extends Modal {
 
 					this.close();
 
+					const finalDest = this.sameDest ? "" : this.destFolder;
+
 					this.onSubmit(
 						this.option,
 						this.overwrite,
 						this.fileName,
 						this.chosenFolder,
 						this.fileOrder,
-						this.destFolder,
+						finalDest,
 						this.templatePath,
 						{
 							includeSubfolders: this.includeSubfolders,

@@ -110,10 +110,12 @@ export async function createArrays(
 	}
 
 	// Filter files within the specified folder
-	if (chosenFolder && chosenFolder !== "/" && chosenFolder !== "") {
-		const normalizedFolder = normalizePath(chosenFolder);
+	const rawChosen = chosenFolder ? normalizePath(chosenFolder) : "";
+	const normalizedChosenFolder = rawChosen === "/" || rawChosen === "." ? "" : rawChosen;
+
+	if (normalizedChosenFolder) {
 		files = files.filter((file) => {
-			return file.path.startsWith(normalizedFolder + "/");
+			return file.path.startsWith(normalizedChosenFolder + "/");
 		});
 	}
 
@@ -157,7 +159,6 @@ export async function createArrays(
 		}
 	}
 
-	const normalizedChosenFolder = chosenFolder && chosenFolder !== "/" ? normalizePath(chosenFolder) : "";
 	const folderName = normalizedChosenFolder ? normalizedChosenFolder.split("/").pop() || "Vault" : "Vault";
 
 	const rootNode = buildFolderTree(
@@ -194,10 +195,16 @@ export async function createFile(
 
 	const baseName = fileName ? fileName.replace(/\.md$/, "") : String(requestedFile);
 
-	if (destFolder && destFolder.trim() !== "") {
-		rawPath = `${destFolder}/${baseName}.md`;
-	} else if (chosenFolder && chosenFolder.trim() !== "") {
-		rawPath = `${chosenFolder}/${baseName}.md`;
+	const rawDest = destFolder && destFolder.trim() !== "" ? normalizePath(destFolder.trim()) : "";
+	const normalizedDest = rawDest === "/" || rawDest === "." ? "" : rawDest;
+
+	const rawChosen = chosenFolder && chosenFolder.trim() !== "" ? normalizePath(chosenFolder.trim()) : "";
+	const normalizedChosen = rawChosen === "/" || rawChosen === "." ? "" : rawChosen;
+
+	if (normalizedDest) {
+		rawPath = `${normalizedDest}/${baseName}.md`;
+	} else if (normalizedChosen) {
+		rawPath = `${normalizedChosen}/${baseName}.md`;
 	} else {
 		rawPath = `${baseName}.md`;
 	}
@@ -209,7 +216,7 @@ export async function createFile(
 		requestedFile,
 		fileInclusion,
 		baseName,
-		chosenFolder,
+		normalizedChosen,
 		order,
 		templatePath,
 		options
@@ -242,7 +249,9 @@ export async function createFile(
 			return null;
 		} else {
 			// Ensure parent folder structure exists recursively if writing to a subfolder
-			const folderPath = completeFilePath.substring(0, completeFilePath.lastIndexOf("/"));
+			const folderPath = completeFilePath.includes("/")
+				? completeFilePath.substring(0, completeFilePath.lastIndexOf("/"))
+				: "";
 			if (folderPath) {
 				await ensureFolderExists(app.vault, folderPath);
 			}
@@ -296,7 +305,8 @@ export async function createText(
 			break;
 	}
 
-	const normalizedChosenFolder = chosenFolder && chosenFolder !== "/" ? normalizePath(chosenFolder) : "";
+	const rawNorm = chosenFolder ? normalizePath(chosenFolder) : "";
+	const normalizedChosenFolder = rawNorm === "/" || rawNorm === "." ? "" : rawNorm;
 	const folderName = normalizedChosenFolder ? normalizedChosenFolder.split("/").pop() || "Vault" : "Vault";
 
 	if (templatePath && templatePath.trim() !== "") {

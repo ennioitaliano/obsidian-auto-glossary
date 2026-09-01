@@ -351,6 +351,18 @@ export function sortFolderTree(node: FolderTreeNode, order: FileOrder | string):
 	}
 }
 
+export function getFileParentPath(file: TFile): string {
+	if (file.parent && typeof file.parent.path === "string") {
+		const p = normalizePath(file.parent.path);
+		return p === "/" || p === "." ? "" : p;
+	}
+	if (file.path && file.path.includes("/")) {
+		const p = normalizePath(file.path.substring(0, file.path.lastIndexOf("/")));
+		return p === "/" || p === "." ? "" : p;
+	}
+	return "";
+}
+
 export function buildFolderTree(
 	rootFolderPath: string,
 	rootFolderName: string,
@@ -361,7 +373,8 @@ export function buildFolderTree(
 	const includeEmptyFolders = options.includeEmptyFolders === true;
 	const order = options.fileOrder || FileOrder.Default;
 
-	const normalizedRoot = rootFolderPath && rootFolderPath !== "/" ? normalizePath(rootFolderPath) : "";
+	const rawNorm = rootFolderPath ? normalizePath(rootFolderPath) : "";
+	const normalizedRoot = rawNorm === "/" || rawNorm === "." ? "" : rawNorm;
 	const rootName = rootFolderName || (normalizedRoot ? normalizedRoot.split("/").pop() || "Vault" : "Vault");
 
 	const rootNode: FolderTreeNode = {
@@ -375,11 +388,7 @@ export function buildFolderTree(
 
 	if (!includeSubfolders) {
 		for (const file of files) {
-			const parentPath = file.parent?.path
-				? normalizePath(file.parent.path)
-				: file.path.includes("/")
-				? normalizePath(file.path.substring(0, file.path.lastIndexOf("/")))
-				: "";
+			const parentPath = getFileParentPath(file);
 			if (parentPath === normalizedRoot) {
 				rootNode.files.push(file);
 			}
@@ -393,7 +402,8 @@ export function buildFolderTree(
 	folderMap.set(normalizedRoot, rootNode);
 
 	const getOrCreateNode = (folderPath: string): FolderTreeNode => {
-		const normalized = normalizePath(folderPath);
+		const raw = normalizePath(folderPath);
+		const normalized = raw === "/" || raw === "." ? "" : raw;
 		if (folderMap.has(normalized)) {
 			return folderMap.get(normalized)!;
 		}
@@ -423,11 +433,7 @@ export function buildFolderTree(
 	};
 
 	for (const file of files) {
-		const parentPath = file.parent?.path
-			? normalizePath(file.parent.path)
-			: file.path.includes("/")
-			? normalizePath(file.path.substring(0, file.path.lastIndexOf("/")))
-			: "";
+		const parentPath = getFileParentPath(file);
 
 		if (normalizedRoot && parentPath !== normalizedRoot && !parentPath.startsWith(normalizedRoot + "/")) {
 			continue;
@@ -439,8 +445,9 @@ export function buildFolderTree(
 
 	if (includeEmptyFolders && options.knownFolderPaths) {
 		for (const folderPath of options.knownFolderPaths) {
-			const normalized = normalizePath(folderPath);
-			if (!normalized || normalized === "/" || normalized === ".") continue;
+			const raw = normalizePath(folderPath);
+			const normalized = raw === "/" || raw === "." ? "" : raw;
+			if (!normalized) continue;
 			if (normalizedRoot) {
 				if (normalized !== normalizedRoot && !normalized.startsWith(normalizedRoot + "/")) {
 					continue;

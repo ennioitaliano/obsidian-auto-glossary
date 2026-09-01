@@ -431,4 +431,42 @@ describe("glossaryIndex - createFile", () => {
 		assert.ok(content.includes("- [[Alpha]]"));
 		assert.ok(!content.includes("Beta"));
 	});
+
+	it("creates a file directly in vault root when chosenFolder is empty or '/'", async () => {
+		const result = await createFile(
+			mockApp,
+			FileType.Index,
+			true,
+			false,
+			"Vault_Index",
+			"/",
+			FileOrder.Default,
+			""
+		);
+
+		assert.ok(result);
+		assert.equal(mockVault.create.callCount, 1);
+		assert.equal(mockVault.create.firstCall.args[0], "Vault_Index.md");
+		const content = createdFiles.get("Vault_Index.md");
+		assert.ok(content);
+		assert.ok(content.includes("## Index"));
+	});
+
+	it("creates a file directly in vault root when destFolder is '/'", async () => {
+		const result = await createFile(
+			mockApp,
+			FileType.Index,
+			true,
+			false,
+			"Root_Index",
+			"",
+			FileOrder.Default,
+			"/"
+		);
+
+		assert.ok(result);
+		assert.equal(mockVault.create.callCount, 1);
+		assert.equal(mockVault.create.firstCall.args[0], "Root_Index.md");
+	});
 });
+

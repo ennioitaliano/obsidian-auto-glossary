@@ -285,7 +285,8 @@ export default class AutoGlossaryPlugin extends Plugin {
 			name: "Create index or glossary",
 			callback: () => {
 				const activeFile = this.app.workspace.getActiveFile();
-				const defaultFolder = activeFile?.parent?.path ?? "";
+				const rawParent = activeFile?.parent?.path ?? "";
+				const defaultFolder = rawParent === "/" || rawParent === "." ? "" : rawParent;
 				const defaultFolderName = activeFile?.parent?.name || "Vault";
 				const defaultName = formatFileName(
 					this.settings.glossaryIndexPattern,
