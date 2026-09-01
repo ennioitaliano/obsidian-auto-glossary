@@ -47,6 +47,10 @@
 - **Default Destination Folder**: If custom destination is enabled, choose the folder where generated files are saved.
 - **Overwrite existing files**: Set default behavior when a file with the same name already exists.
 - **Default File Order**: Choose your preferred default sorting mode.
+- **Filename Patterns**: Customize default filenames for generated notes using the `{{folder}}` placeholder (e.g. `+{{folder}}_Index`, `-{{folder}}_Glossary`, or `{{folder}} MOC`):
+  - **Index filename pattern**: Pattern for index files (default: `{{folder}}_Index`).
+  - **Glossary filename pattern**: Pattern for glossary files (default: `{{folder}}_Glossary`).
+  - **Combined filename pattern**: Pattern for combined overview files (default: `{{folder}}_GlossaryIndex`).
 
 ---
 

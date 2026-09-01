@@ -1,7 +1,7 @@
 import { Plugin, TFolder } from "obsidian";
 import { CreateFileModal } from "./modal";
 import { createFile } from "./glossaryIndex";
-import { FileOrder, FileType, getEnumFO, getEnumFT } from "./utils";
+import { FileOrder, FileType, formatFileName, getEnumFO, getEnumFT } from "./utils";
 import { AutoGlossarySettings, DEFAULT_SETTINGS, SettingTab } from "./settings";
 
 export default class AutoGlossaryPlugin extends Plugin {
@@ -26,12 +26,17 @@ export default class AutoGlossaryPlugin extends Plugin {
 						.setIcon("list")
 						.setSection("auto-glossary")
 						.onClick(async () => {
+							const fileName = formatFileName(
+								this.settings.indexPattern,
+								folderName,
+								`${folderName}_Index`
+							);
 							await createFile(
 								this.app,
 								FileType.Index,
 								this.settings.fileInclusion,
 								this.settings.fileOverwrite,
-								`${folderName}_Index`,
+								fileName,
 								folderPath,
 								getEnumFO(this.settings.fileOrder),
 								this.settings.sameDest ? "" : this.settings.fileDest
@@ -44,12 +49,17 @@ export default class AutoGlossaryPlugin extends Plugin {
 						.setIcon("layout-list")
 						.setSection("auto-glossary")
 						.onClick(async () => {
+							const fileName = formatFileName(
+								this.settings.glossaryPattern,
+								folderName,
+								`${folderName}_Glossary`
+							);
 							await createFile(
 								this.app,
 								FileType.Glossary,
 								this.settings.fileInclusion,
 								this.settings.fileOverwrite,
-								`${folderName}_Glossary`,
+								fileName,
 								folderPath,
 								getEnumFO(this.settings.fileOrder),
 								this.settings.sameDest ? "" : this.settings.fileDest
@@ -62,12 +72,17 @@ export default class AutoGlossaryPlugin extends Plugin {
 						.setIcon("list-ordered")
 						.setSection("auto-glossary")
 						.onClick(async () => {
+							const fileName = formatFileName(
+								this.settings.glossaryIndexPattern,
+								folderName,
+								`${folderName}_GlossaryIndex`
+							);
 							await createFile(
 								this.app,
 								FileType.GlossaryIndex,
 								this.settings.fileInclusion,
 								this.settings.fileOverwrite,
-								`${folderName}_GlossaryIndex`,
+								fileName,
 								folderPath,
 								getEnumFO(this.settings.fileOrder),
 								this.settings.sameDest ? "" : this.settings.fileDest
@@ -81,6 +96,11 @@ export default class AutoGlossaryPlugin extends Plugin {
 						.setIcon("list")
 						.setSection("auto-glossary-advanced")
 						.onClick(() => {
+							const defaultName = formatFileName(
+								this.settings.indexPattern,
+								folderName,
+								`${folderName}_Index`
+							);
 							new CreateFileModal(
 								this.app,
 								this.settings.fileOverwrite,
@@ -107,7 +127,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 									);
 								},
 								folderPath,
-								`${folderName}_Index`,
+								defaultName,
 								FileType.Index
 							).open();
 						});
@@ -118,6 +138,11 @@ export default class AutoGlossaryPlugin extends Plugin {
 						.setIcon("layout-list")
 						.setSection("auto-glossary-advanced")
 						.onClick(() => {
+							const defaultName = formatFileName(
+								this.settings.glossaryPattern,
+								folderName,
+								`${folderName}_Glossary`
+							);
 							new CreateFileModal(
 								this.app,
 								this.settings.fileOverwrite,
@@ -144,7 +169,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 									);
 								},
 								folderPath,
-								`${folderName}_Glossary`,
+								defaultName,
 								FileType.Glossary
 							).open();
 						});
@@ -155,6 +180,11 @@ export default class AutoGlossaryPlugin extends Plugin {
 						.setIcon("list-ordered")
 						.setSection("auto-glossary-advanced")
 						.onClick(() => {
+							const defaultName = formatFileName(
+								this.settings.glossaryIndexPattern,
+								folderName,
+								`${folderName}_GlossaryIndex`
+							);
 							new CreateFileModal(
 								this.app,
 								this.settings.fileOverwrite,
@@ -181,7 +211,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 									);
 								},
 								folderPath,
-								`${folderName}_GlossaryIndex`,
+								defaultName,
 								FileType.GlossaryIndex
 							).open();
 						});
@@ -197,6 +227,11 @@ export default class AutoGlossaryPlugin extends Plugin {
 				const activeFile = this.app.workspace.getActiveFile();
 				const defaultFolder = activeFile?.parent?.path ?? "";
 				const defaultFolderName = activeFile?.parent?.name || "Vault";
+				const defaultName = formatFileName(
+					this.settings.glossaryIndexPattern,
+					defaultFolderName,
+					`${defaultFolderName}_Index`
+				);
 
 				new CreateFileModal(
 					this.app,
@@ -224,7 +259,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 						);
 					},
 					defaultFolder,
-					`${defaultFolderName}_Index`,
+					defaultName,
 					FileType.GlossaryIndex
 				).open();
 			},

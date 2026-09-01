@@ -79,6 +79,23 @@ export function getEnumFO(value?: string): FileOrder {
 	}
 }
 
+// Function to format filenames based on a user-defined pattern
+export function formatFileName(
+	pattern: string | undefined,
+	folderName: string,
+	defaultFallback: string
+): string {
+	if (!pattern || pattern.trim() === "") {
+		return defaultFallback;
+	}
+
+	const safeFolder = folderName.trim() || "Vault";
+	return pattern
+		.replace(/\{\{folder\}\}/gi, safeFolder)
+		.replace(/\{\{name\}\}/gi, safeFolder)
+		.trim();
+}
+
 export async function fileExists(
 	vault: { getAbstractFileByPath: (path: string) => TAbstractFile | null },
 	filePath: string

@@ -7,6 +7,9 @@ export interface AutoGlossarySettings {
 	fileDest: string;
 	fileOverwrite: boolean;
 	fileOrder: string;
+	indexPattern: string;
+	glossaryPattern: string;
+	glossaryIndexPattern: string;
 }
 
 export const DEFAULT_SETTINGS: AutoGlossarySettings = {
@@ -15,6 +18,9 @@ export const DEFAULT_SETTINGS: AutoGlossarySettings = {
 	fileDest: "",
 	fileOverwrite: false,
 	fileOrder: "default",
+	indexPattern: "{{folder}}_Index",
+	glossaryPattern: "{{folder}}_Glossary",
+	glossaryIndexPattern: "{{folder}}_GlossaryIndex",
 };
 
 export class SettingTab extends PluginSettingTab {
@@ -119,6 +125,53 @@ export class SettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.fileOrder)
 					.onChange(async (chosen) => {
 						this.plugin.settings.fileOrder = chosen;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		containerEl.createEl("h3", { text: "Filename patterns" });
+
+		new Setting(containerEl)
+			.setName("Index filename pattern")
+			.setDesc(
+				"Default pattern for index filenames. Use {{folder}} as placeholder for the folder name."
+			)
+			.addText((text) =>
+				text
+					.setPlaceholder("{{folder}}_Index")
+					.setValue(this.plugin.settings.indexPattern)
+					.onChange(async (value) => {
+						this.plugin.settings.indexPattern = value.trim();
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Glossary filename pattern")
+			.setDesc(
+				"Default pattern for glossary filenames. Use {{folder}} as placeholder for the folder name."
+			)
+			.addText((text) =>
+				text
+					.setPlaceholder("{{folder}}_Glossary")
+					.setValue(this.plugin.settings.glossaryPattern)
+					.onChange(async (value) => {
+						this.plugin.settings.glossaryPattern = value.trim();
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Combined filename pattern")
+			.setDesc(
+				"Default pattern for combined index & glossary filenames. Use {{folder}} as placeholder for the folder name."
+			)
+			.addText((text) =>
+				text
+					.setPlaceholder("{{folder}}_GlossaryIndex")
+					.setValue(this.plugin.settings.glossaryIndexPattern)
+					.onChange(async (value) => {
+						this.plugin.settings.glossaryIndexPattern = value.trim();
 						await this.plugin.saveSettings();
 					})
 			);

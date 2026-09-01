@@ -77,6 +77,71 @@ describe("getEnumFO", () => {
 	});
 });
 
+describe("formatFileName", () => {
+	it("interpolates {{folder}} placeholder correctly", () => {
+		assert.equal(
+			utils.formatFileName("{{folder}}_Index", "Notes", "Notes_Index"),
+			"Notes_Index"
+		);
+		assert.equal(
+			utils.formatFileName("+{{folder}}_Index", "Projects", "Projects_Index"),
+			"+Projects_Index"
+		);
+		assert.equal(
+			utils.formatFileName("-{{folder}}_Glossary", "Archive", "Archive_Glossary"),
+			"-Archive_Glossary"
+		);
+		assert.equal(
+			utils.formatFileName("{{folder}} MOC", "Books", "Books_Index"),
+			"Books MOC"
+		);
+	});
+
+	it("interpolates {{name}} alias placeholder correctly", () => {
+		assert.equal(
+			utils.formatFileName("{{name}}_GlossaryIndex", "Docs", "Docs_GlossaryIndex"),
+			"Docs_GlossaryIndex"
+		);
+	});
+
+	it("handles case-insensitive placeholders", () => {
+		assert.equal(
+			utils.formatFileName("{{FOLDER}}_Index", "Docs", "Docs_Index"),
+			"Docs_Index"
+		);
+		assert.equal(
+			utils.formatFileName("{{Folder}}_Index", "Docs", "Docs_Index"),
+			"Docs_Index"
+		);
+	});
+
+	it("falls back to defaultFallback when pattern is empty or whitespace", () => {
+		assert.equal(
+			utils.formatFileName("", "Notes", "Notes_Index"),
+			"Notes_Index"
+		);
+		assert.equal(
+			utils.formatFileName("   ", "Notes", "Notes_Index"),
+			"Notes_Index"
+		);
+		assert.equal(
+			utils.formatFileName(undefined, "Notes", "Notes_Index"),
+			"Notes_Index"
+		);
+	});
+
+	it("falls back to 'Vault' when folderName is empty", () => {
+		assert.equal(
+			utils.formatFileName("+{{folder}}_Index", "", "Vault_Index"),
+			"+Vault_Index"
+		);
+		assert.equal(
+			utils.formatFileName("{{folder}}_Index", "   ", "Vault_Index"),
+			"Vault_Index"
+		);
+	});
+});
+
 describe("sortFiles", () => {
 	let testFiles: Array<TFile>;
 	let testFilenames: Array<string>;
