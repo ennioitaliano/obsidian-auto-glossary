@@ -71,6 +71,56 @@ export class Modal {
 	close(): void {}
 }
 
+export interface SettingControlBase<V = unknown, K extends string = string> {
+	key: K;
+	defaultValue?: V;
+	disabled?: boolean | (() => boolean);
+	validate?: (value: V) => string | void | Promise<string | void>;
+}
+
+export interface SettingToggleControl<K extends string = string> extends SettingControlBase<boolean, K> {
+	type: "toggle";
+}
+
+export interface SettingTextControl<K extends string = string> extends SettingControlBase<string, K> {
+	type: "text";
+	placeholder?: string;
+}
+
+export interface SettingDropdownControl<K extends string = string> extends SettingControlBase<string, K> {
+	type: "dropdown";
+	options: Record<string, string>;
+}
+
+export type SettingControl<K extends string = string> =
+	| SettingToggleControl<K>
+	| SettingDropdownControl<K>
+	| SettingTextControl<K>;
+
+export interface SettingDefinitionBase {
+	name: string;
+	desc?: string;
+	searchable?: boolean | (() => boolean);
+	visible?: boolean | (() => boolean);
+}
+
+export interface SettingDefinitionControl<K extends string = string> extends SettingDefinitionBase {
+	control: SettingControl<K>;
+}
+
+export type SettingDefinition<K extends string = string> = SettingDefinitionControl<K>;
+
+export type SettingGroupItem<K extends string = string> = SettingDefinition<K>;
+
+export interface SettingDefinitionGroup<K extends string = string> {
+	type: "group" | "list";
+	heading?: string;
+	items?: SettingGroupItem<K>[];
+	visible?: boolean | (() => boolean);
+}
+
+export type SettingDefinitionItem<K extends string = string> = SettingDefinition<K> | SettingDefinitionGroup<K>;
+
 export class PluginSettingTab {
 	app: App;
 	plugin: Plugin;
@@ -84,6 +134,18 @@ export class PluginSettingTab {
 		} as unknown as HTMLElement;
 	}
 	display(): void {}
+	getSettingDefinitions(): SettingDefinitionItem[] {
+		return [];
+	}
+	getControlValue(key: string): unknown {
+		return (this.plugin as unknown as { settings: Record<string, unknown> }).settings?.[key];
+	}
+	async setControlValue(key: string, value: unknown): Promise<void> {
+		const settings = (this.plugin as unknown as { settings: Record<string, unknown> }).settings;
+		if (settings) {
+			settings[key] = value;
+		}
+	}
 }
 
 export class Setting {

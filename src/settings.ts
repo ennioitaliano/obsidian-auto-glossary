@@ -1,5 +1,5 @@
 import AutoGlossaryPlugin from "./main";
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { App, PluginSettingTab, Setting, SettingDefinitionItem } from "obsidian";
 
 export interface AutoGlossarySettings {
 	fileInclusion: boolean;
@@ -45,6 +45,199 @@ export class SettingTab extends PluginSettingTab {
 	constructor(app: App, plugin: AutoGlossaryPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
+	}
+
+	getSettingDefinitions(): SettingDefinitionItem[] {
+		return [
+			{
+				type: "group",
+				heading: "Inclusion & Subfolders",
+				items: [
+					{
+						name: "Include Auto Glossary files",
+						desc: "Include previously generated Auto Glossary files in newly created indexes and glossaries.",
+						control: {
+							type: "toggle",
+							key: "fileInclusion",
+						},
+					},
+					{
+						name: "Excluded tags",
+						desc: "Comma-separated list of tags to exclude from generated files (e.g. 'draft, #archive, private').",
+						control: {
+							type: "text",
+							key: "excludedTags",
+							placeholder: "e.g. draft, archive, private",
+						},
+					},
+					{
+						name: "Include subfolders",
+						desc: "Recursively index subdirectories with section headings. If off, only direct files in the target folder will be indexed.",
+						control: {
+							type: "toggle",
+							key: "includeSubfolders",
+						},
+					},
+					{
+						name: "Include empty folders",
+						desc: "Include empty subfolders in generated indexes as list items.",
+						control: {
+							type: "toggle",
+							key: "includeEmptyFolders",
+						},
+					},
+					{
+						name: "Include non-markdown files",
+						desc: "Include non-markdown attachments and files (e.g. PDF, images, canvas) in indexes and glossaries.",
+						control: {
+							type: "toggle",
+							key: "includeNonMarkdown",
+						},
+					},
+					{
+						name: "Allowed non-markdown extensions",
+						desc: "Comma-separated list of allowed file extensions (e.g. 'pdf, png, jpg, canvas'). Leave empty to include all.",
+						control: {
+							type: "text",
+							key: "nonMarkdownExtensions",
+							placeholder: "pdf, png, jpg, jpeg, canvas",
+							disabled: () => !this.plugin.settings.includeNonMarkdown,
+						},
+					},
+				],
+			},
+			{
+				type: "group",
+				heading: "Defaults",
+				items: [
+					{
+						name: "Same destination as folder",
+						desc: "If on, files will be created in the target folder and the 'Destination' field will be disabled.",
+						control: {
+							type: "toggle",
+							key: "sameDest",
+						},
+					},
+					{
+						name: "Destination",
+						desc: "If 'Same destination as folder' is off, specify the custom destination folder for created files.",
+						control: {
+							type: "text",
+							key: "fileDest",
+							placeholder: "e.g. Glossaries/Indices",
+							disabled: () => this.plugin.settings.sameDest,
+						},
+					},
+					{
+						name: "Overwrite existing files",
+						desc: "Set the default overwrite behavior when a file with the same name already exists.",
+						control: {
+							type: "toggle",
+							key: "fileOverwrite",
+						},
+					},
+					{
+						name: "File order",
+						desc: "The default sort order for notes in generated files.",
+						control: {
+							type: "dropdown",
+							key: "fileOrder",
+							options: {
+								default: "Default",
+								mtime_new: "Modification time - Newest to oldest",
+								mtime_old: "Modification time - Oldest to newest",
+								ctime_new: "Creation time - Newest to oldest",
+								ctime_old: "Creation time - Oldest to newest",
+								alphabetical: "Alphabetical (A-Z)",
+								alphabetical_rev: "Alphabetical (Z-A)",
+							},
+						},
+					},
+				],
+			},
+			{
+				type: "group",
+				heading: "Filename patterns",
+				items: [
+					{
+						name: "Index filename pattern",
+						desc: "Default pattern for index filenames. Use {{folder}} as placeholder for the folder name.",
+						control: {
+							type: "text",
+							key: "indexPattern",
+							placeholder: "{{folder}}_Index",
+						},
+					},
+					{
+						name: "Glossary filename pattern",
+						desc: "Default pattern for glossary filenames. Use {{folder}} as placeholder for the folder name.",
+						control: {
+							type: "text",
+							key: "glossaryPattern",
+							placeholder: "{{folder}}_Glossary",
+						},
+					},
+					{
+						name: "Combined filename pattern",
+						desc: "Default pattern for combined index & glossary filenames. Use {{folder}} as placeholder for the folder name.",
+						control: {
+							type: "text",
+							key: "glossaryIndexPattern",
+							placeholder: "{{folder}}_GlossaryIndex",
+						},
+					},
+				],
+			},
+			{
+				type: "group",
+				heading: "Templates",
+				items: [
+					{
+						name: "Index template",
+						desc: "Vault path to a markdown template file for index notes. Placeholders: {{content}}, {{index}}, {{folder}}, {{title}}, {{date}}, {{time}}.",
+						control: {
+							type: "text",
+							key: "indexTemplate",
+							placeholder: "e.g. Templates/IndexTemplate.md",
+						},
+					},
+					{
+						name: "Glossary template",
+						desc: "Vault path to a markdown template file for glossary notes. Placeholders: {{content}}, {{glossary}}, {{folder}}, {{title}}, {{date}}, {{time}}.",
+						control: {
+							type: "text",
+							key: "glossaryTemplate",
+							placeholder: "e.g. Templates/GlossaryTemplate.md",
+						},
+					},
+					{
+						name: "Combined template",
+						desc: "Vault path to a markdown template file for combined index & glossary notes. Placeholders: {{content}}, {{index}}, {{glossary}}, {{folder}}, {{title}}, {{date}}, {{time}}.",
+						control: {
+							type: "text",
+							key: "glossaryIndexTemplate",
+							placeholder: "e.g. Templates/CombinedTemplate.md",
+						},
+					},
+				],
+			},
+		];
+	}
+
+	getControlValue(key: string): unknown {
+		return (this.plugin.settings as unknown as Record<string, unknown>)[key];
+	}
+
+	async setControlValue(key: string, value: unknown): Promise<void> {
+		if (typeof value === "string") {
+			value = value.trim();
+		}
+		(this.plugin.settings as unknown as Record<string, unknown>)[key] = value;
+		if (key === "sameDest" && value === true) {
+			this.plugin.settings.fileDest = "";
+		}
+		await this.plugin.saveSettings();
+		this.refreshDomState?.();
 	}
 
 	display(): void {
@@ -144,7 +337,7 @@ export class SettingTab extends PluginSettingTab {
 			)
 			.setDisabled(!this.plugin.settings.includeNonMarkdown);
 
-		new Setting(containerEl).setName("Default options").setHeading();
+		new Setting(containerEl).setName("Defaults").setHeading();
 
 		let destinationTextSetting: Setting | undefined;
 
