@@ -17,6 +17,7 @@ export interface AutoGlossarySettings {
 	includeEmptyFolders: boolean;
 	includeNonMarkdown: boolean;
 	nonMarkdownExtensions: string;
+	excludedTags: string;
 }
 
 export const DEFAULT_SETTINGS: AutoGlossarySettings = {
@@ -35,6 +36,7 @@ export const DEFAULT_SETTINGS: AutoGlossarySettings = {
 	includeEmptyFolders: false,
 	includeNonMarkdown: false,
 	nonMarkdownExtensions: "pdf, png, jpg, jpeg, canvas",
+	excludedTags: "",
 };
 
 export class SettingTab extends PluginSettingTab {
@@ -64,6 +66,21 @@ export class SettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.fileInclusion)
 					.onChange(async (value) => {
 						this.plugin.settings.fileInclusion = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Excluded tags")
+			.setDesc(
+				"Comma-separated list of tags to exclude from generated files (e.g. 'draft, #archive, private')."
+			)
+			.addText((text) =>
+				text
+					.setPlaceholder("e.g. draft, archive, private")
+					.setValue(this.plugin.settings.excludedTags)
+					.onChange(async (value) => {
+						this.plugin.settings.excludedTags = value.trim();
 						await this.plugin.saveSettings();
 					})
 			);

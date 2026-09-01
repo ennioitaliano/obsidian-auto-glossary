@@ -17,6 +17,7 @@ export interface CreateFileOptions {
 	includeEmptyFolders?: boolean;
 	includeNonMarkdown?: boolean;
 	nonMarkdownExtensions?: string;
+	excludedTags?: string | string[];
 }
 
 function renderIndexSection(
@@ -122,8 +123,17 @@ export async function createArrays(
 		options?.nonMarkdownExtensions
 	);
 
-	if (!fileInclusion) {
-		files = await cleanFiles(app.vault, files, app.metadataCache);
+	const excludedTags = options?.excludedTags;
+	const shouldFilterAutoGlossary = !fileInclusion;
+
+	if (shouldFilterAutoGlossary || (excludedTags && excludedTags.length > 0)) {
+		files = await cleanFiles(
+			app.vault,
+			files,
+			app.metadataCache,
+			excludedTags,
+			shouldFilterAutoGlossary
+		);
 	}
 
 	const isGlossaryIndex =

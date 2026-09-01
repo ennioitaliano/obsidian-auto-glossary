@@ -327,6 +327,138 @@ describe("cleanFiles", () => {
 		assert.equal(mockVault.cachedRead.callCount, 0);
 		assert.equal(cleanedFiles.length, 0);
 	});
+
+	it("excludes files matching custom excluded tags via metadataCache frontmatter", async () => {
+		const mockVault: SinonStubbedInstance<VaultMock> = createStubInstance(VaultMock);
+		const mockMetadataCache = {
+			getFileCache: (file: TFile) => {
+				if (file.name === "testFile1") {
+					return { frontmatter: { tags: ["draft", "project"] } };
+				}
+				return { frontmatter: { tags: ["published"] } };
+			},
+		};
+
+		const cleanedFiles = await utils.cleanFiles(
+			mockVault,
+			testFiles,
+			mockMetadataCache,
+			"draft, private"
+		);
+
+		assert.equal(cleanedFiles.length, testFiles.length - 1);
+		assert.ok(!cleanedFiles.some((f) => f.name === "testFile1"));
+	});
+
+	it("excludes files matching custom excluded tags via metadataCache inline tags", async () => {
+		const mockVault: SinonStubbedInstance<VaultMock> = createStubInstance(VaultMock);
+		const mockMetadataCache = {
+			getFileCache: (file: TFile) => {
+				if (file.name === "testFile2") {
+					return { tags: [{ tag: "#archive/2023" }] as any };
+				}
+				return { tags: [{ tag: "#active" }] as any };
+			},
+		};
+
+		const cleanedFiles = await utils.cleanFiles(
+			mockVault,
+			testFiles,
+			mockMetadataCache as any,
+			"#archive"
+		);
+
+		assert.equal(cleanedFiles.length, testFiles.length - 1);
+		assert.ok(!cleanedFiles.some((f) => f.name === "testFile2"));
+	});
+
+	it("excludes files matching custom excluded tags via raw file content fallback", async () => {
+		const mockVault: SinonStubbedInstance<VaultMock> = createStubInstance(VaultMock);
+		mockVault.cachedRead.callsFake(async (file: TFile) => {
+			if (file.name === "testFile1") {
+				return "Some notes with inline #wip tag in the body";
+			}
+			return "Clean note without excluded tags";
+		});
+
+		const cleanedFiles = await utils.cleanFiles(
+			mockVault,
+			testFiles,
+			undefined,
+			"wip"
+		);
+
+		assert.equal(cleanedFiles.length, testFiles.length - 1);
+		assert.ok(!cleanedFiles.some((f) => f.name === "testFile1"));
+	});
+
+	it("keeps auto-glossary files when filterAutoGlossaryTag is false, but still filters custom tags", async () => {
+		const mockVault: SinonStubbedInstance<VaultMock> = createStubInstance(VaultMock);
+		const mockMetadataCache = {
+			getFileCache: (file: TFile) => {
+				if (file.name === "testFile1") {
+					return { frontmatter: { tags: ["obsidian-auto-glossary"] } };
+				}
+				if (file.name === "testFile2") {
+					return { frontmatter: { tags: ["private"] } };
+				}
+				return { frontmatter: { tags: ["normal"] } };
+			},
+		};
+
+		const cleanedFiles = await utils.cleanFiles(
+			mockVault,
+			testFiles,
+			mockMetadataCache,
+			"private",
+			false // filterAutoGlossaryTag = false
+		);
+
+		// testFile1 (obsidian-auto-glossary) is kept, testFile2 (private) is excluded
+		assert.ok(cleanedFiles.some((f) => f.name === "testFile1"));
+		assert.ok(!cleanedFiles.some((f) => f.name === "testFile2"));
+	});
+});
+
+describe("tag utilities", () => {
+	it("parseTags handles string, array, and whitespace / comma / semicolon delimiters", () => {
+		assert.deepEqual(utils.parseTags("draft, #archive; private  wip"), [
+			"draft",
+			"archive",
+			"private",
+			"wip",
+		]);
+		assert.deepEqual(utils.parseTags(["#Draft", "ARCHIVE", ""]), ["draft", "archive"]);
+		assert.deepEqual(utils.parseTags(""), []);
+		assert.deepEqual(utils.parseTags(undefined), []);
+	});
+
+	it("matchesExcludedTag checks exact and hierarchical nested tags correctly", () => {
+		assert.equal(utils.matchesExcludedTag(["draft"], ["draft"]), true);
+		assert.equal(utils.matchesExcludedTag(["Draft"], ["draft"]), true);
+		assert.equal(utils.matchesExcludedTag(["#archive/2024/january"], ["archive"]), true);
+		assert.equal(utils.matchesExcludedTag(["#archive/2024/january"], ["archive/2024"]), true);
+		assert.equal(utils.matchesExcludedTag(["archived"], ["archive"]), false);
+		assert.equal(utils.matchesExcludedTag(["normal"], ["draft", "private"]), false);
+		assert.equal(utils.matchesExcludedTag([], ["draft"]), false);
+		assert.equal(utils.matchesExcludedTag(["draft"], []), false);
+	});
+
+	it("extractTagsFromContent extracts frontmatter and inline tags", () => {
+		const content = `---
+tags:
+  - project/alpha
+  - Status
+---
+# Heading
+This is a note with #wip/stage1 and #important inline tags.
+`;
+		const tags = utils.extractTagsFromContent(content);
+		assert.ok(tags.includes("project/alpha"));
+		assert.ok(tags.includes("status"));
+		assert.ok(tags.includes("wip/stage1"));
+		assert.ok(tags.includes("important"));
+	});
 });
 
 describe("ensureFolderExists", () => {

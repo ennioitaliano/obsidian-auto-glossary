@@ -46,6 +46,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 									includeEmptyFolders: this.settings.includeEmptyFolders,
 									includeNonMarkdown: this.settings.includeNonMarkdown,
 									nonMarkdownExtensions: this.settings.nonMarkdownExtensions,
+									excludedTags: this.settings.excludedTags,
 								}
 							);
 						});
@@ -76,6 +77,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 									includeEmptyFolders: this.settings.includeEmptyFolders,
 									includeNonMarkdown: this.settings.includeNonMarkdown,
 									nonMarkdownExtensions: this.settings.nonMarkdownExtensions,
+									excludedTags: this.settings.excludedTags,
 								}
 							);
 						});
@@ -106,6 +108,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 									includeEmptyFolders: this.settings.includeEmptyFolders,
 									includeNonMarkdown: this.settings.includeNonMarkdown,
 									nonMarkdownExtensions: this.settings.nonMarkdownExtensions,
+									excludedTags: this.settings.excludedTags,
 								}
 							);
 						});
@@ -160,6 +163,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 									includeEmptyFolders: this.settings.includeEmptyFolders,
 									includeNonMarkdown: this.settings.includeNonMarkdown,
 									nonMarkdownExtensions: this.settings.nonMarkdownExtensions,
+									excludedTags: this.settings.excludedTags,
 								}
 							).open();
 						});
@@ -213,6 +217,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 									includeEmptyFolders: this.settings.includeEmptyFolders,
 									includeNonMarkdown: this.settings.includeNonMarkdown,
 									nonMarkdownExtensions: this.settings.nonMarkdownExtensions,
+									excludedTags: this.settings.excludedTags,
 								}
 							).open();
 						});
@@ -266,6 +271,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 									includeEmptyFolders: this.settings.includeEmptyFolders,
 									includeNonMarkdown: this.settings.includeNonMarkdown,
 									nonMarkdownExtensions: this.settings.nonMarkdownExtensions,
+									excludedTags: this.settings.excludedTags,
 								}
 							).open();
 						});
@@ -325,6 +331,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 						includeEmptyFolders: this.settings.includeEmptyFolders,
 						includeNonMarkdown: this.settings.includeNonMarkdown,
 						nonMarkdownExtensions: this.settings.nonMarkdownExtensions,
+						excludedTags: this.settings.excludedTags,
 					}
 				).open();
 			},

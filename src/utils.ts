@@ -151,12 +151,65 @@ export function filterFiles(
 	});
 }
 
+export function parseTags(tags: string | string[] | undefined): string[] {
+	if (!tags) {
+		return [];
+	}
+	const rawList = Array.isArray(tags) ? tags : tags.split(/[,;\s]+/);
+	return rawList
+		.map((t) => t.trim().replace(/^#/, "").trim().toLowerCase())
+		.filter(Boolean);
+}
+
+export function matchesExcludedTag(fileTags: string[], excludedTags: string[]): boolean {
+	if (!fileTags.length || !excludedTags.length) {
+		return false;
+	}
+	const normalizedFileTags = fileTags
+		.map((t) => t.trim().replace(/^#/, "").trim().toLowerCase())
+		.filter(Boolean);
+
+	return excludedTags.some((ex) => {
+		const normalizedEx = ex.trim().replace(/^#/, "").trim().toLowerCase();
+		if (!normalizedEx) return false;
+		return normalizedFileTags.some(
+			(ft) => ft === normalizedEx || ft.startsWith(`${normalizedEx}/`)
+		);
+	});
+}
+
+export function extractTagsFromContent(content: string): string[] {
+	const tags: string[] = [];
+	const { frontmatter } = splitFrontmatter(content);
+	if (frontmatter) {
+		const blocks = parseFrontmatterBlocks(frontmatter);
+		const rawTags = blocks.has("tags")
+			? extractTagsFromBlock(blocks.get("tags")!)
+			: blocks.has("tag")
+			? extractTagsFromBlock(blocks.get("tag")!)
+			: [];
+		tags.push(...rawTags);
+	}
+
+	const inlineTagRegex = /(?:^|\s)#[a-zA-Z_\u0080-\uFFFF][a-zA-Z0-9_\-/\u0080-\uFFFF]*/g;
+	let match: RegExpExecArray | null;
+	while ((match = inlineTagRegex.exec(content)) !== null) {
+		const full = match[0].trim();
+		tags.push(full.replace(/^#/, ""));
+	}
+
+	return Array.from(new Set(tags.map((t) => t.trim().toLowerCase()).filter(Boolean)));
+}
+
 export async function cleanFiles(
 	vault: VaultWrapper,
 	notesTFiles: TFile[],
-	metadataCache?: MetadataCacheWrapper
+	metadataCache?: MetadataCacheWrapper,
+	excludedTags?: string | string[],
+	filterAutoGlossaryTag = true
 ): Promise<TFile[]> {
 	const cleanedNotes: TFile[] = [];
+	const normalizedExcluded = parseTags(excludedTags);
 
 	for (const file of notesTFiles) {
 		if (file.extension && file.extension.toLowerCase() !== "md") {
@@ -164,24 +217,72 @@ export async function cleanFiles(
 			continue;
 		}
 
+		let fileExcluded = false;
+		let inspectedCache = false;
+
 		try {
 			if (metadataCache) {
 				const cache = metadataCache.getFileCache(file);
-				if (cache?.frontmatter) {
-					const tags = cache.frontmatter.tags || cache.frontmatter.tag;
-					if (
-						(typeof tags === "string" && tags.includes("obsidian-auto-glossary")) ||
-						(Array.isArray(tags) && tags.includes("obsidian-auto-glossary"))
+				if (cache) {
+					inspectedCache = true;
+					const tags: string[] = [];
+
+					if (cache.frontmatter) {
+						const fmTags = cache.frontmatter.tags ?? cache.frontmatter.tag;
+						if (typeof fmTags === "string") {
+							tags.push(...parseTags(fmTags));
+						} else if (Array.isArray(fmTags)) {
+							for (const item of fmTags) {
+								if (typeof item === "string") {
+									tags.push(...parseTags(item));
+								}
+							}
+						}
+					}
+
+					if (cache.tags && Array.isArray(cache.tags)) {
+						for (const tagObj of cache.tags) {
+							if (tagObj && typeof tagObj.tag === "string") {
+								tags.push(...parseTags(tagObj.tag));
+							}
+						}
+					}
+
+					const uniqueTags = Array.from(new Set(tags));
+
+					if (filterAutoGlossaryTag && uniqueTags.includes("obsidian-auto-glossary")) {
+						fileExcluded = true;
+					} else if (
+						normalizedExcluded.length > 0 &&
+						matchesExcludedTag(uniqueTags, normalizedExcluded)
 					) {
+						fileExcluded = true;
+					}
+				}
+			}
+
+			if (fileExcluded) {
+				continue;
+			}
+
+			// If cache was not available or cache didn't filter it out, check raw content if cache was not present
+			// or if we need to check auto glossary content match
+			if (!inspectedCache || (filterAutoGlossaryTag && !fileExcluded)) {
+				const fileContent: string = await vault.cachedRead(file);
+
+				if (filterAutoGlossaryTag && fileContent.includes("obsidian-auto-glossary")) {
+					continue;
+				}
+
+				if (normalizedExcluded.length > 0) {
+					const contentTags = extractTagsFromContent(fileContent);
+					if (matchesExcludedTag(contentTags, normalizedExcluded)) {
 						continue;
 					}
 				}
 			}
 
-			const fileContent: string = await vault.cachedRead(file);
-			if (!fileContent.includes("obsidian-auto-glossary")) {
-				cleanedNotes.push(file);
-			}
+			cleanedNotes.push(file);
 		} catch {
 			// If reading fails for a file, keep it in the list
 			cleanedNotes.push(file);

@@ -203,6 +203,32 @@ describe("glossaryIndex - createArrays & createText", () => {
 		assert.ok(indexText.includes("- EmptyFolder/\n"));
 		assert.ok(!glossaryText.includes("EmptyFolder"));
 	});
+
+	it("supports excludedTags filtering in createArrays", async () => {
+		(mockApp as any).metadataCache = {
+			getFileCache: (file: TFile) => {
+				if (file.name === "Beta.md") {
+					return { frontmatter: { tags: ["draft"] } };
+				}
+				return null;
+			},
+		};
+
+		const [indexText, glossaryText] = await createArrays(
+			mockApp,
+			FileType.Index,
+			true,
+			undefined,
+			"",
+			FileOrder.Default,
+			{
+				excludedTags: "draft",
+			}
+		);
+
+		assert.ok(indexText.includes("- [[Alpha]]"));
+		assert.ok(!indexText.includes("Beta"));
+	});
 });
 
 describe("glossaryIndex - createFile", () => {
@@ -371,5 +397,38 @@ describe("glossaryIndex - createFile", () => {
 		assert.ok(updatedContent.includes("custom-tag"));
 		assert.ok(updatedContent.includes("obsidian-auto-glossary"));
 		assert.ok(updatedContent.includes("## Index\n- [[Alpha]]\n- [[Beta]]"));
+	});
+
+	it("creates a file respecting excludedTags option", async () => {
+		(mockApp as any).metadataCache = {
+			getFileCache: (file: TFile) => {
+				if (file.name === "Beta.md") {
+					return { frontmatter: { tags: ["archived_project"] } };
+				}
+				return null;
+			},
+		};
+
+		const result = await createFile(
+			mockApp,
+			FileType.Index,
+			true,
+			false,
+			"FilteredIndex",
+			"Folder",
+			FileOrder.Default,
+			"",
+			"",
+			{
+				excludedTags: "archived_project",
+			}
+		);
+
+		assert.ok(result);
+		assert.equal(mockVault.create.callCount, 1);
+		const content = createdFiles.get("Folder/FilteredIndex.md");
+		assert.ok(content);
+		assert.ok(content.includes("- [[Alpha]]"));
+		assert.ok(!content.includes("Beta"));
 	});
 });

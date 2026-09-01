@@ -6,6 +6,7 @@ export interface ModalInclusionOptions {
 	includeEmptyFolders: boolean;
 	includeNonMarkdown: boolean;
 	nonMarkdownExtensions: string;
+	excludedTags?: string;
 }
 
 export class CreateFileModal extends Modal {
@@ -21,6 +22,7 @@ export class CreateFileModal extends Modal {
 	includeEmptyFolders: boolean;
 	includeNonMarkdown: boolean;
 	nonMarkdownExtensions: string;
+	excludedTags: string;
 
 	onSubmit: (
 		option: string,
@@ -69,6 +71,7 @@ export class CreateFileModal extends Modal {
 		this.includeEmptyFolders = inclusionOptions?.includeEmptyFolders ?? false;
 		this.includeNonMarkdown = inclusionOptions?.includeNonMarkdown ?? false;
 		this.nonMarkdownExtensions = inclusionOptions?.nonMarkdownExtensions ?? "pdf, png, jpg, jpeg, canvas";
+		this.excludedTags = inclusionOptions?.excludedTags ?? "";
 	}
 
 	onOpen(): void {
@@ -245,6 +248,18 @@ export class CreateFileModal extends Modal {
 			)
 			.setDisabled(!this.includeNonMarkdown);
 
+		new Setting(contentEl)
+			.setName("Excluded tags")
+			.setDesc("Comma-separated list of tags to exclude from generated files.")
+			.addText((text) =>
+				text
+					.setPlaceholder("e.g. draft, archive, private")
+					.setValue(this.excludedTags)
+					.onChange((value) => {
+						this.excludedTags = value.trim();
+					})
+			);
+
 		new Setting(contentEl).addButton((btn) =>
 			btn
 				.setButtonText("Generate")
@@ -269,6 +284,7 @@ export class CreateFileModal extends Modal {
 							includeEmptyFolders: this.includeEmptyFolders,
 							includeNonMarkdown: this.includeNonMarkdown,
 							nonMarkdownExtensions: this.nonMarkdownExtensions,
+							excludedTags: this.excludedTags,
 						}
 					);
 				})
