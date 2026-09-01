@@ -13,12 +13,17 @@
 - **Index (Links only / MOC)**: Creates a list of wikilinks (`[[Note]]`) to all notes in the selected folder.
 - **Glossary (Note embeds)**: Creates a document embedding (`![[Note]]`) all notes in the selected folder, formatted with headers and dividers.
 - **Combined Index & Glossary**: Creates an index with anchor links at the top pointing directly to each note's embedded section in the glossary below.
-- **Flexible Sorting**: Sort notes by:
+- **Sub-directory Hierarchy**: Automatically organizes nested subfolders into markdown section headings (`### Subfolder`) with files sorted neatly under their parent directory.
+- **Non-Markdown File Inclusion**: Optionally index and embed non-markdown files and attachments (PDFs, images, canvas files) with a configurable extension whitelist.
+- **Empty Folder Options**: Option to include or omit empty folders in generated indexes.
+- **Flexible Sorting**: Sort notes and folders by:
   - Default (Vault order)
   - Modification time (Newest to oldest / Oldest to newest)
   - Creation time (Newest to oldest / Oldest to newest)
   - Alphabetical (A-Z / Z-A)
 - **Smart Exclusion**: Avoid infinite loops by automatically ignoring previously generated auto-glossary files (customizable in settings).
+- **Custom Templates**: Define markdown templates for index, glossary, or combined notes with metadata/frontmatter (e.g. `aliases`, tags) and layout customization.
+- **Metadata Preservation on Refresh**: Re-generating or overwriting an existing glossary/index preserves custom frontmatter properties without wiping them out.
 - **Desktop & Mobile Support**: Fully compatible with Obsidian on desktop (macOS, Windows, Linux) and mobile (iOS, Android).
 - **Command Palette & Context Menu**: Trigger quick generation directly via right-click on any folder in the File Explorer or use the Advanced modal.
 
@@ -32,7 +37,7 @@
   - **New index (links)**: Creates `<FolderName>_Index.md` in the folder.
   - **New glossary (embeds)**: Creates `<FolderName>_Glossary.md` in the folder.
   - **New combined index & glossary**: Creates `<FolderName>_GlossaryIndex.md` in the folder.
-  - **Advanced options**: Opens a dialog to customize the destination folder, target filename, sorting order, file type, and overwrite preferences.
+  - **Advanced options**: Opens a dialog to customize the destination folder, target filename, template file, sorting order, file type, and overwrite preferences.
 
 ### 2. Command Palette
 - Press `Ctrl/Cmd + P` and search for **Auto Glossary: Create index or glossary**.
@@ -40,13 +45,55 @@
 
 ---
 
+## Templates
+
+You can create custom templates in your vault to format generated files and include custom metadata.
+
+### Supported Placeholders
+- `{{content}}`: Full generated content (Index, Glossary, or Combined).
+- `{{index}}`: The generated Index list.
+- `{{glossary}}`: The generated Glossary embeds.
+- `{{folder}}` / `{{name}}`: Name of the source folder (e.g. `Projects`).
+- `{{folderPath}}`: Vault path of the source folder (e.g. `Work/Projects`).
+- `{{title}}`: Name of the generated note.
+- `{{date}}`: Current date (`YYYY-MM-DD`).
+- `{{time}}`: Current time (`HH:mm`).
+
+### Example Template
+```markdown
+---
+aliases:
+  - "{{folder}} Overview"
+  - "{{folder}} MOC"
+tags:
+  - moc
+  - dashboard
+---
+# {{folder}} Navigation
+
+Last updated on {{date}} at {{time}}.
+
+{{content}}
+```
+
+---
+
 ## Settings
 
-- **File Inclusion**: Toggle whether to include previously generated Auto Glossary files in newly created indexes and glossaries.
+- **Include Auto Glossary files**: Toggle whether to include previously generated Auto Glossary files in newly created indexes and glossaries.
+- **Include subfolders**: Toggle whether to recursively index subdirectories with section headings.
+- **Include empty folders**: Toggle whether to include empty subfolders in generated indexes as list items.
+- **Include non-markdown files**: Toggle whether to index and embed non-markdown attachments and files.
+- **Allowed non-markdown extensions**: Comma-separated list of allowed file extensions (e.g. `pdf, png, jpg, canvas`).
 - **Same destination as folder**: Set whether files are created in the target folder or a global custom destination.
 - **Default Destination Folder**: If custom destination is enabled, choose the folder where generated files are saved.
 - **Overwrite existing files**: Set default behavior when a file with the same name already exists.
 - **Default File Order**: Choose your preferred default sorting mode.
+- **Filename Patterns**: Customize default filenames for generated notes using the `{{folder}}` placeholder (e.g. `+{{folder}}_Index`, `-{{folder}}_Glossary`, or `{{folder}} MOC`):
+  - **Index filename pattern**: Pattern for index files (default: `{{folder}}_Index`).
+  - **Glossary filename pattern**: Pattern for glossary files (default: `{{folder}}_Glossary`).
+  - **Combined filename pattern**: Pattern for combined overview files (default: `{{folder}}_GlossaryIndex`).
+- **Templates**: Configure default template files from your vault for Index, Glossary, and Combined files.
 
 ---
 

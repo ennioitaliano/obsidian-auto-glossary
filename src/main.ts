@@ -1,7 +1,7 @@
 import { Plugin, TFolder } from "obsidian";
 import { CreateFileModal } from "./modal";
 import { createFile } from "./glossaryIndex";
-import { FileOrder, FileType, getEnumFO, getEnumFT } from "./utils";
+import { FileOrder, FileType, formatFileName, getEnumFO, getEnumFT } from "./utils";
 import { AutoGlossarySettings, DEFAULT_SETTINGS, SettingTab } from "./settings";
 
 export default class AutoGlossaryPlugin extends Plugin {
@@ -26,15 +26,28 @@ export default class AutoGlossaryPlugin extends Plugin {
 						.setIcon("list")
 						.setSection("auto-glossary")
 						.onClick(async () => {
+							const fileName = formatFileName(
+								this.settings.indexPattern,
+								folderName,
+								`${folderName}_Index`
+							);
 							await createFile(
 								this.app,
 								FileType.Index,
 								this.settings.fileInclusion,
 								this.settings.fileOverwrite,
-								`${folderName}_Index`,
+								fileName,
 								folderPath,
 								getEnumFO(this.settings.fileOrder),
-								this.settings.sameDest ? "" : this.settings.fileDest
+								this.settings.sameDest ? "" : this.settings.fileDest,
+								this.settings.indexTemplate,
+								{
+									includeSubfolders: this.settings.includeSubfolders,
+									includeEmptyFolders: this.settings.includeEmptyFolders,
+									includeNonMarkdown: this.settings.includeNonMarkdown,
+									nonMarkdownExtensions: this.settings.nonMarkdownExtensions,
+									excludedTags: this.settings.excludedTags,
+								}
 							);
 						});
 				});
@@ -44,15 +57,28 @@ export default class AutoGlossaryPlugin extends Plugin {
 						.setIcon("layout-list")
 						.setSection("auto-glossary")
 						.onClick(async () => {
+							const fileName = formatFileName(
+								this.settings.glossaryPattern,
+								folderName,
+								`${folderName}_Glossary`
+							);
 							await createFile(
 								this.app,
 								FileType.Glossary,
 								this.settings.fileInclusion,
 								this.settings.fileOverwrite,
-								`${folderName}_Glossary`,
+								fileName,
 								folderPath,
 								getEnumFO(this.settings.fileOrder),
-								this.settings.sameDest ? "" : this.settings.fileDest
+								this.settings.sameDest ? "" : this.settings.fileDest,
+								this.settings.glossaryTemplate,
+								{
+									includeSubfolders: this.settings.includeSubfolders,
+									includeEmptyFolders: this.settings.includeEmptyFolders,
+									includeNonMarkdown: this.settings.includeNonMarkdown,
+									nonMarkdownExtensions: this.settings.nonMarkdownExtensions,
+									excludedTags: this.settings.excludedTags,
+								}
 							);
 						});
 				});
@@ -62,15 +88,28 @@ export default class AutoGlossaryPlugin extends Plugin {
 						.setIcon("list-ordered")
 						.setSection("auto-glossary")
 						.onClick(async () => {
+							const fileName = formatFileName(
+								this.settings.glossaryIndexPattern,
+								folderName,
+								`${folderName}_GlossaryIndex`
+							);
 							await createFile(
 								this.app,
 								FileType.GlossaryIndex,
 								this.settings.fileInclusion,
 								this.settings.fileOverwrite,
-								`${folderName}_GlossaryIndex`,
+								fileName,
 								folderPath,
 								getEnumFO(this.settings.fileOrder),
-								this.settings.sameDest ? "" : this.settings.fileDest
+								this.settings.sameDest ? "" : this.settings.fileDest,
+								this.settings.glossaryIndexTemplate,
+								{
+									includeSubfolders: this.settings.includeSubfolders,
+									includeEmptyFolders: this.settings.includeEmptyFolders,
+									includeNonMarkdown: this.settings.includeNonMarkdown,
+									nonMarkdownExtensions: this.settings.nonMarkdownExtensions,
+									excludedTags: this.settings.excludedTags,
+								}
 							);
 						});
 				});
@@ -81,6 +120,11 @@ export default class AutoGlossaryPlugin extends Plugin {
 						.setIcon("list")
 						.setSection("auto-glossary-advanced")
 						.onClick(() => {
+							const defaultName = formatFileName(
+								this.settings.indexPattern,
+								folderName,
+								`${folderName}_Index`
+							);
 							new CreateFileModal(
 								this.app,
 								this.settings.fileOverwrite,
@@ -93,7 +137,9 @@ export default class AutoGlossaryPlugin extends Plugin {
 									fileName,
 									chosenFolder,
 									fileOrder,
-									destFolder
+									destFolder,
+									templatePath,
+									inclusionOptions
 								) => {
 									void createFile(
 										this.app,
@@ -103,12 +149,22 @@ export default class AutoGlossaryPlugin extends Plugin {
 										fileName,
 										chosenFolder,
 										getEnumFO(fileOrder),
-										destFolder
+										destFolder,
+										templatePath,
+										inclusionOptions
 									);
 								},
 								folderPath,
-								`${folderName}_Index`,
-								FileType.Index
+								defaultName,
+								FileType.Index,
+								this.settings.indexTemplate,
+								{
+									includeSubfolders: this.settings.includeSubfolders,
+									includeEmptyFolders: this.settings.includeEmptyFolders,
+									includeNonMarkdown: this.settings.includeNonMarkdown,
+									nonMarkdownExtensions: this.settings.nonMarkdownExtensions,
+									excludedTags: this.settings.excludedTags,
+								}
 							).open();
 						});
 				});
@@ -118,6 +174,11 @@ export default class AutoGlossaryPlugin extends Plugin {
 						.setIcon("layout-list")
 						.setSection("auto-glossary-advanced")
 						.onClick(() => {
+							const defaultName = formatFileName(
+								this.settings.glossaryPattern,
+								folderName,
+								`${folderName}_Glossary`
+							);
 							new CreateFileModal(
 								this.app,
 								this.settings.fileOverwrite,
@@ -130,7 +191,9 @@ export default class AutoGlossaryPlugin extends Plugin {
 									fileName,
 									chosenFolder,
 									fileOrder,
-									destFolder
+									destFolder,
+									templatePath,
+									inclusionOptions
 								) => {
 									void createFile(
 										this.app,
@@ -140,12 +203,22 @@ export default class AutoGlossaryPlugin extends Plugin {
 										fileName,
 										chosenFolder,
 										getEnumFO(fileOrder),
-										destFolder
+										destFolder,
+										templatePath,
+										inclusionOptions
 									);
 								},
 								folderPath,
-								`${folderName}_Glossary`,
-								FileType.Glossary
+								defaultName,
+								FileType.Glossary,
+								this.settings.glossaryTemplate,
+								{
+									includeSubfolders: this.settings.includeSubfolders,
+									includeEmptyFolders: this.settings.includeEmptyFolders,
+									includeNonMarkdown: this.settings.includeNonMarkdown,
+									nonMarkdownExtensions: this.settings.nonMarkdownExtensions,
+									excludedTags: this.settings.excludedTags,
+								}
 							).open();
 						});
 				});
@@ -155,6 +228,11 @@ export default class AutoGlossaryPlugin extends Plugin {
 						.setIcon("list-ordered")
 						.setSection("auto-glossary-advanced")
 						.onClick(() => {
+							const defaultName = formatFileName(
+								this.settings.glossaryIndexPattern,
+								folderName,
+								`${folderName}_GlossaryIndex`
+							);
 							new CreateFileModal(
 								this.app,
 								this.settings.fileOverwrite,
@@ -167,7 +245,9 @@ export default class AutoGlossaryPlugin extends Plugin {
 									fileName,
 									chosenFolder,
 									fileOrder,
-									destFolder
+									destFolder,
+									templatePath,
+									inclusionOptions
 								) => {
 									void createFile(
 										this.app,
@@ -177,12 +257,22 @@ export default class AutoGlossaryPlugin extends Plugin {
 										fileName,
 										chosenFolder,
 										getEnumFO(fileOrder),
-										destFolder
+										destFolder,
+										templatePath,
+										inclusionOptions
 									);
 								},
 								folderPath,
-								`${folderName}_GlossaryIndex`,
-								FileType.GlossaryIndex
+								defaultName,
+								FileType.GlossaryIndex,
+								this.settings.glossaryIndexTemplate,
+								{
+									includeSubfolders: this.settings.includeSubfolders,
+									includeEmptyFolders: this.settings.includeEmptyFolders,
+									includeNonMarkdown: this.settings.includeNonMarkdown,
+									nonMarkdownExtensions: this.settings.nonMarkdownExtensions,
+									excludedTags: this.settings.excludedTags,
+								}
 							).open();
 						});
 				});
@@ -197,6 +287,11 @@ export default class AutoGlossaryPlugin extends Plugin {
 				const activeFile = this.app.workspace.getActiveFile();
 				const defaultFolder = activeFile?.parent?.path ?? "";
 				const defaultFolderName = activeFile?.parent?.name || "Vault";
+				const defaultName = formatFileName(
+					this.settings.glossaryIndexPattern,
+					defaultFolderName,
+					`${defaultFolderName}_Index`
+				);
 
 				new CreateFileModal(
 					this.app,
@@ -210,7 +305,9 @@ export default class AutoGlossaryPlugin extends Plugin {
 						fileName,
 						chosenFolder,
 						fileOrder,
-						destFolder
+						destFolder,
+						templatePath,
+						inclusionOptions
 					) => {
 						void createFile(
 							this.app,
@@ -220,12 +317,22 @@ export default class AutoGlossaryPlugin extends Plugin {
 							fileName,
 							chosenFolder,
 							getEnumFO(fileOrder),
-							destFolder
+							destFolder,
+							templatePath,
+							inclusionOptions
 						);
 					},
 					defaultFolder,
-					`${defaultFolderName}_Index`,
-					FileType.GlossaryIndex
+					defaultName,
+					FileType.GlossaryIndex,
+					this.settings.glossaryIndexTemplate,
+					{
+						includeSubfolders: this.settings.includeSubfolders,
+						includeEmptyFolders: this.settings.includeEmptyFolders,
+						includeNonMarkdown: this.settings.includeNonMarkdown,
+						nonMarkdownExtensions: this.settings.nonMarkdownExtensions,
+						excludedTags: this.settings.excludedTags,
+					}
 				).open();
 			},
 		});

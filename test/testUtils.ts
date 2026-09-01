@@ -77,6 +77,71 @@ describe("getEnumFO", () => {
 	});
 });
 
+describe("formatFileName", () => {
+	it("interpolates {{folder}} placeholder correctly", () => {
+		assert.equal(
+			utils.formatFileName("{{folder}}_Index", "Notes", "Notes_Index"),
+			"Notes_Index"
+		);
+		assert.equal(
+			utils.formatFileName("+{{folder}}_Index", "Projects", "Projects_Index"),
+			"+Projects_Index"
+		);
+		assert.equal(
+			utils.formatFileName("-{{folder}}_Glossary", "Archive", "Archive_Glossary"),
+			"-Archive_Glossary"
+		);
+		assert.equal(
+			utils.formatFileName("{{folder}} MOC", "Books", "Books_Index"),
+			"Books MOC"
+		);
+	});
+
+	it("interpolates {{name}} alias placeholder correctly", () => {
+		assert.equal(
+			utils.formatFileName("{{name}}_GlossaryIndex", "Docs", "Docs_GlossaryIndex"),
+			"Docs_GlossaryIndex"
+		);
+	});
+
+	it("handles case-insensitive placeholders", () => {
+		assert.equal(
+			utils.formatFileName("{{FOLDER}}_Index", "Docs", "Docs_Index"),
+			"Docs_Index"
+		);
+		assert.equal(
+			utils.formatFileName("{{Folder}}_Index", "Docs", "Docs_Index"),
+			"Docs_Index"
+		);
+	});
+
+	it("falls back to defaultFallback when pattern is empty or whitespace", () => {
+		assert.equal(
+			utils.formatFileName("", "Notes", "Notes_Index"),
+			"Notes_Index"
+		);
+		assert.equal(
+			utils.formatFileName("   ", "Notes", "Notes_Index"),
+			"Notes_Index"
+		);
+		assert.equal(
+			utils.formatFileName(undefined, "Notes", "Notes_Index"),
+			"Notes_Index"
+		);
+	});
+
+	it("falls back to 'Vault' when folderName is empty", () => {
+		assert.equal(
+			utils.formatFileName("+{{folder}}_Index", "", "Vault_Index"),
+			"+Vault_Index"
+		);
+		assert.equal(
+			utils.formatFileName("{{folder}}_Index", "   ", "Vault_Index"),
+			"Vault_Index"
+		);
+	});
+});
+
 describe("sortFiles", () => {
 	let testFiles: Array<TFile>;
 	let testFilenames: Array<string>;
@@ -262,6 +327,138 @@ describe("cleanFiles", () => {
 		assert.equal(mockVault.cachedRead.callCount, 0);
 		assert.equal(cleanedFiles.length, 0);
 	});
+
+	it("excludes files matching custom excluded tags via metadataCache frontmatter", async () => {
+		const mockVault: SinonStubbedInstance<VaultMock> = createStubInstance(VaultMock);
+		const mockMetadataCache = {
+			getFileCache: (file: TFile) => {
+				if (file.name === "testFile1") {
+					return { frontmatter: { tags: ["draft", "project"] } };
+				}
+				return { frontmatter: { tags: ["published"] } };
+			},
+		};
+
+		const cleanedFiles = await utils.cleanFiles(
+			mockVault,
+			testFiles,
+			mockMetadataCache,
+			"draft, private"
+		);
+
+		assert.equal(cleanedFiles.length, testFiles.length - 1);
+		assert.ok(!cleanedFiles.some((f) => f.name === "testFile1"));
+	});
+
+	it("excludes files matching custom excluded tags via metadataCache inline tags", async () => {
+		const mockVault: SinonStubbedInstance<VaultMock> = createStubInstance(VaultMock);
+		const mockMetadataCache = {
+			getFileCache: (file: TFile) => {
+				if (file.name === "testFile2") {
+					return { tags: [{ tag: "#archive/2023" }] as any };
+				}
+				return { tags: [{ tag: "#active" }] as any };
+			},
+		};
+
+		const cleanedFiles = await utils.cleanFiles(
+			mockVault,
+			testFiles,
+			mockMetadataCache as any,
+			"#archive"
+		);
+
+		assert.equal(cleanedFiles.length, testFiles.length - 1);
+		assert.ok(!cleanedFiles.some((f) => f.name === "testFile2"));
+	});
+
+	it("excludes files matching custom excluded tags via raw file content fallback", async () => {
+		const mockVault: SinonStubbedInstance<VaultMock> = createStubInstance(VaultMock);
+		mockVault.cachedRead.callsFake(async (file: TFile) => {
+			if (file.name === "testFile1") {
+				return "Some notes with inline #wip tag in the body";
+			}
+			return "Clean note without excluded tags";
+		});
+
+		const cleanedFiles = await utils.cleanFiles(
+			mockVault,
+			testFiles,
+			undefined,
+			"wip"
+		);
+
+		assert.equal(cleanedFiles.length, testFiles.length - 1);
+		assert.ok(!cleanedFiles.some((f) => f.name === "testFile1"));
+	});
+
+	it("keeps auto-glossary files when filterAutoGlossaryTag is false, but still filters custom tags", async () => {
+		const mockVault: SinonStubbedInstance<VaultMock> = createStubInstance(VaultMock);
+		const mockMetadataCache = {
+			getFileCache: (file: TFile) => {
+				if (file.name === "testFile1") {
+					return { frontmatter: { tags: ["obsidian-auto-glossary"] } };
+				}
+				if (file.name === "testFile2") {
+					return { frontmatter: { tags: ["private"] } };
+				}
+				return { frontmatter: { tags: ["normal"] } };
+			},
+		};
+
+		const cleanedFiles = await utils.cleanFiles(
+			mockVault,
+			testFiles,
+			mockMetadataCache,
+			"private",
+			false // filterAutoGlossaryTag = false
+		);
+
+		// testFile1 (obsidian-auto-glossary) is kept, testFile2 (private) is excluded
+		assert.ok(cleanedFiles.some((f) => f.name === "testFile1"));
+		assert.ok(!cleanedFiles.some((f) => f.name === "testFile2"));
+	});
+});
+
+describe("tag utilities", () => {
+	it("parseTags handles string, array, and whitespace / comma / semicolon delimiters", () => {
+		assert.deepEqual(utils.parseTags("draft, #archive; private  wip"), [
+			"draft",
+			"archive",
+			"private",
+			"wip",
+		]);
+		assert.deepEqual(utils.parseTags(["#Draft", "ARCHIVE", ""]), ["draft", "archive"]);
+		assert.deepEqual(utils.parseTags(""), []);
+		assert.deepEqual(utils.parseTags(undefined), []);
+	});
+
+	it("matchesExcludedTag checks exact and hierarchical nested tags correctly", () => {
+		assert.equal(utils.matchesExcludedTag(["draft"], ["draft"]), true);
+		assert.equal(utils.matchesExcludedTag(["Draft"], ["draft"]), true);
+		assert.equal(utils.matchesExcludedTag(["#archive/2024/january"], ["archive"]), true);
+		assert.equal(utils.matchesExcludedTag(["#archive/2024/january"], ["archive/2024"]), true);
+		assert.equal(utils.matchesExcludedTag(["archived"], ["archive"]), false);
+		assert.equal(utils.matchesExcludedTag(["normal"], ["draft", "private"]), false);
+		assert.equal(utils.matchesExcludedTag([], ["draft"]), false);
+		assert.equal(utils.matchesExcludedTag(["draft"], []), false);
+	});
+
+	it("extractTagsFromContent extracts frontmatter and inline tags", () => {
+		const content = `---
+tags:
+  - project/alpha
+  - Status
+---
+# Heading
+This is a note with #wip/stage1 and #important inline tags.
+`;
+		const tags = utils.extractTagsFromContent(content);
+		assert.ok(tags.includes("project/alpha"));
+		assert.ok(tags.includes("status"));
+		assert.ok(tags.includes("wip/stage1"));
+		assert.ok(tags.includes("important"));
+	});
 });
 
 describe("ensureFolderExists", () => {
@@ -296,4 +493,240 @@ describe("ensureFolderExists", () => {
 		]);
 	});
 });
+
+describe("template & frontmatter utilities", () => {
+	it("formatCurrentDate formats Date as YYYY-MM-DD", () => {
+		const fixedDate = new Date(2026, 4, 15);
+		assert.equal(utils.formatCurrentDate(fixedDate), "2026-05-15");
+	});
+
+	it("formatCurrentTime formats Date as HH:mm", () => {
+		const fixedDate = new Date(2026, 4, 15, 9, 7);
+		assert.equal(utils.formatCurrentTime(fixedDate), "09:07");
+	});
+
+	it("splitFrontmatter correctly splits frontmatter and body", () => {
+		const mdWithFm = "---\naliases: [Index]\n---\n# Title\nBody";
+		const res = utils.splitFrontmatter(mdWithFm);
+		assert.equal(res.frontmatter, "aliases: [Index]");
+		assert.equal(res.body, "# Title\nBody");
+
+		const mdWithoutFm = "# Title\nBody";
+		const res2 = utils.splitFrontmatter(mdWithoutFm);
+		assert.equal(res2.frontmatter, null);
+		assert.equal(res2.body, "# Title\nBody");
+	});
+
+	it("ensureAutoGlossaryTag adds frontmatter if none exists", () => {
+		const md = "# Title\nContent";
+		const res = utils.ensureAutoGlossaryTag(md);
+		assert.ok(res.startsWith("---\ntags:\n  - obsidian-auto-glossary\n---\n"));
+		assert.ok(res.includes("# Title\nContent"));
+	});
+
+	it("ensureAutoGlossaryTag preserves existing tag array and adds obsidian-auto-glossary", () => {
+		const md = "---\ntags:\n  - my-tag\n---\n# Title";
+		const res = utils.ensureAutoGlossaryTag(md);
+		assert.ok(res.includes("  - my-tag"));
+		assert.ok(res.includes("  - obsidian-auto-glossary"));
+	});
+
+	it("ensureAutoGlossaryTag preserves bracket tags and adds obsidian-auto-glossary", () => {
+		const md = "---\ntags: [tag1, tag2]\n---\n# Title";
+		const res = utils.ensureAutoGlossaryTag(md);
+		assert.ok(res.includes("tags: [tag1, tag2, obsidian-auto-glossary]"));
+	});
+
+	it("ensureAutoGlossaryTag does not duplicate tag if already present", () => {
+		const md = "---\ntags:\n  - obsidian-auto-glossary\n---\n# Title";
+		const res = utils.ensureAutoGlossaryTag(md);
+		assert.equal(res, md);
+	});
+
+	it("mergeFrontmatter preserves custom user metadata when refreshed", () => {
+		const existingFile = "---\naliases:\n  - Custom MOC\nstatus: active\ntags:\n  - custom-tag\n  - obsidian-auto-glossary\n---\nOld content";
+		const newFile = "---\ntags:\n  - obsidian-auto-glossary\n---\n## Index\n- [[Note1]]";
+
+		const merged = utils.mergeFrontmatter(existingFile, newFile);
+		assert.ok(merged.includes("aliases:\n  - Custom MOC"));
+		assert.ok(merged.includes("status: active"));
+		assert.ok(merged.includes("custom-tag"));
+		assert.ok(merged.includes("obsidian-auto-glossary"));
+		assert.ok(merged.includes("## Index\n- [[Note1]]"));
+		assert.ok(!merged.includes("Old content"));
+	});
+
+	it("applyTemplate replaces all placeholders correctly", () => {
+		const template = [
+			"---",
+			"aliases:",
+			'  - "{{folder}} Overview"',
+			"---",
+			"# {{title}}",
+			"Folder: {{folder}} at {{folderPath}}",
+			"Generated on {{date}} at {{time}}",
+			"",
+			"{{content}}",
+		].join("\n");
+
+		const result = utils.applyTemplate(template, {
+			title: "Projects_Index",
+			folder: "Projects",
+			folderPath: "Work/Projects",
+			date: "2026-09-01",
+			time: "12:00",
+			content: "## Index\n- [[ProjA]]",
+		});
+
+		assert.ok(result.includes('aliases:\n  - "Projects Overview"'));
+		assert.ok(result.includes("# Projects_Index"));
+		assert.ok(result.includes("Folder: Projects at Work/Projects"));
+		assert.ok(result.includes("Generated on 2026-09-01 at 12:00"));
+		assert.ok(result.includes("## Index\n- [[ProjA]]"));
+		assert.ok(result.includes("obsidian-auto-glossary"));
+	});
+
+	it("applyTemplate replaces index and glossary separately", () => {
+		const template = [
+			"# Navigation",
+			"### Links",
+			"{{index}}",
+			"### Summaries",
+			"{{glossary}}",
+		].join("\n");
+
+		const result = utils.applyTemplate(template, {
+			indexContent: "## Index\n- [[Alpha]]",
+			glossaryContent: "## Glossary\n### Alpha",
+		});
+
+		assert.ok(result.includes("### Links\n## Index\n- [[Alpha]]"));
+		assert.ok(result.includes("### Summaries\n## Glossary\n### Alpha"));
+		assert.ok(result.includes("obsidian-auto-glossary"));
+	});
+
+	it("applyTemplate appends content if no placeholder is present", () => {
+		const template = "# Static Header\nSome intro text.";
+		const result = utils.applyTemplate(template, {
+			content: "## Index\n- [[Alpha]]",
+		});
+
+		assert.ok(result.includes("# Static Header\nSome intro text.\n\n## Index\n- [[Alpha]]"));
+		assert.ok(result.includes("obsidian-auto-glossary"));
+	});
+});
+
+describe("extension & file filtering utilities", () => {
+	it("parseExtensions correctly handles empty, comma, and space separated strings", () => {
+		assert.deepEqual(utils.parseExtensions(""), []);
+		assert.deepEqual(utils.parseExtensions("   "), []);
+		assert.deepEqual(utils.parseExtensions("pdf, png, jpg"), ["pdf", "png", "jpg"]);
+		assert.deepEqual(utils.parseExtensions(".pdf, .png; .canvas"), ["pdf", "png", "canvas"]);
+	});
+
+	it("filterFiles filters non-markdown files when includeNonMarkdown is false", () => {
+		const files = [
+			createTFile(1, "note1", { ctime: 1, mtime: 1, size: 1 }, "note1.md"),
+			Object.assign(createTFile(2, "image.png", { ctime: 1, mtime: 1, size: 1 }, "image.png"), { extension: "png" }),
+		];
+
+		const res = utils.filterFiles(files, false);
+		assert.equal(res.length, 1);
+		assert.equal(res[0].name, "note1");
+	});
+
+	it("filterFiles allows whitelisted non-markdown extensions when enabled", () => {
+		const files = [
+			createTFile(1, "note1", { ctime: 1, mtime: 1, size: 1 }, "note1.md"),
+			Object.assign(createTFile(2, "image.png", { ctime: 1, mtime: 1, size: 1 }, "image.png"), { extension: "png" }),
+			Object.assign(createTFile(3, "doc.pdf", { ctime: 1, mtime: 1, size: 1 }, "doc.pdf"), { extension: "pdf" }),
+			Object.assign(createTFile(4, "script.js", { ctime: 1, mtime: 1, size: 1 }, "script.js"), { extension: "js" }),
+		];
+
+		const res = utils.filterFiles(files, true, "png, pdf");
+		assert.equal(res.length, 3);
+		assert.equal(res[0].name, "note1");
+		assert.equal(res[1].name, "image.png");
+		assert.equal(res[2].name, "doc.pdf");
+	});
+});
+
+describe("folder tree construction & sorting", () => {
+	it("sortFolders sorts subfolders alphabetically and reverse", () => {
+		const folders: utils.FolderTreeNode[] = [
+			{ name: "Beta", path: "Beta", relativeDepth: 1, files: [], subfolders: [] },
+			{ name: "Alpha", path: "Alpha", relativeDepth: 1, files: [], subfolders: [] },
+			{ name: "Gamma", path: "Gamma", relativeDepth: 1, files: [], subfolders: [] },
+		];
+
+		utils.sortFolders(folders, utils.FileOrder.Alphabetical);
+		assert.equal(folders[0].name, "Alpha");
+		assert.equal(folders[1].name, "Beta");
+		assert.equal(folders[2].name, "Gamma");
+
+		utils.sortFolders(folders, utils.FileOrder.AlphabeticalRev);
+		assert.equal(folders[0].name, "Gamma");
+		assert.equal(folders[1].name, "Beta");
+		assert.equal(folders[2].name, "Alpha");
+	});
+
+	it("buildFolderTree builds hierarchy with files first and sorts folders and files", () => {
+		const files = [
+			createTFile(1, "RootNote", { ctime: 1, mtime: 1, size: 1 }, "RootNote.md"),
+			createTFile(2, "SubNote", { ctime: 1, mtime: 1, size: 1 }, "Sub/SubNote.md"),
+			createTFile(3, "NestedNote", { ctime: 1, mtime: 1, size: 1 }, "Sub/Nested/NestedNote.md"),
+		];
+
+		const tree = utils.buildFolderTree("", "Vault", files, {
+			includeSubfolders: true,
+			fileOrder: utils.FileOrder.Alphabetical,
+		});
+
+		assert.equal(tree.name, "Vault");
+		assert.equal(tree.files.length, 1);
+		assert.equal(tree.files[0].name, "RootNote");
+		assert.equal(tree.subfolders.length, 1);
+
+		const sub = tree.subfolders[0];
+		assert.equal(sub.name, "Sub");
+		assert.equal(sub.files.length, 1);
+		assert.equal(sub.files[0].name, "SubNote");
+		assert.equal(sub.subfolders.length, 1);
+
+		const nested = sub.subfolders[0];
+		assert.equal(nested.name, "Nested");
+		assert.equal(nested.files.length, 1);
+		assert.equal(nested.files[0].name, "NestedNote");
+	});
+
+	it("buildFolderTree prunes empty folders when includeEmptyFolders is false", () => {
+		const files = [createTFile(1, "Note1", { ctime: 1, mtime: 1, size: 1 }, "Folder/Note1.md")];
+
+		const tree = utils.buildFolderTree("", "Vault", files, {
+			includeSubfolders: true,
+			includeEmptyFolders: false,
+			knownFolderPaths: ["Folder", "EmptyFolder", "AnotherEmpty"],
+		});
+
+		assert.equal(tree.subfolders.length, 1);
+		assert.equal(tree.subfolders[0].name, "Folder");
+	});
+
+	it("buildFolderTree retains empty folders when includeEmptyFolders is true", () => {
+		const files = [createTFile(1, "Note1", { ctime: 1, mtime: 1, size: 1 }, "Folder/Note1.md")];
+
+		const tree = utils.buildFolderTree("", "Vault", files, {
+			includeSubfolders: true,
+			includeEmptyFolders: true,
+			knownFolderPaths: ["Folder", "EmptyFolder"],
+		});
+
+		assert.equal(tree.subfolders.length, 2);
+		const emptySub = tree.subfolders.find((f) => f.name === "EmptyFolder");
+		assert.ok(emptySub);
+		assert.equal(emptySub.isEmpty, true);
+	});
+});
+
+
 

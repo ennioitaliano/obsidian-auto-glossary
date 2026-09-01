@@ -1,6 +1,14 @@
 import { App, Modal, Setting } from "obsidian";
 import { FileOrder, FileType } from "./utils";
 
+export interface ModalInclusionOptions {
+	includeSubfolders: boolean;
+	includeEmptyFolders: boolean;
+	includeNonMarkdown: boolean;
+	nonMarkdownExtensions: string;
+	excludedTags?: string;
+}
+
 export class CreateFileModal extends Modal {
 	option: string;
 	overwrite: boolean;
@@ -9,6 +17,12 @@ export class CreateFileModal extends Modal {
 	chosenFolder: string;
 	fileOrder: string;
 	destFolder: string;
+	templatePath: string;
+	includeSubfolders: boolean;
+	includeEmptyFolders: boolean;
+	includeNonMarkdown: boolean;
+	nonMarkdownExtensions: string;
+	excludedTags: string;
 
 	onSubmit: (
 		option: string,
@@ -16,7 +30,9 @@ export class CreateFileModal extends Modal {
 		fileName: string,
 		chosenFolder: string,
 		fileOrder: string,
-		destFolder: string
+		destFolder: string,
+		templatePath?: string,
+		inclusionOptions?: ModalInclusionOptions
 	) => void;
 
 	constructor(
@@ -31,11 +47,15 @@ export class CreateFileModal extends Modal {
 			fileName: string,
 			chosenFolder: string,
 			fileOrder: string,
-			destFolder: string
+			destFolder: string,
+			templatePath?: string,
+			inclusionOptions?: ModalInclusionOptions
 		) => void,
 		passedFolder?: string,
 		passedName?: string,
-		passedOption?: string
+		passedOption?: string,
+		passedTemplate?: string,
+		inclusionOptions?: Partial<ModalInclusionOptions>
 	) {
 		super(app);
 		this.onSubmit = onSubmit;
@@ -46,6 +66,12 @@ export class CreateFileModal extends Modal {
 		this.chosenFolder = passedFolder ? passedFolder : "";
 		this.fileName = passedName ? passedName : "";
 		this.option = passedOption ? passedOption : FileType.GlossaryIndex;
+		this.templatePath = passedTemplate ? passedTemplate : "";
+		this.includeSubfolders = inclusionOptions?.includeSubfolders ?? true;
+		this.includeEmptyFolders = inclusionOptions?.includeEmptyFolders ?? false;
+		this.includeNonMarkdown = inclusionOptions?.includeNonMarkdown ?? false;
+		this.nonMarkdownExtensions = inclusionOptions?.nonMarkdownExtensions ?? "pdf, png, jpg, jpeg, canvas";
+		this.excludedTags = inclusionOptions?.excludedTags ?? "";
 	}
 
 	onOpen(): void {
@@ -163,6 +189,77 @@ export class CreateFileModal extends Modal {
 					})
 			);
 
+		new Setting(contentEl)
+			.setName("Template File")
+			.setDesc(
+				"Optional template file path in your vault (e.g. Templates/IndexTemplate.md)."
+			)
+			.addText((text) =>
+				text
+					.setPlaceholder("e.g. Templates/MyTemplate.md")
+					.setValue(this.templatePath)
+					.onChange((value) => {
+						this.templatePath = value.trim();
+					})
+			);
+
+		contentEl.createEl("h3", { text: "Inclusion Options" });
+
+		new Setting(contentEl)
+			.setName("Include subfolders")
+			.setDesc("Recursively index subdirectories with section headings.")
+			.addToggle((toggle) =>
+				toggle.setValue(this.includeSubfolders).onChange((value) => {
+					this.includeSubfolders = value;
+				})
+			);
+
+		new Setting(contentEl)
+			.setName("Include empty folders")
+			.setDesc("Include empty subfolders in generated indexes.")
+			.addToggle((toggle) =>
+				toggle.setValue(this.includeEmptyFolders).onChange((value) => {
+					this.includeEmptyFolders = value;
+				})
+			);
+
+		let nonMdExtSetting: Setting | undefined;
+
+		new Setting(contentEl)
+			.setName("Include non-markdown files")
+			.setDesc("Include non-markdown attachments and files (e.g. PDF, images, canvas).")
+			.addToggle((toggle) =>
+				toggle.setValue(this.includeNonMarkdown).onChange((value) => {
+					this.includeNonMarkdown = value;
+					nonMdExtSetting?.setDisabled(!value);
+				})
+			);
+
+		nonMdExtSetting = new Setting(contentEl)
+			.setName("Allowed non-markdown extensions")
+			.setDesc("Comma-separated list of extensions. Leave empty to allow all.")
+			.addText((text) =>
+				text
+					.setPlaceholder("pdf, png, jpg, jpeg, canvas")
+					.setValue(this.nonMarkdownExtensions)
+					.onChange((value) => {
+						this.nonMarkdownExtensions = value.trim();
+					})
+			)
+			.setDisabled(!this.includeNonMarkdown);
+
+		new Setting(contentEl)
+			.setName("Excluded tags")
+			.setDesc("Comma-separated list of tags to exclude from generated files.")
+			.addText((text) =>
+				text
+					.setPlaceholder("e.g. draft, archive, private")
+					.setValue(this.excludedTags)
+					.onChange((value) => {
+						this.excludedTags = value.trim();
+					})
+			);
+
 		new Setting(contentEl).addButton((btn) =>
 			btn
 				.setButtonText("Generate")
@@ -180,7 +277,15 @@ export class CreateFileModal extends Modal {
 						this.fileName,
 						this.chosenFolder,
 						this.fileOrder,
-						this.destFolder
+						this.destFolder,
+						this.templatePath,
+						{
+							includeSubfolders: this.includeSubfolders,
+							includeEmptyFolders: this.includeEmptyFolders,
+							includeNonMarkdown: this.includeNonMarkdown,
+							nonMarkdownExtensions: this.nonMarkdownExtensions,
+							excludedTags: this.excludedTags,
+						}
 					);
 				})
 		);
