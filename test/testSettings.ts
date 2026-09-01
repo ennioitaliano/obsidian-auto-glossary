@@ -7,7 +7,7 @@ import { SettingTab, DEFAULT_SETTINGS } from "../src/settings";
 const dummyManifest: PluginManifest = {
 	id: "auto-glossary",
 	name: "Auto Glossary",
-	version: "1.0.0",
+	version: "1.0.1",
 	minAppVersion: "1.5.0",
 	description: "",
 	author: "",
