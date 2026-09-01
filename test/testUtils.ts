@@ -362,3 +362,126 @@ describe("ensureFolderExists", () => {
 	});
 });
 
+describe("template & frontmatter utilities", () => {
+	it("formatCurrentDate formats Date as YYYY-MM-DD", () => {
+		const fixedDate = new Date(2026, 4, 15);
+		assert.equal(utils.formatCurrentDate(fixedDate), "2026-05-15");
+	});
+
+	it("formatCurrentTime formats Date as HH:mm", () => {
+		const fixedDate = new Date(2026, 4, 15, 9, 7);
+		assert.equal(utils.formatCurrentTime(fixedDate), "09:07");
+	});
+
+	it("splitFrontmatter correctly splits frontmatter and body", () => {
+		const mdWithFm = "---\naliases: [Index]\n---\n# Title\nBody";
+		const res = utils.splitFrontmatter(mdWithFm);
+		assert.equal(res.frontmatter, "aliases: [Index]");
+		assert.equal(res.body, "# Title\nBody");
+
+		const mdWithoutFm = "# Title\nBody";
+		const res2 = utils.splitFrontmatter(mdWithoutFm);
+		assert.equal(res2.frontmatter, null);
+		assert.equal(res2.body, "# Title\nBody");
+	});
+
+	it("ensureAutoGlossaryTag adds frontmatter if none exists", () => {
+		const md = "# Title\nContent";
+		const res = utils.ensureAutoGlossaryTag(md);
+		assert.ok(res.startsWith("---\ntags:\n  - obsidian-auto-glossary\n---\n"));
+		assert.ok(res.includes("# Title\nContent"));
+	});
+
+	it("ensureAutoGlossaryTag preserves existing tag array and adds obsidian-auto-glossary", () => {
+		const md = "---\ntags:\n  - my-tag\n---\n# Title";
+		const res = utils.ensureAutoGlossaryTag(md);
+		assert.ok(res.includes("  - my-tag"));
+		assert.ok(res.includes("  - obsidian-auto-glossary"));
+	});
+
+	it("ensureAutoGlossaryTag preserves bracket tags and adds obsidian-auto-glossary", () => {
+		const md = "---\ntags: [tag1, tag2]\n---\n# Title";
+		const res = utils.ensureAutoGlossaryTag(md);
+		assert.ok(res.includes("tags: [tag1, tag2, obsidian-auto-glossary]"));
+	});
+
+	it("ensureAutoGlossaryTag does not duplicate tag if already present", () => {
+		const md = "---\ntags:\n  - obsidian-auto-glossary\n---\n# Title";
+		const res = utils.ensureAutoGlossaryTag(md);
+		assert.equal(res, md);
+	});
+
+	it("mergeFrontmatter preserves custom user metadata when refreshed", () => {
+		const existingFile = "---\naliases:\n  - Custom MOC\nstatus: active\ntags:\n  - custom-tag\n  - obsidian-auto-glossary\n---\nOld content";
+		const newFile = "---\ntags:\n  - obsidian-auto-glossary\n---\n## Index\n- [[Note1]]";
+
+		const merged = utils.mergeFrontmatter(existingFile, newFile);
+		assert.ok(merged.includes("aliases:\n  - Custom MOC"));
+		assert.ok(merged.includes("status: active"));
+		assert.ok(merged.includes("custom-tag"));
+		assert.ok(merged.includes("obsidian-auto-glossary"));
+		assert.ok(merged.includes("## Index\n- [[Note1]]"));
+		assert.ok(!merged.includes("Old content"));
+	});
+
+	it("applyTemplate replaces all placeholders correctly", () => {
+		const template = [
+			"---",
+			"aliases:",
+			'  - "{{folder}} Overview"',
+			"---",
+			"# {{title}}",
+			"Folder: {{folder}} at {{folderPath}}",
+			"Generated on {{date}} at {{time}}",
+			"",
+			"{{content}}",
+		].join("\n");
+
+		const result = utils.applyTemplate(template, {
+			title: "Projects_Index",
+			folder: "Projects",
+			folderPath: "Work/Projects",
+			date: "2026-09-01",
+			time: "12:00",
+			content: "## Index\n- [[ProjA]]",
+		});
+
+		assert.ok(result.includes('aliases:\n  - "Projects Overview"'));
+		assert.ok(result.includes("# Projects_Index"));
+		assert.ok(result.includes("Folder: Projects at Work/Projects"));
+		assert.ok(result.includes("Generated on 2026-09-01 at 12:00"));
+		assert.ok(result.includes("## Index\n- [[ProjA]]"));
+		assert.ok(result.includes("obsidian-auto-glossary"));
+	});
+
+	it("applyTemplate replaces index and glossary separately", () => {
+		const template = [
+			"# Navigation",
+			"### Links",
+			"{{index}}",
+			"### Summaries",
+			"{{glossary}}",
+		].join("\n");
+
+		const result = utils.applyTemplate(template, {
+			indexContent: "## Index\n- [[Alpha]]",
+			glossaryContent: "## Glossary\n### Alpha",
+		});
+
+		assert.ok(result.includes("### Links\n## Index\n- [[Alpha]]"));
+		assert.ok(result.includes("### Summaries\n## Glossary\n### Alpha"));
+		assert.ok(result.includes("obsidian-auto-glossary"));
+	});
+
+	it("applyTemplate appends content if no placeholder is present", () => {
+		const template = "# Static Header\nSome intro text.";
+		const result = utils.applyTemplate(template, {
+			content: "## Index\n- [[Alpha]]",
+		});
+
+		assert.ok(result.includes("# Static Header\nSome intro text.\n\n## Index\n- [[Alpha]]"));
+		assert.ok(result.includes("obsidian-auto-glossary"));
+	});
+});
+
+

@@ -39,7 +39,8 @@ export default class AutoGlossaryPlugin extends Plugin {
 								fileName,
 								folderPath,
 								getEnumFO(this.settings.fileOrder),
-								this.settings.sameDest ? "" : this.settings.fileDest
+								this.settings.sameDest ? "" : this.settings.fileDest,
+								this.settings.indexTemplate
 							);
 						});
 				});
@@ -62,7 +63,8 @@ export default class AutoGlossaryPlugin extends Plugin {
 								fileName,
 								folderPath,
 								getEnumFO(this.settings.fileOrder),
-								this.settings.sameDest ? "" : this.settings.fileDest
+								this.settings.sameDest ? "" : this.settings.fileDest,
+								this.settings.glossaryTemplate
 							);
 						});
 				});
@@ -85,7 +87,8 @@ export default class AutoGlossaryPlugin extends Plugin {
 								fileName,
 								folderPath,
 								getEnumFO(this.settings.fileOrder),
-								this.settings.sameDest ? "" : this.settings.fileDest
+								this.settings.sameDest ? "" : this.settings.fileDest,
+								this.settings.glossaryIndexTemplate
 							);
 						});
 				});
@@ -113,7 +116,8 @@ export default class AutoGlossaryPlugin extends Plugin {
 									fileName,
 									chosenFolder,
 									fileOrder,
-									destFolder
+									destFolder,
+									templatePath
 								) => {
 									void createFile(
 										this.app,
@@ -123,12 +127,14 @@ export default class AutoGlossaryPlugin extends Plugin {
 										fileName,
 										chosenFolder,
 										getEnumFO(fileOrder),
-										destFolder
+										destFolder,
+										templatePath
 									);
 								},
 								folderPath,
 								defaultName,
-								FileType.Index
+								FileType.Index,
+								this.settings.indexTemplate
 							).open();
 						});
 				});
@@ -155,7 +161,8 @@ export default class AutoGlossaryPlugin extends Plugin {
 									fileName,
 									chosenFolder,
 									fileOrder,
-									destFolder
+									destFolder,
+									templatePath
 								) => {
 									void createFile(
 										this.app,
@@ -165,12 +172,14 @@ export default class AutoGlossaryPlugin extends Plugin {
 										fileName,
 										chosenFolder,
 										getEnumFO(fileOrder),
-										destFolder
+										destFolder,
+										templatePath
 									);
 								},
 								folderPath,
 								defaultName,
-								FileType.Glossary
+								FileType.Glossary,
+								this.settings.glossaryTemplate
 							).open();
 						});
 				});
@@ -197,7 +206,8 @@ export default class AutoGlossaryPlugin extends Plugin {
 									fileName,
 									chosenFolder,
 									fileOrder,
-									destFolder
+									destFolder,
+									templatePath
 								) => {
 									void createFile(
 										this.app,
@@ -207,12 +217,14 @@ export default class AutoGlossaryPlugin extends Plugin {
 										fileName,
 										chosenFolder,
 										getEnumFO(fileOrder),
-										destFolder
+										destFolder,
+										templatePath
 									);
 								},
 								folderPath,
 								defaultName,
-								FileType.GlossaryIndex
+								FileType.GlossaryIndex,
+								this.settings.glossaryIndexTemplate
 							).open();
 						});
 				});
@@ -245,7 +257,8 @@ export default class AutoGlossaryPlugin extends Plugin {
 						fileName,
 						chosenFolder,
 						fileOrder,
-						destFolder
+						destFolder,
+						templatePath
 					) => {
 						void createFile(
 							this.app,
@@ -255,12 +268,14 @@ export default class AutoGlossaryPlugin extends Plugin {
 							fileName,
 							chosenFolder,
 							getEnumFO(fileOrder),
-							destFolder
+							destFolder,
+							templatePath
 						);
 					},
 					defaultFolder,
 					defaultName,
-					FileType.GlossaryIndex
+					FileType.GlossaryIndex,
+					this.settings.glossaryIndexTemplate
 				).open();
 			},
 		});

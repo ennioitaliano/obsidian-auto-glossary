@@ -9,6 +9,7 @@ export class CreateFileModal extends Modal {
 	chosenFolder: string;
 	fileOrder: string;
 	destFolder: string;
+	templatePath: string;
 
 	onSubmit: (
 		option: string,
@@ -16,7 +17,8 @@ export class CreateFileModal extends Modal {
 		fileName: string,
 		chosenFolder: string,
 		fileOrder: string,
-		destFolder: string
+		destFolder: string,
+		templatePath?: string
 	) => void;
 
 	constructor(
@@ -31,11 +33,13 @@ export class CreateFileModal extends Modal {
 			fileName: string,
 			chosenFolder: string,
 			fileOrder: string,
-			destFolder: string
+			destFolder: string,
+			templatePath?: string
 		) => void,
 		passedFolder?: string,
 		passedName?: string,
-		passedOption?: string
+		passedOption?: string,
+		passedTemplate?: string
 	) {
 		super(app);
 		this.onSubmit = onSubmit;
@@ -46,6 +50,7 @@ export class CreateFileModal extends Modal {
 		this.chosenFolder = passedFolder ? passedFolder : "";
 		this.fileName = passedName ? passedName : "";
 		this.option = passedOption ? passedOption : FileType.GlossaryIndex;
+		this.templatePath = passedTemplate ? passedTemplate : "";
 	}
 
 	onOpen(): void {
@@ -163,6 +168,20 @@ export class CreateFileModal extends Modal {
 					})
 			);
 
+		new Setting(contentEl)
+			.setName("Template File")
+			.setDesc(
+				"Optional template file path in your vault (e.g. Templates/IndexTemplate.md)."
+			)
+			.addText((text) =>
+				text
+					.setPlaceholder("e.g. Templates/MyTemplate.md")
+					.setValue(this.templatePath)
+					.onChange((value) => {
+						this.templatePath = value.trim();
+					})
+			);
+
 		new Setting(contentEl).addButton((btn) =>
 			btn
 				.setButtonText("Generate")
@@ -180,7 +199,8 @@ export class CreateFileModal extends Modal {
 						this.fileName,
 						this.chosenFolder,
 						this.fileOrder,
-						this.destFolder
+						this.destFolder,
+						this.templatePath
 					);
 				})
 		);

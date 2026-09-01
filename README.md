@@ -19,6 +19,8 @@
   - Creation time (Newest to oldest / Oldest to newest)
   - Alphabetical (A-Z / Z-A)
 - **Smart Exclusion**: Avoid infinite loops by automatically ignoring previously generated auto-glossary files (customizable in settings).
+- **Custom Templates**: Define markdown templates for index, glossary, or combined notes with metadata/frontmatter (e.g. `aliases`, tags) and layout customization.
+- **Metadata Preservation on Refresh**: Re-generating or overwriting an existing glossary/index preserves custom frontmatter properties without wiping them out.
 - **Desktop & Mobile Support**: Fully compatible with Obsidian on desktop (macOS, Windows, Linux) and mobile (iOS, Android).
 - **Command Palette & Context Menu**: Trigger quick generation directly via right-click on any folder in the File Explorer or use the Advanced modal.
 
@@ -32,11 +34,44 @@
   - **New index (links)**: Creates `<FolderName>_Index.md` in the folder.
   - **New glossary (embeds)**: Creates `<FolderName>_Glossary.md` in the folder.
   - **New combined index & glossary**: Creates `<FolderName>_GlossaryIndex.md` in the folder.
-  - **Advanced options**: Opens a dialog to customize the destination folder, target filename, sorting order, file type, and overwrite preferences.
+  - **Advanced options**: Opens a dialog to customize the destination folder, target filename, template file, sorting order, file type, and overwrite preferences.
 
 ### 2. Command Palette
 - Press `Ctrl/Cmd + P` and search for **Auto Glossary: Create index or glossary**.
 - Choose your desired settings and generate the file.
+
+---
+
+## Templates
+
+You can create custom templates in your vault to format generated files and include custom metadata.
+
+### Supported Placeholders
+- `{{content}}`: Full generated content (Index, Glossary, or Combined).
+- `{{index}}`: The generated Index list.
+- `{{glossary}}`: The generated Glossary embeds.
+- `{{folder}}` / `{{name}}`: Name of the source folder (e.g. `Projects`).
+- `{{folderPath}}`: Vault path of the source folder (e.g. `Work/Projects`).
+- `{{title}}`: Name of the generated note.
+- `{{date}}`: Current date (`YYYY-MM-DD`).
+- `{{time}}`: Current time (`HH:mm`).
+
+### Example Template
+```markdown
+---
+aliases:
+  - "{{folder}} Overview"
+  - "{{folder}} MOC"
+tags:
+  - moc
+  - dashboard
+---
+# {{folder}} Navigation
+
+Last updated on {{date}} at {{time}}.
+
+{{content}}
+```
 
 ---
 
@@ -51,6 +86,7 @@
   - **Index filename pattern**: Pattern for index files (default: `{{folder}}_Index`).
   - **Glossary filename pattern**: Pattern for glossary files (default: `{{folder}}_Glossary`).
   - **Combined filename pattern**: Pattern for combined overview files (default: `{{folder}}_GlossaryIndex`).
+- **Templates**: Configure default template files from your vault for Index, Glossary, and Combined files.
 
 ---
 

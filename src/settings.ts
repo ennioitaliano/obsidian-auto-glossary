@@ -10,6 +10,9 @@ export interface AutoGlossarySettings {
 	indexPattern: string;
 	glossaryPattern: string;
 	glossaryIndexPattern: string;
+	indexTemplate: string;
+	glossaryTemplate: string;
+	glossaryIndexTemplate: string;
 }
 
 export const DEFAULT_SETTINGS: AutoGlossarySettings = {
@@ -21,6 +24,9 @@ export const DEFAULT_SETTINGS: AutoGlossarySettings = {
 	indexPattern: "{{folder}}_Index",
 	glossaryPattern: "{{folder}}_Glossary",
 	glossaryIndexPattern: "{{folder}}_GlossaryIndex",
+	indexTemplate: "",
+	glossaryTemplate: "",
+	glossaryIndexTemplate: "",
 };
 
 export class SettingTab extends PluginSettingTab {
@@ -172,6 +178,53 @@ export class SettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.glossaryIndexPattern)
 					.onChange(async (value) => {
 						this.plugin.settings.glossaryIndexPattern = value.trim();
+						await this.plugin.saveSettings();
+					})
+			);
+
+		containerEl.createEl("h3", { text: "Templates" });
+
+		new Setting(containerEl)
+			.setName("Index template")
+			.setDesc(
+				"Vault path to a markdown template file for index notes. Placeholders: {{content}}, {{index}}, {{folder}}, {{title}}, {{date}}, {{time}}."
+			)
+			.addText((text) =>
+				text
+					.setPlaceholder("e.g. Templates/IndexTemplate.md")
+					.setValue(this.plugin.settings.indexTemplate)
+					.onChange(async (value) => {
+						this.plugin.settings.indexTemplate = value.trim();
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Glossary template")
+			.setDesc(
+				"Vault path to a markdown template file for glossary notes. Placeholders: {{content}}, {{glossary}}, {{folder}}, {{title}}, {{date}}, {{time}}."
+			)
+			.addText((text) =>
+				text
+					.setPlaceholder("e.g. Templates/GlossaryTemplate.md")
+					.setValue(this.plugin.settings.glossaryTemplate)
+					.onChange(async (value) => {
+						this.plugin.settings.glossaryTemplate = value.trim();
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Combined template")
+			.setDesc(
+				"Vault path to a markdown template file for combined index & glossary notes. Placeholders: {{content}}, {{index}}, {{glossary}}, {{folder}}, {{title}}, {{date}}, {{time}}."
+			)
+			.addText((text) =>
+				text
+					.setPlaceholder("e.g. Templates/CombinedTemplate.md")
+					.setValue(this.plugin.settings.glossaryIndexTemplate)
+					.onChange(async (value) => {
+						this.plugin.settings.glossaryIndexTemplate = value.trim();
 						await this.plugin.saveSettings();
 					})
 			);

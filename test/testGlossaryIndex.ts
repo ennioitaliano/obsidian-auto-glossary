@@ -128,10 +128,12 @@ describe("glossaryIndex - createFile", () => {
 		createdFiles = new Map<string, string>();
 
 		mockVault.getMarkdownFiles.returns([
-			makeTFile("Alpha", "Alpha.md"),
-			makeTFile("Beta", "Beta.md"),
+			makeTFile("Alpha", "Folder/Alpha.md"),
+			makeTFile("Beta", "Folder/Beta.md"),
 		]);
-		mockVault.cachedRead.resolves("Content");
+		mockVault.cachedRead.callsFake(async (file: TFile): Promise<string> => {
+			return createdFiles.get(file.path) ?? "Content";
+		});
 
 		mockVault.getAbstractFileByPath.callsFake((path: string): TAbstractFile | null => {
 			if (createdFiles.has(path)) {
@@ -213,5 +215,74 @@ describe("glossaryIndex - createFile", () => {
 		assert.equal(result, null);
 		assert.equal(mockVault.modify.callCount, 0);
 		assert.equal(mockVault.create.callCount, 0);
+	});
+
+	it("creates a file using a custom template", async () => {
+		createdFiles.set(
+			"Templates/CustomIndex.md",
+			"---\naliases: [{{folder}} Index]\n---\n# {{folder}} MOC\n\n{{content}}"
+		);
+
+		const result = await createFile(
+			mockApp,
+			FileType.Index,
+			true,
+			false,
+			"Folder_Index",
+			"Folder",
+			FileOrder.Default,
+			"",
+			"Templates/CustomIndex"
+		);
+
+		assert.ok(result);
+		assert.equal(mockVault.create.callCount, 1);
+		const content = createdFiles.get("Folder/Folder_Index.md");
+		assert.ok(content);
+		assert.ok(content.includes("aliases: [Folder Index]"));
+		assert.ok(content.includes("# Folder MOC"));
+		assert.ok(content.includes("## Index\n- [[Alpha]]\n- [[Beta]]"));
+		assert.ok(content.includes("obsidian-auto-glossary"));
+	});
+
+	it("falls back to default format when template path does not exist", async () => {
+		const text = await createText(
+			mockApp,
+			FileType.Index,
+			true,
+			"Folder_Index",
+			"Folder",
+			FileOrder.Default,
+			"NonExistentTemplate.md"
+		);
+
+		assert.ok(text.startsWith("---\ntags:\n  - obsidian-auto-glossary\n---\n## Index\n"));
+	});
+
+	it("preserves custom user frontmatter metadata when overwriting", async () => {
+		createdFiles.set(
+			"Folder/Existing.md",
+			"---\naliases:\n  - My Custom Alias\nrating: 5\ntags:\n  - custom-tag\n  - obsidian-auto-glossary\n---\n## Index\n- [[Alpha]]"
+		);
+
+		const result = await createFile(
+			mockApp,
+			FileType.Index,
+			true,
+			true,
+			"Existing",
+			"Folder",
+			FileOrder.Default
+		);
+
+		assert.ok(result);
+		assert.equal(mockVault.modify.callCount, 1);
+		const updatedContent = createdFiles.get("Folder/Existing.md");
+		assert.ok(updatedContent);
+		assert.ok(updatedContent.includes("aliases:\n  - My Custom Alias"));
+		assert.ok(updatedContent.includes("rating: 5"));
+		assert.ok(updatedContent.includes("custom-tag"));
+		assert.ok(updatedContent.includes("obsidian-auto-glossary"));
+		assert.ok(updatedContent.includes("## Index\n- [[Alpha]]\n- [[Beta]]"));
 	});
 });

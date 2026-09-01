@@ -1,10 +1,12 @@
 import { App, normalizePath, Notice, TFile, TFolder } from "obsidian";
 import {
+	applyTemplate,
 	cleanFiles,
 	ensureFolderExists,
 	FileOrder,
 	FileType,
 	getEnumFT,
+	mergeFrontmatter,
 	sortFiles,
 } from "./utils";
 
@@ -66,7 +68,8 @@ export async function createFile(
 	fileName: string,
 	chosenFolder?: string,
 	order?: FileOrder | string,
-	destFolder?: string
+	destFolder?: string,
+	templatePath?: string
 ): Promise<TFile | null> {
 	let rawPath = "";
 
@@ -88,7 +91,8 @@ export async function createFile(
 		fileInclusion,
 		baseName,
 		chosenFolder,
-		order
+		order,
+		templatePath
 	);
 
 	try {
@@ -101,7 +105,16 @@ export async function createFile(
 				);
 				return null;
 			}
-			await app.vault.modify(existingAbstract, content);
+
+			let finalContent = content;
+			try {
+				const existingContent = await app.vault.cachedRead(existingAbstract);
+				finalContent = mergeFrontmatter(existingContent, content);
+			} catch (err) {
+				console.warn("Could not read existing file for metadata merge:", err);
+			}
+
+			await app.vault.modify(existingAbstract, finalContent);
 			new Notice(`Updated: ${completeFilePath}`);
 			return existingAbstract;
 		} else if (existingAbstract instanceof TFolder) {
@@ -131,7 +144,8 @@ export async function createText(
 	fileInclusion: boolean,
 	fileName?: string,
 	chosenFolder?: string,
-	order?: FileOrder | string
+	order?: FileOrder | string,
+	templatePath?: string
 ): Promise<string> {
 	const [indexText, glossaryText] = await createArrays(
 		app,
@@ -142,26 +156,54 @@ export async function createText(
 		order
 	);
 
-	let text = "---\ntags:\n  - obsidian-auto-glossary\n---\n";
-
 	const fileTypeNormalized = getEnumFT(
 		typeof requestedFile === "string" ? requestedFile : undefined
 	);
 
+	let generatedContent = "";
 	switch (fileTypeNormalized) {
 		case FileType.Glossary:
-			text += glossaryText;
+			generatedContent = glossaryText;
 			break;
 		case FileType.Index:
-			text += indexText;
+			generatedContent = indexText;
 			break;
 		case FileType.GlossaryIndex:
 		default:
-			text += `${indexText}\n***\n\n${glossaryText}`;
+			generatedContent = `${indexText}\n***\n\n${glossaryText}`;
 			break;
 	}
 
-	return text;
+	const normalizedChosenFolder = chosenFolder && chosenFolder !== "/" ? normalizePath(chosenFolder) : "";
+	const folderName = normalizedChosenFolder ? normalizedChosenFolder.split("/").pop() || "Vault" : "Vault";
+
+	if (templatePath && templatePath.trim() !== "") {
+		const normalizedTemplatePath = normalizePath(
+			templatePath.endsWith(".md") ? templatePath.trim() : `${templatePath.trim()}.md`
+		);
+		const templateAbstract = app.vault.getAbstractFileByPath(normalizedTemplatePath);
+
+		if (templateAbstract instanceof TFile) {
+			try {
+				const templateContent = await app.vault.cachedRead(templateAbstract);
+				return applyTemplate(templateContent, {
+					title: fileName,
+					folder: folderName,
+					folderPath: normalizedChosenFolder,
+					indexContent: indexText,
+					glossaryContent: glossaryText,
+					content: generatedContent,
+				});
+			} catch (err) {
+				console.error("Failed to read template file:", err);
+				new Notice(`Auto Glossary: Could not read template "${normalizedTemplatePath}". Using default format.`);
+			}
+		} else {
+			new Notice(`Auto Glossary: Template "${normalizedTemplatePath}" not found. Using default format.`);
+		}
+	}
+
+	return `---\ntags:\n  - obsidian-auto-glossary\n---\n${generatedContent}`;
 }
 
 

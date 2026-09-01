@@ -106,10 +106,12 @@ export class Setting {
 		return this;
 	}
 	addText(cb: (text: unknown) => unknown): this {
-		cb({
-			setPlaceholder: () => ({ setValue: () => ({ onChange: () => {} }) }),
-			setValue: () => ({ onChange: () => {} }),
-		});
+		const comp: Record<string, unknown> = {};
+		comp.setPlaceholder = () => comp;
+		comp.setValue = () => comp;
+		comp.onChange = () => comp;
+		comp.setDisabled = () => comp;
+		cb(comp);
 		return this;
 	}
 	addDropdown(cb: (dropdown: unknown) => unknown): this {
