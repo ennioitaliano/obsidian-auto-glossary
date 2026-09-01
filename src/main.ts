@@ -1,270 +1,240 @@
 import { Plugin, TFolder } from "obsidian";
-
 import { CreateFileModal } from "./modal";
 import { createFile } from "./glossaryIndex";
-import { getEnumFT, getEnumFO, fileType } from "./utils";
-import { AutoGlossarySettings, DEFAULT_SETTINGS, SettingTab } from "settings";
+import { FileOrder, FileType, getEnumFO, getEnumFT } from "./utils";
+import { AutoGlossarySettings, DEFAULT_SETTINGS, SettingTab } from "./settings";
 
-export default class autoGlossary extends Plugin {
-	// SETTINGS
-	settings: AutoGlossarySettings;
-	async onload() {
-		console.info("Auto Glossary enabled");
+export default class AutoGlossaryPlugin extends Plugin {
+	settings: AutoGlossarySettings = DEFAULT_SETTINGS;
 
-		//SETTINGS
+	async onload(): Promise<void> {
 		await this.loadSettings();
-		/* // This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon(
-			"dice",
-			"Auto Glossary",
-			(evt: MouseEvent) => {
-			}
-		);
-		// Perform additional things with the ribbon
-		ribbonIconEl.addClass("my-plugin-ribbon-class");*/
 
+		// Register single file-menu handler for folder context menus
 		this.registerEvent(
 			this.app.workspace.on("file-menu", (menu, folder) => {
-				if (folder instanceof TFolder) {
-					menu.addItem((item) => {
-						item.setTitle("New index")
-							.setIcon("list")
-							.onClick(async () => {
-								createFile(
-									this.app,
-									fileType.i,
-									this.settings.fileInclusion,
-									this.settings.fileOverwrite,
-									folder.name + "_Index",
-									folder.path,
-									getEnumFO(this.settings.fileOrder),
-									this.settings.sameDest
-										? ""
-										: this.settings.fileDest
-								);
-							});
-					});
+				if (!(folder instanceof TFolder)) {
+					return;
 				}
-			})
-		);
 
-		this.registerEvent(
-			this.app.workspace.on("file-menu", (menu, folder) => {
-				if (folder instanceof TFolder) {
-					menu.addItem((item) => {
-						item.setTitle("New glossary")
-							.setIcon("layout-list")
-							.onClick(async () => {
-								createFile(
-									this.app,
-									fileType.g,
-									this.settings.fileInclusion,
-									this.settings.fileOverwrite,
-									folder.name + "_Glossary",
-									folder.path,
-									getEnumFO(this.settings.fileOrder),
-									this.settings.sameDest
-										? ""
-										: this.settings.fileDest
-								);
-							});
-					});
-				}
-			})
-		);
+				const folderName = folder.name || "Vault";
+				const folderPath = folder.path === "/" ? "" : folder.path;
 
-		this.registerEvent(
-			this.app.workspace.on("file-menu", (menu, folder) => {
-				if (folder instanceof TFolder) {
-					menu.addItem((item) => {
-						item.setTitle("New index+glossary")
-							.setIcon("list-ordered")
-							.onClick(async () => {
-								createFile(
-									this.app,
-									fileType.gi,
-									this.settings.fileInclusion,
-									this.settings.fileOverwrite,
-									folder.name + "_GlossaryIndex",
-									folder.path,
-									getEnumFO(this.settings.fileOrder),
-									this.settings.sameDest
-										? ""
-										: this.settings.fileDest
-								);
-							});
-					});
-				}
-			})
-		);
+				// Quick generation options
+				menu.addItem((item) => {
+					item.setTitle("Auto Glossary: New index (links)")
+						.setIcon("list")
+						.setSection("auto-glossary")
+						.onClick(async () => {
+							await createFile(
+								this.app,
+								FileType.Index,
+								this.settings.fileInclusion,
+								this.settings.fileOverwrite,
+								`${folderName}_Index`,
+								folderPath,
+								getEnumFO(this.settings.fileOrder),
+								this.settings.sameDest ? "" : this.settings.fileDest
+							);
+						});
+				});
 
-		this.registerEvent(
-			this.app.workspace.on("file-menu", (menu, folder) => {
-				if (folder instanceof TFolder) {
-					menu.addItem((item) => {
-						item.setTitle("Advanced index")
-							.setIcon("list")
-							.onClick(async () => {
-								new CreateFileModal(
-									this.app,
-									this.settings.fileOverwrite,
-									this.settings.sameDest,
-									this.settings.fileDest,
-									this.settings.fileOrder,
-									(
-										option,
+				menu.addItem((item) => {
+					item.setTitle("Auto Glossary: New glossary (embeds)")
+						.setIcon("layout-list")
+						.setSection("auto-glossary")
+						.onClick(async () => {
+							await createFile(
+								this.app,
+								FileType.Glossary,
+								this.settings.fileInclusion,
+								this.settings.fileOverwrite,
+								`${folderName}_Glossary`,
+								folderPath,
+								getEnumFO(this.settings.fileOrder),
+								this.settings.sameDest ? "" : this.settings.fileDest
+							);
+						});
+				});
+
+				menu.addItem((item) => {
+					item.setTitle("Auto Glossary: New combined index & glossary")
+						.setIcon("list-ordered")
+						.setSection("auto-glossary")
+						.onClick(async () => {
+							await createFile(
+								this.app,
+								FileType.GlossaryIndex,
+								this.settings.fileInclusion,
+								this.settings.fileOverwrite,
+								`${folderName}_GlossaryIndex`,
+								folderPath,
+								getEnumFO(this.settings.fileOrder),
+								this.settings.sameDest ? "" : this.settings.fileDest
+							);
+						});
+				});
+
+				// Advanced generation options
+				menu.addItem((item) => {
+					item.setTitle("Auto Glossary: Advanced index (links)")
+						.setIcon("list")
+						.setSection("auto-glossary-advanced")
+						.onClick(() => {
+							new CreateFileModal(
+								this.app,
+								this.settings.fileOverwrite,
+								this.settings.sameDest,
+								this.settings.fileDest,
+								this.settings.fileOrder,
+								(
+									option,
+									overwrite,
+									fileName,
+									chosenFolder,
+									fileOrder,
+									destFolder
+								) => {
+									void createFile(
+										this.app,
+										getEnumFT(option),
+										this.settings.fileInclusion,
 										overwrite,
 										fileName,
 										chosenFolder,
-										fileOrder,
+										getEnumFO(fileOrder),
 										destFolder
-									) => {
-										createFile(
-											this.app,
-											getEnumFT(option),
-											this.settings.fileInclusion,
-											overwrite,
-											fileName,
-											chosenFolder,
-											getEnumFO(fileOrder),
-											destFolder
-										);
-									},
-									folder.path,
-									folder.name + "_Index",
-									fileType.i
-								).open();
-							});
-					});
-				}
-			})
-		);
+									);
+								},
+								folderPath,
+								`${folderName}_Index`,
+								FileType.Index
+							).open();
+						});
+				});
 
-		this.registerEvent(
-			this.app.workspace.on("file-menu", (menu, folder) => {
-				if (folder instanceof TFolder) {
-					menu.addItem((item) => {
-						item.setTitle("Advanced glossary")
-							.setIcon("layout-list")
-							.onClick(async () => {
-								new CreateFileModal(
-									this.app,
-									this.settings.fileOverwrite,
-									this.settings.sameDest,
-									this.settings.fileDest,
-									this.settings.fileOrder,
-									(
-										option,
+				menu.addItem((item) => {
+					item.setTitle("Auto Glossary: Advanced glossary (embeds)")
+						.setIcon("layout-list")
+						.setSection("auto-glossary-advanced")
+						.onClick(() => {
+							new CreateFileModal(
+								this.app,
+								this.settings.fileOverwrite,
+								this.settings.sameDest,
+								this.settings.fileDest,
+								this.settings.fileOrder,
+								(
+									option,
+									overwrite,
+									fileName,
+									chosenFolder,
+									fileOrder,
+									destFolder
+								) => {
+									void createFile(
+										this.app,
+										getEnumFT(option),
+										this.settings.fileInclusion,
 										overwrite,
 										fileName,
 										chosenFolder,
-										fileOrder,
+										getEnumFO(fileOrder),
 										destFolder
-									) => {
-										createFile(
-											this.app,
-											getEnumFT(option),
-											this.settings.fileInclusion,
-											overwrite,
-											fileName,
-											chosenFolder,
-											getEnumFO(fileOrder),
-											destFolder
-										);
-									},
-									folder.path,
-									folder.name + "_Glossary",
-									fileType.g
-								).open();
-							});
-					});
-				}
-			})
-		);
+									);
+								},
+								folderPath,
+								`${folderName}_Glossary`,
+								FileType.Glossary
+							).open();
+						});
+				});
 
-		this.registerEvent(
-			this.app.workspace.on("file-menu", (menu, folder) => {
-				if (folder instanceof TFolder) {
-					menu.addItem((item) => {
-						item.setTitle("Advanced index+glossary")
-							.setIcon("list-ordered")
-							.onClick(async () => {
-								new CreateFileModal(
-									this.app,
-									this.settings.fileOverwrite,
-									this.settings.sameDest,
-									this.settings.fileDest,
-									this.settings.fileOrder,
-									(
-										option,
+				menu.addItem((item) => {
+					item.setTitle("Auto Glossary: Advanced combined index & glossary")
+						.setIcon("list-ordered")
+						.setSection("auto-glossary-advanced")
+						.onClick(() => {
+							new CreateFileModal(
+								this.app,
+								this.settings.fileOverwrite,
+								this.settings.sameDest,
+								this.settings.fileDest,
+								this.settings.fileOrder,
+								(
+									option,
+									overwrite,
+									fileName,
+									chosenFolder,
+									fileOrder,
+									destFolder
+								) => {
+									void createFile(
+										this.app,
+										getEnumFT(option),
+										this.settings.fileInclusion,
 										overwrite,
 										fileName,
 										chosenFolder,
-										fileOrder,
+										getEnumFO(fileOrder),
 										destFolder
-									) => {
-										createFile(
-											this.app,
-											getEnumFT(option),
-											this.settings.fileInclusion,
-											overwrite,
-											fileName,
-											chosenFolder,
-											getEnumFO(fileOrder),
-											destFolder
-										);
-									},
-									folder.path,
-									folder.name + "_GlossaryIndex",
-									fileType.gi
-								).open();
-							});
-					});
-				}
+									);
+								},
+								folderPath,
+								`${folderName}_GlossaryIndex`,
+								FileType.GlossaryIndex
+							).open();
+						});
+				});
 			})
 		);
 
-		/*this.addCommand({
-			id: "create-glossary",
-			name: "Create glossary",
+		// Add Command Palette Command
+		this.addCommand({
+			id: "create-glossary-index",
+			name: "Create index or glossary",
 			callback: () => {
+				const activeFile = this.app.workspace.getActiveFile();
+				const defaultFolder = activeFile?.parent?.path ?? "";
+				const defaultFolderName = activeFile?.parent?.name || "Vault";
+
 				new CreateFileModal(
 					this.app,
 					this.settings.fileOverwrite,
+					this.settings.sameDest,
+					this.settings.fileDest,
+					this.settings.fileOrder,
 					(
 						option,
+						overwrite,
 						fileName,
 						chosenFolder,
 						fileOrder,
-						destFolder,
-						overwrite
+						destFolder
 					) => {
-						createFile(
+						void createFile(
 							this.app,
 							getEnumFT(option),
 							this.settings.fileInclusion,
-							fileName,
 							overwrite,
+							fileName,
 							chosenFolder,
 							getEnumFO(fileOrder),
 							destFolder
 						);
-					}
+					},
+					defaultFolder,
+					`${defaultFolderName}_Index`,
+					FileType.GlossaryIndex
 				).open();
 			},
-		});*/
+		});
 
-		// SETTINGS
-		// This adds a settings tab so the user can configure various aspects of the plugin
+		// Settings tab
 		this.addSettingTab(new SettingTab(this.app, this));
 	}
 
-	onunload() {
-		console.info("Auto Glossary unloaded");
-	}
-
-	// SETTINGS
-	async loadSettings() {
+	async loadSettings(): Promise<void> {
 		this.settings = Object.assign(
 			{},
 			DEFAULT_SETTINGS,
@@ -272,8 +242,9 @@ export default class autoGlossary extends Plugin {
 		);
 	}
 
-	async saveSettings() {
+	async saveSettings(): Promise<void> {
 		await this.saveData(this.settings);
-		console.log("Settings saved.");
 	}
 }
+
+

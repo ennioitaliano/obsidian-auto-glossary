@@ -1,4 +1,4 @@
-import autoGlossary from "main";
+import AutoGlossaryPlugin from "./main";
 import { App, PluginSettingTab, Setting } from "obsidian";
 
 export interface AutoGlossarySettings {
@@ -18,9 +18,9 @@ export const DEFAULT_SETTINGS: AutoGlossarySettings = {
 };
 
 export class SettingTab extends PluginSettingTab {
-	plugin: autoGlossary;
+	plugin: AutoGlossaryPlugin;
 
-	constructor(app: App, plugin: autoGlossary) {
+	constructor(app: App, plugin: AutoGlossaryPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
@@ -35,13 +35,12 @@ export class SettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("File inclusion")
 			.setDesc(
-				"Include previously generated files in glossaries and indexes."
+				"Include previously generated Auto Glossary files in newly created indexes and glossaries."
 			)
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.fileInclusion)
 					.onChange(async (value) => {
-						console.log("fileInclusion switched to " + value);
 						this.plugin.settings.fileInclusion = value;
 						await this.plugin.saveSettings();
 					})
@@ -49,54 +48,51 @@ export class SettingTab extends PluginSettingTab {
 
 		containerEl.createEl("h3", { text: "Default options" });
 
+		let destinationTextSetting: Setting | undefined;
+
 		new Setting(containerEl)
 			.setName("Same destination as folder")
 			.setDesc(
-				"If on, files will be created in the same folder specified above and the 'Destination' field will be disabled."
+				"If on, files will be created in the target folder and the 'Destination' field will be disabled."
 			)
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.sameDest)
 					.onChange(async (value) => {
-						console.log("sameDest switched to " + value);
 						this.plugin.settings.sameDest = value;
 						if (value) {
 							this.plugin.settings.fileDest = "";
 						}
-						destination.setDisabled(value);
+						destinationTextSetting?.setDisabled(value);
 						await this.plugin.saveSettings();
 					})
 			);
 
-		const destination = new Setting(containerEl);
-
-		destination
+		destinationTextSetting = new Setting(containerEl)
 			.setName("Destination")
 			.setDesc(
-				"If the above toggle is off, specify here the destination folder for the files created."
+				"If 'Same destination as folder' is off, specify the custom destination folder for created files."
 			)
 			.addText((destText) =>
 				destText
+					.setPlaceholder("e.g. Glossaries/Indices")
+					.setValue(this.plugin.settings.fileDest)
 					.onChange(async (value) => {
-						this.plugin.settings.fileDest = value;
-						console.log("fileDest switched to " + value);
+						this.plugin.settings.fileDest = value.trim();
 						await this.plugin.saveSettings();
 					})
-					.setValue(this.plugin.settings.fileDest)
-					.setDisabled(true)
 			)
 			.setDisabled(this.plugin.settings.sameDest);
 
 		new Setting(containerEl)
 			.setName("Overwrite existing files")
 			.setDesc(
-				"Set the default behavior when a file already exists. Can be changed every time in the modal."
+				"Set the default overwrite behavior when a file with the same name already exists."
 			)
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.fileOverwrite)
 					.onChange(async (value) => {
-						console.log("fileOverwrite switched to " + value);
 						this.plugin.settings.fileOverwrite = value;
 						await this.plugin.saveSettings();
 					})
@@ -104,7 +100,7 @@ export class SettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("File order")
-			.setDesc("The order for the files to be indexed.")
+			.setDesc("The default sort order for notes in generated files.")
 			.addDropdown((drop) =>
 				drop
 					.addOption("default", "Default")
@@ -118,14 +114,15 @@ export class SettingTab extends PluginSettingTab {
 					)
 					.addOption("ctime_new", "Creation time - Newest to oldest")
 					.addOption("ctime_old", "Creation time - Oldest to newest")
-					.addOption("alphabetical", "Alphabetical")
-					.addOption("alphabetical_rev", "Alphabetical - Reverse")
+					.addOption("alphabetical", "Alphabetical (A-Z)")
+					.addOption("alphabetical_rev", "Alphabetical (Z-A)")
 					.setValue(this.plugin.settings.fileOrder)
 					.onChange(async (chosen) => {
-						console.log("fileOrder switched to " + chosen);
 						this.plugin.settings.fileOrder = chosen;
 						await this.plugin.saveSettings();
 					})
 			);
 	}
 }
+
+
