@@ -7,9 +7,11 @@
 		"dev": "node esbuild.config.mjs",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
-		"test": "node --import tsx --test ./test/*.ts",
-		"test:coverage": "c8 node --import tsx --test ./test/*.ts",
-		"test:only": "node --import tsx --test --test-only ./test/*.ts"
+		"lint": "eslint src/**/*.ts test/**/*.ts",
+		"lint:fix": "eslint src/**/*.ts test/**/*.ts --fix",
+		"test": "node -r ./test/setup.cjs --import tsx --test ./test/*.ts",
+		"test:coverage": "c8 node -r ./test/setup.cjs --import tsx --test ./test/*.ts",
+		"test:only": "node -r ./test/setup.cjs --import tsx --test --test-only ./test/*.ts"
 	},
 	"keywords": [
 		"obsidian",

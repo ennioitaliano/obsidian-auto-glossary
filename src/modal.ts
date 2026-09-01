@@ -1,5 +1,5 @@
 import { App, Modal, Setting } from "obsidian";
-import { fileType } from "./utils";
+import { FileOrder, FileType } from "./utils";
 
 export class CreateFileModal extends Modal {
 	option: string;
@@ -42,10 +42,10 @@ export class CreateFileModal extends Modal {
 		this.overwrite = overwrite;
 		this.sameDest = sameDest;
 		this.destFolder = destFolder ? destFolder : "";
-		this.fileOrder = fileOrder ? fileOrder : "default";
+		this.fileOrder = fileOrder ? fileOrder : FileOrder.Default;
 		this.chosenFolder = passedFolder ? passedFolder : "";
 		this.fileName = passedName ? passedName : "";
-		this.option = passedOption ? passedOption : fileType.gi;
+		this.option = passedOption ? passedOption : FileType.GlossaryIndex;
 	}
 
 	onOpen(): void {
@@ -55,9 +55,13 @@ export class CreateFileModal extends Modal {
 
 		new Setting(contentEl)
 			.setName("Source Folder")
-			.setDesc(this.chosenFolder ? `Files in "${this.chosenFolder}" will be indexed.` : "Vault root (all notes).");
+			.setDesc(
+				this.chosenFolder
+					? `Files in "${this.chosenFolder}" will be indexed.`
+					: "Vault root (all notes)."
+			);
 
-		let destinationSetting: Setting;
+		let destinationSetting: Setting | undefined;
 
 		new Setting(contentEl)
 			.setName("Same destination as folder")
@@ -67,7 +71,7 @@ export class CreateFileModal extends Modal {
 			.addToggle((toggle) =>
 				toggle.setValue(this.sameDest).onChange((value) => {
 					this.sameDest = value;
-					destinationSetting.setDisabled(value);
+					destinationSetting?.setDisabled(value);
 					if (value) {
 						this.destFolder = this.chosenFolder;
 					}
@@ -115,19 +119,25 @@ export class CreateFileModal extends Modal {
 			.setDesc("Order in which notes are listed.")
 			.addDropdown((drop) =>
 				drop
-					.addOption("default", "Default (Vault order)")
+					.addOption(FileOrder.Default, "Default (Vault order)")
 					.addOption(
-						"mtime_new",
+						FileOrder.MtimeNew,
 						"Modification time - Newest to oldest"
 					)
 					.addOption(
-						"mtime_old",
+						FileOrder.MtimeOld,
 						"Modification time - Oldest to newest"
 					)
-					.addOption("ctime_new", "Creation time - Newest to oldest")
-					.addOption("ctime_old", "Creation time - Oldest to newest")
-					.addOption("alphabetical", "Alphabetical (A-Z)")
-					.addOption("alphabetical_rev", "Alphabetical (Z-A)")
+					.addOption(
+						FileOrder.CtimeNew,
+						"Creation time - Newest to oldest"
+					)
+					.addOption(
+						FileOrder.CtimeOld,
+						"Creation time - Oldest to newest"
+					)
+					.addOption(FileOrder.Alphabetical, "Alphabetical (A-Z)")
+					.addOption(FileOrder.AlphabeticalRev, "Alphabetical (Z-A)")
 					.setValue(this.fileOrder)
 					.onChange((chosen) => {
 						this.fileOrder = chosen;
@@ -139,10 +149,10 @@ export class CreateFileModal extends Modal {
 			.setDesc("Choose between Index (MOC), Glossary, or combined Index+Glossary.")
 			.addDropdown((drop) =>
 				drop
-					.addOption(fileType.gi, "Glossary with Index")
-					.addOption(fileType.i, "Index only")
-					.addOption(fileType.g, "Glossary only")
-					.setValue(this.option ? this.option : fileType.gi)
+					.addOption(FileType.GlossaryIndex, "Glossary with Index")
+					.addOption(FileType.Index, "Index only")
+					.addOption(FileType.Glossary, "Glossary only")
+					.setValue(this.option ? this.option : FileType.GlossaryIndex)
 					.onChange((chosen) => {
 						this.option = chosen;
 					})
@@ -176,4 +186,5 @@ export class CreateFileModal extends Modal {
 		contentEl.empty();
 	}
 }
+
 

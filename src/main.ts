@@ -1,14 +1,13 @@
 import { Plugin, TFolder } from "obsidian";
 import { CreateFileModal } from "./modal";
 import { createFile } from "./glossaryIndex";
-import { getEnumFT, getEnumFO, fileType } from "./utils";
+import { FileOrder, FileType, getEnumFO, getEnumFT } from "./utils";
 import { AutoGlossarySettings, DEFAULT_SETTINGS, SettingTab } from "./settings";
 
 export default class AutoGlossaryPlugin extends Plugin {
 	settings: AutoGlossarySettings = DEFAULT_SETTINGS;
 
 	async onload(): Promise<void> {
-
 		await this.loadSettings();
 
 		// Register single file-menu handler for folder context menus
@@ -29,7 +28,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 						.onClick(async () => {
 							await createFile(
 								this.app,
-								fileType.i,
+								FileType.Index,
 								this.settings.fileInclusion,
 								this.settings.fileOverwrite,
 								`${folderName}_Index`,
@@ -47,7 +46,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 						.onClick(async () => {
 							await createFile(
 								this.app,
-								fileType.g,
+								FileType.Glossary,
 								this.settings.fileInclusion,
 								this.settings.fileOverwrite,
 								`${folderName}_Glossary`,
@@ -65,7 +64,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 						.onClick(async () => {
 							await createFile(
 								this.app,
-								fileType.gi,
+								FileType.GlossaryIndex,
 								this.settings.fileInclusion,
 								this.settings.fileOverwrite,
 								`${folderName}_GlossaryIndex`,
@@ -96,7 +95,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 									fileOrder,
 									destFolder
 								) => {
-									createFile(
+									void createFile(
 										this.app,
 										getEnumFT(option),
 										this.settings.fileInclusion,
@@ -109,7 +108,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 								},
 								folderPath,
 								`${folderName}_Index`,
-								fileType.i
+								FileType.Index
 							).open();
 						});
 				});
@@ -133,7 +132,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 									fileOrder,
 									destFolder
 								) => {
-									createFile(
+									void createFile(
 										this.app,
 										getEnumFT(option),
 										this.settings.fileInclusion,
@@ -146,7 +145,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 								},
 								folderPath,
 								`${folderName}_Glossary`,
-								fileType.g
+								FileType.Glossary
 							).open();
 						});
 				});
@@ -170,7 +169,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 									fileOrder,
 									destFolder
 								) => {
-									createFile(
+									void createFile(
 										this.app,
 										getEnumFT(option),
 										this.settings.fileInclusion,
@@ -183,7 +182,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 								},
 								folderPath,
 								`${folderName}_GlossaryIndex`,
-								fileType.gi
+								FileType.GlossaryIndex
 							).open();
 						});
 				});
@@ -213,7 +212,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 						fileOrder,
 						destFolder
 					) => {
-						createFile(
+						void createFile(
 							this.app,
 							getEnumFT(option),
 							this.settings.fileInclusion,
@@ -226,7 +225,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 					},
 					defaultFolder,
 					`${defaultFolderName}_Index`,
-					fileType.gi
+					FileType.GlossaryIndex
 				).open();
 			},
 		});
@@ -247,4 +246,5 @@ export default class AutoGlossaryPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 }
+
 

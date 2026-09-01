@@ -48,7 +48,7 @@ export class SettingTab extends PluginSettingTab {
 
 		containerEl.createEl("h3", { text: "Default options" });
 
-		let destinationTextSetting: Setting;
+		let destinationTextSetting: Setting | undefined;
 
 		new Setting(containerEl)
 			.setName("Same destination as folder")
@@ -63,13 +63,12 @@ export class SettingTab extends PluginSettingTab {
 						if (value) {
 							this.plugin.settings.fileDest = "";
 						}
-						destinationTextSetting.setDisabled(value);
+						destinationTextSetting?.setDisabled(value);
 						await this.plugin.saveSettings();
 					})
 			);
 
-		destinationTextSetting = new Setting(containerEl);
-		destinationTextSetting
+		destinationTextSetting = new Setting(containerEl)
 			.setName("Destination")
 			.setDesc(
 				"If 'Same destination as folder' is off, specify the custom destination folder for created files."
@@ -125,4 +124,5 @@ export class SettingTab extends PluginSettingTab {
 			);
 	}
 }
+
 
