@@ -20,6 +20,17 @@ const makeTFile = (basename: string, path: string): TFile => {
 	return file;
 };
 
+const makeTFolder = (path: string): TFolder => {
+	const folder = new (TFolder as unknown as { new (): TFolder })();
+	Object.assign(folder, {
+		path,
+		name: path.split("/").pop() || "Folder",
+		parent: null,
+		children: [],
+	});
+	return folder;
+};
+
 describe("glossaryIndex - createArrays & createText", () => {
 	let mockVault: SinonStubbedInstance<VaultMock>;
 	let mockApp: App;
@@ -52,9 +63,8 @@ describe("glossaryIndex - createArrays & createText", () => {
 		);
 
 		assert.ok(indexText.includes("## Index\n"));
-		assert.ok(indexText.includes("- [[Alpha]]\n"));
-		assert.ok(indexText.includes("- [[Beta]]\n"));
-		assert.ok(indexText.includes("- [[Gamma]]\n"));
+		assert.ok(indexText.includes("### Folder\n\n- [[Alpha]]\n- [[Beta]]\n"));
+		assert.ok(indexText.includes("### OtherFolder\n\n- [[Gamma]]\n"));
 		assert.ok(glossaryText.includes("## Glossary\n"));
 
 		const fullText = await createText(mockApp, FileType.Index, true);
@@ -65,8 +75,8 @@ describe("glossaryIndex - createArrays & createText", () => {
 	it("creates glossary-only text correctly with proper headings and embeds", async () => {
 		const fullText = await createText(mockApp, FileType.Glossary, true);
 		assert.ok(fullText.startsWith("---\ntags:\n  - obsidian-auto-glossary\n---\n## Glossary\n"));
-		assert.ok(fullText.includes("### Alpha\n\n![[Alpha]]\n\n***\n\n"));
-		assert.ok(fullText.includes("### Beta\n\n![[Beta]]\n\n***\n\n"));
+		assert.ok(fullText.includes("### Folder\n\n#### Alpha\n\n![[Alpha]]\n\n***\n\n#### Beta\n\n![[Beta]]\n\n***\n\n"));
+		assert.ok(fullText.includes("### OtherFolder\n\n#### Gamma\n\n![[Gamma]]\n\n***\n\n"));
 		assert.ok(!fullText.includes("## Index"));
 	});
 
@@ -79,15 +89,15 @@ describe("glossaryIndex - createArrays & createText", () => {
 
 		assert.ok(indexText.includes("- [[#Alpha|Alpha]]\n"));
 		assert.ok(indexText.includes("- [[#Beta|Beta]]\n"));
-		assert.ok(glossaryText.includes("### Alpha\n\n![[Alpha]]\n\n***\n\n"));
+		assert.ok(glossaryText.includes("#### Alpha\n\n![[Alpha]]\n\n***\n\n"));
 
 		const fullText = await createText(mockApp, FileType.GlossaryIndex, true);
-		assert.ok(fullText.includes("## Index\n- [[#Alpha|Alpha]]\n- [[#Beta|Beta]]\n- [[#Gamma|Gamma]]\n"));
+		assert.ok(fullText.includes("## Index\n\n### Folder\n\n- [[#Alpha|Alpha]]\n- [[#Beta|Beta]]\n"));
 		assert.ok(fullText.includes("\n***\n\n## Glossary\n"));
 	});
 
-	it("filters notes within a chosenFolder", async () => {
-		const [indexText] = await createArrays(
+	it("filters notes within a chosenFolder and lists direct notes without extra heading", async () => {
+		const [indexText, glossaryText] = await createArrays(
 			mockApp,
 			FileType.Index,
 			true,
@@ -95,9 +105,9 @@ describe("glossaryIndex - createArrays & createText", () => {
 			"Folder"
 		);
 
-		assert.ok(indexText.includes("- [[Alpha]]\n"));
-		assert.ok(indexText.includes("- [[Beta]]\n"));
+		assert.ok(indexText.includes("## Index\n- [[Alpha]]\n- [[Beta]]\n"));
 		assert.ok(!indexText.includes("Gamma"));
+		assert.ok(glossaryText.includes("### Alpha\n\n![[Alpha]]\n\n***\n\n### Beta\n\n![[Beta]]\n\n***\n\n"));
 	});
 
 	it("sorts notes correctly in created arrays", async () => {
@@ -110,11 +120,88 @@ describe("glossaryIndex - createArrays & createText", () => {
 			FileOrder.AlphabeticalRev
 		);
 
-		const gammaPos = indexText.indexOf("Gamma");
-		const betaPos = indexText.indexOf("Beta");
-		const alphaPos = indexText.indexOf("Alpha");
+		const otherPos = indexText.indexOf("OtherFolder");
+		const folderPos = indexText.indexOf("### Folder");
 
-		assert.ok(gammaPos < betaPos && betaPos < alphaPos);
+		assert.ok(otherPos < folderPos);
+	});
+
+	it("supports disabling subfolders (includeSubfolders: false)", async () => {
+		const rootFiles = [
+			makeTFile("RootNote", "RootNote.md"),
+			makeTFile("Alpha", "Folder/Alpha.md"),
+		];
+		mockVault.getMarkdownFiles.returns(rootFiles);
+
+		const [indexText] = await createArrays(
+			mockApp,
+			FileType.Index,
+			true,
+			undefined,
+			"",
+			FileOrder.Default,
+			{ includeSubfolders: false }
+		);
+
+		assert.ok(indexText.includes("- [[RootNote]]\n"));
+		assert.ok(!indexText.includes("Alpha"));
+		assert.ok(!indexText.includes("### Folder"));
+	});
+
+	it("supports non-markdown file inclusion and whitelist filtering", async () => {
+		const mixedFiles = [
+			makeTFile("Alpha", "Alpha.md"),
+			Object.assign(makeTFile("photo", "photo.png"), { extension: "png", name: "photo.png" }),
+			Object.assign(makeTFile("doc", "doc.pdf"), { extension: "pdf", name: "doc.pdf" }),
+			Object.assign(makeTFile("archive", "archive.zip"), { extension: "zip", name: "archive.zip" }),
+		];
+		mockVault.getFiles.returns(mixedFiles);
+
+		const [indexText, glossaryText] = await createArrays(
+			mockApp,
+			FileType.Index,
+			true,
+			undefined,
+			"",
+			FileOrder.Default,
+			{
+				includeNonMarkdown: true,
+				nonMarkdownExtensions: "png, pdf",
+			}
+		);
+
+		assert.ok(indexText.includes("- [[Alpha]]\n"));
+		assert.ok(indexText.includes("- [[photo.png]]\n"));
+		assert.ok(indexText.includes("- [[doc.pdf]]\n"));
+		assert.ok(!indexText.includes("archive.zip"));
+
+		assert.ok(glossaryText.includes("### photo.png\n\n![[photo.png]]\n\n***\n\n"));
+		assert.ok(glossaryText.includes("### doc.pdf\n\n![[doc.pdf]]\n\n***\n\n"));
+	});
+
+	it("handles empty folder inclusion and omission in glossary", async () => {
+		const files = [makeTFile("Alpha", "Folder/Alpha.md")];
+		mockVault.getMarkdownFiles.returns(files);
+		mockVault.getAllLoadedFiles.returns([
+			makeTFolder("Folder"),
+			makeTFolder("EmptyFolder"),
+		]);
+
+		const [indexText, glossaryText] = await createArrays(
+			mockApp,
+			FileType.Index,
+			true,
+			undefined,
+			"",
+			FileOrder.Default,
+			{
+				includeSubfolders: true,
+				includeEmptyFolders: true,
+			}
+		);
+
+		assert.ok(indexText.includes("- EmptyFolder/\n"));
+		assert.ok(!glossaryText.includes("EmptyFolder"));
 	});
 });
 

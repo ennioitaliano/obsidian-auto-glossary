@@ -1,14 +1,93 @@
 import { App, normalizePath, Notice, TFile, TFolder } from "obsidian";
 import {
 	applyTemplate,
+	buildFolderTree,
 	cleanFiles,
 	ensureFolderExists,
 	FileOrder,
 	FileType,
+	filterFiles,
+	FolderTreeNode,
 	getEnumFT,
 	mergeFrontmatter,
-	sortFiles,
 } from "./utils";
+
+export interface CreateFileOptions {
+	includeSubfolders?: boolean;
+	includeEmptyFolders?: boolean;
+	includeNonMarkdown?: boolean;
+	nonMarkdownExtensions?: string;
+}
+
+function renderIndexSection(
+	node: FolderTreeNode,
+	isGlossaryIndex: boolean,
+	lines: string[]
+): void {
+	if (node.relativeDepth > 0 && !node.isEmpty) {
+		const headingLevel = "#".repeat(Math.min(6, 2 + node.relativeDepth));
+		lines.push(`${headingLevel} ${node.name}\n\n`);
+	}
+
+	for (const file of node.files) {
+		const isMd = !file.extension || file.extension.toLowerCase() === "md";
+		const noteName = isMd ? file.basename : file.name;
+		if (isGlossaryIndex) {
+			lines.push(`- [[#${noteName}|${noteName}]]\n`);
+		} else {
+			lines.push(`- [[${noteName}]]\n`);
+		}
+	}
+
+	for (const subfolder of node.subfolders) {
+		if (subfolder.isEmpty) {
+			lines.push(`- ${subfolder.name}/\n`);
+		} else {
+			if (lines.length > 0 && !lines[lines.length - 1].endsWith("\n\n")) {
+				lines.push("\n");
+			}
+			renderIndexSection(subfolder, isGlossaryIndex, lines);
+		}
+	}
+}
+
+export function renderIndexText(
+	rootNode: FolderTreeNode,
+	isGlossaryIndex: boolean
+): string {
+	const lines: string[] = ["## Index\n"];
+	renderIndexSection(rootNode, isGlossaryIndex, lines);
+	return lines.join("");
+}
+
+function renderGlossarySection(
+	node: FolderTreeNode,
+	sections: string[]
+): void {
+	if (node.relativeDepth > 0 && !node.isEmpty) {
+		const headingLevel = "#".repeat(Math.min(6, 2 + node.relativeDepth));
+		sections.push(`${headingLevel} ${node.name}\n\n`);
+	}
+
+	for (const file of node.files) {
+		const isMd = !file.extension || file.extension.toLowerCase() === "md";
+		const noteName = isMd ? file.basename : file.name;
+		const headingLevel = "#".repeat(Math.min(6, 3 + node.relativeDepth));
+		sections.push(`${headingLevel} ${noteName}\n\n![[${noteName}]]\n\n***\n\n`);
+	}
+
+	for (const subfolder of node.subfolders) {
+		if (!subfolder.isEmpty) {
+			renderGlossarySection(subfolder, sections);
+		}
+	}
+}
+
+export function renderGlossaryText(rootNode: FolderTreeNode): string {
+	const sections: string[] = ["## Glossary\n"];
+	renderGlossarySection(rootNode, sections);
+	return sections.join("");
+}
 
 export async function createArrays(
 	app: App,
@@ -16,46 +95,75 @@ export async function createArrays(
 	fileInclusion: boolean,
 	fileName?: string,
 	chosenFolder?: string,
-	order?: FileOrder | string
+	order?: FileOrder | string,
+	options?: CreateFileOptions
 ): Promise<[string, string]> {
-	let notesTFile: TFile[] = app.vault.getMarkdownFiles();
+	let files: TFile[] = [];
+
+	if (options?.includeNonMarkdown && typeof app.vault.getFiles === "function") {
+		files = app.vault.getFiles();
+	} else if (typeof app.vault.getMarkdownFiles === "function") {
+		files = app.vault.getMarkdownFiles();
+	} else if (typeof app.vault.getFiles === "function") {
+		files = app.vault.getFiles();
+	}
 
 	// Filter files within the specified folder
 	if (chosenFolder && chosenFolder !== "/" && chosenFolder !== "") {
 		const normalizedFolder = normalizePath(chosenFolder);
-		notesTFile = notesTFile.filter((file) => {
+		files = files.filter((file) => {
 			return file.path.startsWith(normalizedFolder + "/");
 		});
 	}
 
+	files = filterFiles(
+		files,
+		options?.includeNonMarkdown ?? false,
+		options?.nonMarkdownExtensions
+	);
+
 	if (!fileInclusion) {
-		notesTFile = await cleanFiles(app.vault, notesTFile, app.metadataCache);
+		files = await cleanFiles(app.vault, files, app.metadataCache);
 	}
-
-	if (order) {
-		notesTFile = sortFiles(notesTFile, order);
-	}
-
-	const glossaryArray: string[] = [];
-	const indexArray: string[] = [];
 
 	const isGlossaryIndex =
 		requestedFile === FileType.GlossaryIndex || requestedFile === "glossaryIndex";
 
-	for (const file of notesTFile) {
-		const noteName = file.basename;
-
-		if (isGlossaryIndex) {
-			indexArray.push(`- [[#${noteName}|${noteName}]]\n`);
-		} else {
-			indexArray.push(`- [[${noteName}]]\n`);
+	let knownFolderPaths: string[] | undefined;
+	if (options?.includeEmptyFolders && typeof app.vault.getAllLoadedFiles === "function") {
+		try {
+			const loaded = app.vault.getAllLoadedFiles();
+			knownFolderPaths = loaded
+				.filter(
+					(f): f is TFolder =>
+						f instanceof TFolder ||
+						"children" in f ||
+						(!("extension" in f) && !("basename" in f) && "path" in f)
+				)
+				.map((f) => f.path)
+				.filter((p) => p && p !== "/" && p !== ".");
+		} catch {
+			knownFolderPaths = undefined;
 		}
-
-		glossaryArray.push(`### ${noteName}\n\n![[${noteName}]]\n\n***\n\n`);
 	}
 
-	const indexText = `## Index\n${indexArray.join("")}`;
-	const glossaryText = `## Glossary\n${glossaryArray.join("")}`;
+	const normalizedChosenFolder = chosenFolder && chosenFolder !== "/" ? normalizePath(chosenFolder) : "";
+	const folderName = normalizedChosenFolder ? normalizedChosenFolder.split("/").pop() || "Vault" : "Vault";
+
+	const rootNode = buildFolderTree(
+		normalizedChosenFolder,
+		folderName,
+		files,
+		{
+			includeSubfolders: options?.includeSubfolders !== false,
+			includeEmptyFolders: options?.includeEmptyFolders === true,
+			fileOrder: order,
+			knownFolderPaths,
+		}
+	);
+
+	const indexText = renderIndexText(rootNode, isGlossaryIndex);
+	const glossaryText = renderGlossaryText(rootNode);
 
 	return [indexText, glossaryText];
 }
@@ -69,7 +177,8 @@ export async function createFile(
 	chosenFolder?: string,
 	order?: FileOrder | string,
 	destFolder?: string,
-	templatePath?: string
+	templatePath?: string,
+	options?: CreateFileOptions
 ): Promise<TFile | null> {
 	let rawPath = "";
 
@@ -92,7 +201,8 @@ export async function createFile(
 		baseName,
 		chosenFolder,
 		order,
-		templatePath
+		templatePath,
+		options
 	);
 
 	try {
@@ -145,7 +255,8 @@ export async function createText(
 	fileName?: string,
 	chosenFolder?: string,
 	order?: FileOrder | string,
-	templatePath?: string
+	templatePath?: string,
+	options?: CreateFileOptions
 ): Promise<string> {
 	const [indexText, glossaryText] = await createArrays(
 		app,
@@ -153,7 +264,8 @@ export async function createText(
 		fileInclusion,
 		fileName,
 		chosenFolder,
-		order
+		order,
+		options
 	);
 
 	const fileTypeNormalized = getEnumFT(

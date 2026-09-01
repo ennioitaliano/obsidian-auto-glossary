@@ -13,6 +13,10 @@ export interface AutoGlossarySettings {
 	indexTemplate: string;
 	glossaryTemplate: string;
 	glossaryIndexTemplate: string;
+	includeSubfolders: boolean;
+	includeEmptyFolders: boolean;
+	includeNonMarkdown: boolean;
+	nonMarkdownExtensions: string;
 }
 
 export const DEFAULT_SETTINGS: AutoGlossarySettings = {
@@ -27,6 +31,10 @@ export const DEFAULT_SETTINGS: AutoGlossarySettings = {
 	indexTemplate: "",
 	glossaryTemplate: "",
 	glossaryIndexTemplate: "",
+	includeSubfolders: true,
+	includeEmptyFolders: false,
+	includeNonMarkdown: false,
+	nonMarkdownExtensions: "pdf, png, jpg, jpeg, canvas",
 };
 
 export class SettingTab extends PluginSettingTab {
@@ -44,8 +52,10 @@ export class SettingTab extends PluginSettingTab {
 
 		containerEl.createEl("h2", { text: "Auto Glossary Settings" });
 
+		containerEl.createEl("h3", { text: "Inclusion & Subfolders" });
+
 		new Setting(containerEl)
-			.setName("File inclusion")
+			.setName("Include Auto Glossary files")
 			.setDesc(
 				"Include previously generated Auto Glossary files in newly created indexes and glossaries."
 			)
@@ -57,6 +67,67 @@ export class SettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
+
+		new Setting(containerEl)
+			.setName("Include subfolders")
+			.setDesc(
+				"Recursively index subdirectories with section headings. If off, only direct files in the target folder will be indexed."
+			)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.includeSubfolders)
+					.onChange(async (value) => {
+						this.plugin.settings.includeSubfolders = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Include empty folders")
+			.setDesc(
+				"Include empty subfolders in generated indexes as list items."
+			)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.includeEmptyFolders)
+					.onChange(async (value) => {
+						this.plugin.settings.includeEmptyFolders = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		let nonMarkdownExtensionsSetting: Setting | undefined;
+
+		new Setting(containerEl)
+			.setName("Include non-markdown files")
+			.setDesc(
+				"Include non-markdown attachments and files (e.g. PDF, images, canvas) in indexes and glossaries."
+			)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.includeNonMarkdown)
+					.onChange(async (value) => {
+						this.plugin.settings.includeNonMarkdown = value;
+						nonMarkdownExtensionsSetting?.setDisabled(!value);
+						await this.plugin.saveSettings();
+					})
+			);
+
+		nonMarkdownExtensionsSetting = new Setting(containerEl)
+			.setName("Allowed non-markdown extensions")
+			.setDesc(
+				"Comma-separated list of allowed file extensions (e.g. 'pdf, png, jpg, canvas'). Leave empty to include all."
+			)
+			.addText((text) =>
+				text
+					.setPlaceholder("pdf, png, jpg, jpeg, canvas")
+					.setValue(this.plugin.settings.nonMarkdownExtensions)
+					.onChange(async (value) => {
+						this.plugin.settings.nonMarkdownExtensions = value.trim();
+						await this.plugin.saveSettings();
+					})
+			)
+			.setDisabled(!this.plugin.settings.includeNonMarkdown);
 
 		containerEl.createEl("h3", { text: "Default options" });
 

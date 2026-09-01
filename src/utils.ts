@@ -104,6 +104,53 @@ export async function fileExists(
 	return vault.getAbstractFileByPath(normalized) !== null;
 }
 
+export interface FolderTreeNode {
+	name: string;
+	path: string;
+	relativeDepth: number;
+	files: TFile[];
+	subfolders: FolderTreeNode[];
+	isEmpty?: boolean;
+}
+
+export interface BuildTreeOptions {
+	includeSubfolders?: boolean;
+	includeEmptyFolders?: boolean;
+	fileOrder?: FileOrder | string;
+	knownFolderPaths?: string[];
+}
+
+export function parseExtensions(extensionsStr: string): string[] {
+	if (!extensionsStr || !extensionsStr.trim()) {
+		return [];
+	}
+	return extensionsStr
+		.split(/[,;\s]+/)
+		.map((ext) => ext.replace(/^\./, "").trim().toLowerCase())
+		.filter(Boolean);
+}
+
+export function filterFiles(
+	files: TFile[],
+	includeNonMarkdown: boolean,
+	extensionsStr?: string
+): TFile[] {
+	if (!files || !Array.isArray(files)) {
+		return [];
+	}
+	if (!includeNonMarkdown) {
+		return files.filter((f) => !f.extension || f.extension.toLowerCase() === "md");
+	}
+	const allowedExtensions = parseExtensions(extensionsStr || "");
+	if (allowedExtensions.length === 0) {
+		return files;
+	}
+	return files.filter((f) => {
+		const ext = f.extension ? f.extension.toLowerCase() : "";
+		return ext === "md" || allowedExtensions.includes(ext);
+	});
+}
+
 export async function cleanFiles(
 	vault: VaultWrapper,
 	notesTFiles: TFile[],
@@ -112,6 +159,11 @@ export async function cleanFiles(
 	const cleanedNotes: TFile[] = [];
 
 	for (const file of notesTFiles) {
+		if (file.extension && file.extension.toLowerCase() !== "md") {
+			cleanedNotes.push(file);
+			continue;
+		}
+
 		try {
 			if (metadataCache) {
 				const cache = metadataCache.getFileCache(file);
@@ -169,6 +221,160 @@ export function sortFiles(notesTFile: TFile[], order: FileOrder | string): TFile
 	}
 
 	return notesTFile;
+}
+
+export function sortFolders(folders: FolderTreeNode[], order: FileOrder | string): FolderTreeNode[] {
+	if (!folders || !Array.isArray(folders)) {
+		return folders;
+	}
+
+	switch (order) {
+		case FileOrder.AlphabeticalRev:
+			folders.sort((a, b) => b.name.localeCompare(a.name, undefined, { sensitivity: "base", numeric: true }));
+			break;
+		case FileOrder.Alphabetical:
+		case FileOrder.Default:
+		default:
+			folders.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base", numeric: true }));
+			break;
+	}
+
+	return folders;
+}
+
+export function sortFolderTree(node: FolderTreeNode, order: FileOrder | string): void {
+	sortFiles(node.files, order);
+	sortFolders(node.subfolders, order);
+	for (const subfolder of node.subfolders) {
+		sortFolderTree(subfolder, order);
+	}
+}
+
+export function buildFolderTree(
+	rootFolderPath: string,
+	rootFolderName: string,
+	files: TFile[],
+	options: BuildTreeOptions = {}
+): FolderTreeNode {
+	const includeSubfolders = options.includeSubfolders !== false;
+	const includeEmptyFolders = options.includeEmptyFolders === true;
+	const order = options.fileOrder || FileOrder.Default;
+
+	const normalizedRoot = rootFolderPath && rootFolderPath !== "/" ? normalizePath(rootFolderPath) : "";
+	const rootName = rootFolderName || (normalizedRoot ? normalizedRoot.split("/").pop() || "Vault" : "Vault");
+
+	const rootNode: FolderTreeNode = {
+		name: rootName,
+		path: normalizedRoot,
+		relativeDepth: 0,
+		files: [],
+		subfolders: [],
+		isEmpty: false,
+	};
+
+	if (!includeSubfolders) {
+		for (const file of files) {
+			const parentPath = file.parent?.path
+				? normalizePath(file.parent.path)
+				: file.path.includes("/")
+				? normalizePath(file.path.substring(0, file.path.lastIndexOf("/")))
+				: "";
+			if (parentPath === normalizedRoot) {
+				rootNode.files.push(file);
+			}
+		}
+		sortFiles(rootNode.files, order);
+		rootNode.isEmpty = rootNode.files.length === 0;
+		return rootNode;
+	}
+
+	const folderMap = new Map<string, FolderTreeNode>();
+	folderMap.set(normalizedRoot, rootNode);
+
+	const getOrCreateNode = (folderPath: string): FolderTreeNode => {
+		const normalized = normalizePath(folderPath);
+		if (folderMap.has(normalized)) {
+			return folderMap.get(normalized)!;
+		}
+
+		const folderName = normalized.split("/").pop() || "Folder";
+		const parentPath = normalized.includes("/") ? normalized.substring(0, normalized.lastIndexOf("/")) : "";
+		const parentNode = getOrCreateNode(parentPath);
+
+		const relativeDepth = normalizedRoot
+			? (normalized.startsWith(normalizedRoot + "/")
+					? normalized.slice(normalizedRoot.length + 1).split("/").length
+					: 1)
+			: (normalized ? normalized.split("/").length : 0);
+
+		const newNode: FolderTreeNode = {
+			name: folderName,
+			path: normalized,
+			relativeDepth,
+			files: [],
+			subfolders: [],
+			isEmpty: true,
+		};
+
+		folderMap.set(normalized, newNode);
+		parentNode.subfolders.push(newNode);
+		return newNode;
+	};
+
+	for (const file of files) {
+		const parentPath = file.parent?.path
+			? normalizePath(file.parent.path)
+			: file.path.includes("/")
+			? normalizePath(file.path.substring(0, file.path.lastIndexOf("/")))
+			: "";
+
+		if (normalizedRoot && parentPath !== normalizedRoot && !parentPath.startsWith(normalizedRoot + "/")) {
+			continue;
+		}
+		const node = getOrCreateNode(parentPath);
+		node.files.push(file);
+		node.isEmpty = false;
+	}
+
+	if (includeEmptyFolders && options.knownFolderPaths) {
+		for (const folderPath of options.knownFolderPaths) {
+			const normalized = normalizePath(folderPath);
+			if (!normalized || normalized === "/" || normalized === ".") continue;
+			if (normalizedRoot) {
+				if (normalized !== normalizedRoot && !normalized.startsWith(normalizedRoot + "/")) {
+					continue;
+				}
+			}
+			getOrCreateNode(normalized);
+		}
+	}
+
+	if (!includeEmptyFolders) {
+		const pruneEmpty = (node: FolderTreeNode): boolean => {
+			node.subfolders = node.subfolders.filter((child) => pruneEmpty(child));
+			const hasContent = node.files.length > 0 || node.subfolders.length > 0;
+			node.isEmpty = !hasContent;
+			return hasContent;
+		};
+		pruneEmpty(rootNode);
+	} else {
+		const markEmpty = (node: FolderTreeNode): boolean => {
+			let childHasContent = false;
+			for (const child of node.subfolders) {
+				if (markEmpty(child)) {
+					childHasContent = true;
+				}
+			}
+			const hasContent = node.files.length > 0 || childHasContent;
+			node.isEmpty = !hasContent;
+			return hasContent;
+		};
+		markEmpty(rootNode);
+	}
+
+	sortFolderTree(rootNode, order);
+
+	return rootNode;
 }
 
 export async function ensureFolderExists(

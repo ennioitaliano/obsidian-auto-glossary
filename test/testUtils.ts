@@ -484,4 +484,117 @@ describe("template & frontmatter utilities", () => {
 	});
 });
 
+describe("extension & file filtering utilities", () => {
+	it("parseExtensions correctly handles empty, comma, and space separated strings", () => {
+		assert.deepEqual(utils.parseExtensions(""), []);
+		assert.deepEqual(utils.parseExtensions("   "), []);
+		assert.deepEqual(utils.parseExtensions("pdf, png, jpg"), ["pdf", "png", "jpg"]);
+		assert.deepEqual(utils.parseExtensions(".pdf, .png; .canvas"), ["pdf", "png", "canvas"]);
+	});
+
+	it("filterFiles filters non-markdown files when includeNonMarkdown is false", () => {
+		const files = [
+			createTFile(1, "note1", { ctime: 1, mtime: 1, size: 1 }, "note1.md"),
+			Object.assign(createTFile(2, "image.png", { ctime: 1, mtime: 1, size: 1 }, "image.png"), { extension: "png" }),
+		];
+
+		const res = utils.filterFiles(files, false);
+		assert.equal(res.length, 1);
+		assert.equal(res[0].name, "note1");
+	});
+
+	it("filterFiles allows whitelisted non-markdown extensions when enabled", () => {
+		const files = [
+			createTFile(1, "note1", { ctime: 1, mtime: 1, size: 1 }, "note1.md"),
+			Object.assign(createTFile(2, "image.png", { ctime: 1, mtime: 1, size: 1 }, "image.png"), { extension: "png" }),
+			Object.assign(createTFile(3, "doc.pdf", { ctime: 1, mtime: 1, size: 1 }, "doc.pdf"), { extension: "pdf" }),
+			Object.assign(createTFile(4, "script.js", { ctime: 1, mtime: 1, size: 1 }, "script.js"), { extension: "js" }),
+		];
+
+		const res = utils.filterFiles(files, true, "png, pdf");
+		assert.equal(res.length, 3);
+		assert.equal(res[0].name, "note1");
+		assert.equal(res[1].name, "image.png");
+		assert.equal(res[2].name, "doc.pdf");
+	});
+});
+
+describe("folder tree construction & sorting", () => {
+	it("sortFolders sorts subfolders alphabetically and reverse", () => {
+		const folders: utils.FolderTreeNode[] = [
+			{ name: "Beta", path: "Beta", relativeDepth: 1, files: [], subfolders: [] },
+			{ name: "Alpha", path: "Alpha", relativeDepth: 1, files: [], subfolders: [] },
+			{ name: "Gamma", path: "Gamma", relativeDepth: 1, files: [], subfolders: [] },
+		];
+
+		utils.sortFolders(folders, utils.FileOrder.Alphabetical);
+		assert.equal(folders[0].name, "Alpha");
+		assert.equal(folders[1].name, "Beta");
+		assert.equal(folders[2].name, "Gamma");
+
+		utils.sortFolders(folders, utils.FileOrder.AlphabeticalRev);
+		assert.equal(folders[0].name, "Gamma");
+		assert.equal(folders[1].name, "Beta");
+		assert.equal(folders[2].name, "Alpha");
+	});
+
+	it("buildFolderTree builds hierarchy with files first and sorts folders and files", () => {
+		const files = [
+			createTFile(1, "RootNote", { ctime: 1, mtime: 1, size: 1 }, "RootNote.md"),
+			createTFile(2, "SubNote", { ctime: 1, mtime: 1, size: 1 }, "Sub/SubNote.md"),
+			createTFile(3, "NestedNote", { ctime: 1, mtime: 1, size: 1 }, "Sub/Nested/NestedNote.md"),
+		];
+
+		const tree = utils.buildFolderTree("", "Vault", files, {
+			includeSubfolders: true,
+			fileOrder: utils.FileOrder.Alphabetical,
+		});
+
+		assert.equal(tree.name, "Vault");
+		assert.equal(tree.files.length, 1);
+		assert.equal(tree.files[0].name, "RootNote");
+		assert.equal(tree.subfolders.length, 1);
+
+		const sub = tree.subfolders[0];
+		assert.equal(sub.name, "Sub");
+		assert.equal(sub.files.length, 1);
+		assert.equal(sub.files[0].name, "SubNote");
+		assert.equal(sub.subfolders.length, 1);
+
+		const nested = sub.subfolders[0];
+		assert.equal(nested.name, "Nested");
+		assert.equal(nested.files.length, 1);
+		assert.equal(nested.files[0].name, "NestedNote");
+	});
+
+	it("buildFolderTree prunes empty folders when includeEmptyFolders is false", () => {
+		const files = [createTFile(1, "Note1", { ctime: 1, mtime: 1, size: 1 }, "Folder/Note1.md")];
+
+		const tree = utils.buildFolderTree("", "Vault", files, {
+			includeSubfolders: true,
+			includeEmptyFolders: false,
+			knownFolderPaths: ["Folder", "EmptyFolder", "AnotherEmpty"],
+		});
+
+		assert.equal(tree.subfolders.length, 1);
+		assert.equal(tree.subfolders[0].name, "Folder");
+	});
+
+	it("buildFolderTree retains empty folders when includeEmptyFolders is true", () => {
+		const files = [createTFile(1, "Note1", { ctime: 1, mtime: 1, size: 1 }, "Folder/Note1.md")];
+
+		const tree = utils.buildFolderTree("", "Vault", files, {
+			includeSubfolders: true,
+			includeEmptyFolders: true,
+			knownFolderPaths: ["Folder", "EmptyFolder"],
+		});
+
+		assert.equal(tree.subfolders.length, 2);
+		const emptySub = tree.subfolders.find((f) => f.name === "EmptyFolder");
+		assert.ok(emptySub);
+		assert.equal(emptySub.isEmpty, true);
+	});
+});
+
+
 

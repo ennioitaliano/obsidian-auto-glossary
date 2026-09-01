@@ -13,7 +13,10 @@
 - **Index (Links only / MOC)**: Creates a list of wikilinks (`[[Note]]`) to all notes in the selected folder.
 - **Glossary (Note embeds)**: Creates a document embedding (`![[Note]]`) all notes in the selected folder, formatted with headers and dividers.
 - **Combined Index & Glossary**: Creates an index with anchor links at the top pointing directly to each note's embedded section in the glossary below.
-- **Flexible Sorting**: Sort notes by:
+- **Sub-directory Hierarchy**: Automatically organizes nested subfolders into markdown section headings (`### Subfolder`) with files sorted neatly under their parent directory.
+- **Non-Markdown File Inclusion**: Optionally index and embed non-markdown files and attachments (PDFs, images, canvas files) with a configurable extension whitelist.
+- **Empty Folder Options**: Option to include or omit empty folders in generated indexes.
+- **Flexible Sorting**: Sort notes and folders by:
   - Default (Vault order)
   - Modification time (Newest to oldest / Oldest to newest)
   - Creation time (Newest to oldest / Oldest to newest)
@@ -77,7 +80,11 @@ Last updated on {{date}} at {{time}}.
 
 ## Settings
 
-- **File Inclusion**: Toggle whether to include previously generated Auto Glossary files in newly created indexes and glossaries.
+- **Include Auto Glossary files**: Toggle whether to include previously generated Auto Glossary files in newly created indexes and glossaries.
+- **Include subfolders**: Toggle whether to recursively index subdirectories with section headings.
+- **Include empty folders**: Toggle whether to include empty subfolders in generated indexes as list items.
+- **Include non-markdown files**: Toggle whether to index and embed non-markdown attachments and files.
+- **Allowed non-markdown extensions**: Comma-separated list of allowed file extensions (e.g. `pdf, png, jpg, canvas`).
 - **Same destination as folder**: Set whether files are created in the target folder or a global custom destination.
 - **Default Destination Folder**: If custom destination is enabled, choose the folder where generated files are saved.
 - **Overwrite existing files**: Set default behavior when a file with the same name already exists.
