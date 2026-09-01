@@ -1,5 +1,5 @@
 import { App, Modal, Setting } from "obsidian";
-import { fileType } from "utils";
+import { fileType } from "./utils";
 
 export class CreateFileModal extends Modal {
 	option: string;
@@ -13,10 +13,10 @@ export class CreateFileModal extends Modal {
 	onSubmit: (
 		option: string,
 		overwrite: boolean,
-		fileName?: string,
-		chosenFolder?: string,
-		fileOrder?: string,
-		destFolder?: string
+		fileName: string,
+		chosenFolder: string,
+		fileOrder: string,
+		destFolder: string
 	) => void;
 
 	constructor(
@@ -45,71 +45,64 @@ export class CreateFileModal extends Modal {
 		this.fileOrder = fileOrder ? fileOrder : "default";
 		this.chosenFolder = passedFolder ? passedFolder : "";
 		this.fileName = passedName ? passedName : "";
-		this.option = passedOption ? passedOption : "";
+		this.option = passedOption ? passedOption : fileType.gi;
 	}
 
-	onOpen() {
+	onOpen(): void {
 		const { contentEl } = this;
 
-		contentEl.createEl("h1", { text: "AutoGlossary" });
+		contentEl.createEl("h2", { text: "Auto Glossary: Generate File" });
 
-		new Setting(contentEl).setName("Folder: " + this.chosenFolder);
-		/*.setDesc("The folder to get the files indexed from.")
-		.addText((text) =>
-				text
-					.onChange((value) => {
-						this.chosenFolder = value;
-					})
-					.setValue(this.chosenFolder)
-			);*/
+		new Setting(contentEl)
+			.setName("Source Folder")
+			.setDesc(this.chosenFolder ? `Files in "${this.chosenFolder}" will be indexed.` : "Vault root (all notes).");
+
+		let destinationSetting: Setting;
 
 		new Setting(contentEl)
 			.setName("Same destination as folder")
 			.setDesc(
-				"If on, the file will be created in the same folder specified above and the 'Destination' field will be disabled."
+				"If enabled, the file will be created inside the source folder. Otherwise, specify a custom destination below."
 			)
 			.addToggle((toggle) =>
 				toggle.setValue(this.sameDest).onChange((value) => {
 					this.sameDest = value;
-					destination.setDisabled(value);
+					destinationSetting.setDisabled(value);
 					if (value) {
 						this.destFolder = this.chosenFolder;
 					}
 				})
 			);
 
-		const destination = new Setting(contentEl);
-
-		destination
-			.setName("Destination")
-			.setDesc(
-				"If the above toggle is off, specify here the destination folder for the file created."
-			)
+		destinationSetting = new Setting(contentEl)
+			.setName("Destination Folder")
+			.setDesc("The folder where the generated file will be saved.")
 			.addText((text) =>
 				text
-					.onChange((value) => {
-						this.destFolder = value;
-					})
+					.setPlaceholder("e.g. Glossaries/Indices")
 					.setValue(this.destFolder)
-					.setDisabled(true)
+					.onChange((value) => {
+						this.destFolder = value.trim();
+					})
 			)
 			.setDisabled(this.sameDest);
 
 		new Setting(contentEl)
-			.setName("File name")
-			.setDesc("The name of the created file.")
+			.setName("File Name")
+			.setDesc("The name of the created note (without .md extension).")
 			.addText((text) =>
 				text
-					.onChange((value) => {
-						this.fileName = value;
-					})
+					.setPlaceholder(this.fileName || "Index")
 					.setValue(this.fileName)
+					.onChange((value) => {
+						this.fileName = value.trim();
+					})
 			);
 
 		new Setting(contentEl)
 			.setName("Overwrite existing file")
 			.setDesc(
-				"If turned on, if a file with the same name and location already exists, it will be overwritten. Default behavior can be changed in the plugin settings."
+				"If enabled, any existing file with the same name will be overwritten."
 			)
 			.addToggle((toggle) =>
 				toggle.setValue(this.overwrite).onChange((value) => {
@@ -118,11 +111,11 @@ export class CreateFileModal extends Modal {
 			);
 
 		new Setting(contentEl)
-			.setName("File order")
-			.setDesc("The order for the files to be indexed.")
+			.setName("File Order")
+			.setDesc("Order in which notes are listed.")
 			.addDropdown((drop) =>
 				drop
-					.addOption("default", "Default")
+					.addOption("default", "Default (Vault order)")
 					.addOption(
 						"mtime_new",
 						"Modification time - Newest to oldest"
@@ -133,8 +126,8 @@ export class CreateFileModal extends Modal {
 					)
 					.addOption("ctime_new", "Creation time - Newest to oldest")
 					.addOption("ctime_old", "Creation time - Oldest to newest")
-					.addOption("alphabetical", "Alphabetical")
-					.addOption("alphabetical_rev", "Alphabetical - Reverse")
+					.addOption("alphabetical", "Alphabetical (A-Z)")
+					.addOption("alphabetical_rev", "Alphabetical (Z-A)")
 					.setValue(this.fileOrder)
 					.onChange((chosen) => {
 						this.fileOrder = chosen;
@@ -142,22 +135,22 @@ export class CreateFileModal extends Modal {
 			);
 
 		new Setting(contentEl)
-			.setName("File type")
-			.setDesc("Choose between index, glossary or both.")
+			.setName("File Type")
+			.setDesc("Choose between Index (MOC), Glossary, or combined Index+Glossary.")
 			.addDropdown((drop) =>
 				drop
-					.addOption(fileType.g, "Glossary")
-					.addOption(fileType.i, "Index")
-					.addOption(fileType.gi, "Glossary with index")
+					.addOption(fileType.gi, "Glossary with Index")
+					.addOption(fileType.i, "Index only")
+					.addOption(fileType.g, "Glossary only")
+					.setValue(this.option ? this.option : fileType.gi)
 					.onChange((chosen) => {
 						this.option = chosen;
 					})
-					.setValue(this.option ? this.option : fileType.gi)
 			);
 
 		new Setting(contentEl).addButton((btn) =>
 			btn
-				.setButtonText("Submit")
+				.setButtonText("Generate")
 				.setCta()
 				.onClick(() => {
 					if (!this.fileName) {
@@ -178,8 +171,9 @@ export class CreateFileModal extends Modal {
 		);
 	}
 
-	onClose() {
+	onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}
 }
+

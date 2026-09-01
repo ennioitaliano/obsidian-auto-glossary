@@ -5,8 +5,8 @@ import { cloneDeep } from "lodash";
 
 import * as utils from "../src/utils";
 import { createStubInstance, SinonStubbedInstance } from "sinon";
-import { DataAdapterMock } from "./mocks/DataAdapterMock";
 import { VaultMock } from "./mocks/VaultMock";
+
 
 
 /*********************
@@ -221,20 +221,20 @@ describe("fileExists", () => {
   });
 
   it("successfully checks that a file exists", async () => {
-    const mockAdapter: SinonStubbedInstance<DataAdapterMock>  = createStubInstance(DataAdapterMock);
-    mockAdapter.exists.resolves(true);
-    const exists: boolean = await utils.fileExists(mockAdapter, filename);
+    const mockVault: SinonStubbedInstance<VaultMock> = createStubInstance(VaultMock);
+    mockVault.getAbstractFileByPath.returns({} as any);
+    const exists: boolean = await utils.fileExists(mockVault, filename);
 
-    assert.equal(1, mockAdapter.exists.callCount);
+    assert.equal(1, mockVault.getAbstractFileByPath.callCount);
     assert.equal(true, exists);
   });
 
   it("successfully checks that a file doesn't exist", async () => {
-    const mockAdapter: SinonStubbedInstance<DataAdapterMock> = createStubInstance(DataAdapterMock);
-    mockAdapter.exists.resolves(false);
-    const exists: boolean = await utils.fileExists(mockAdapter, filename);
+    const mockVault: SinonStubbedInstance<VaultMock> = createStubInstance(VaultMock);
+    mockVault.getAbstractFileByPath.returns(null);
+    const exists: boolean = await utils.fileExists(mockVault, filename);
 
-    assert.equal(1, mockAdapter.exists.callCount);
+    assert.equal(1, mockVault.getAbstractFileByPath.callCount);
     assert.equal(false, exists);
   });
 });

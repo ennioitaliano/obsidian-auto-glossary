@@ -1,6 +1,4 @@
-
-import { DataAdapterWrapper } from "interfaces/DataAdapterWrapper";
-import { VaultWrapper } from "interfaces/VaultWrapper";
+import { VaultWrapper } from "./interfaces/VaultWrapper";
 import { TFile } from "obsidian";
 
 // enum to handle different cases
@@ -23,71 +21,53 @@ export enum fileOrder {
 
 // function to get the file type enum key from the string
 export function getEnumFT(value: string): fileType {
-	let result: fileType;
+	if (!value) {
+		return fileType.gi;
+	}
 
 	switch (value.toLowerCase()) {
 		case "glossary":
-			result = fileType.g;
-			break;
+			return fileType.g;
 		case "index":
-			result = fileType.i;
-			break;
+			return fileType.i;
 		case "glossaryindex":
-			result = fileType.gi;
-			break;
+			return fileType.gi;
 		default:
-			result = fileType.gi;
-			break;
+			return fileType.gi;
 	}
-
-	return result;
 }
 
 // function to get the file order enum key from the string
 export function getEnumFO(value: string): fileOrder {
-	let result: fileOrder;
 	if (!value) {
 		return fileOrder.default;
-	} else {
-		switch (value.toLowerCase()) {
-			case "default":
-				result = fileOrder.default;
-				break;
-			case "mtime_new":
-				result = fileOrder.mtime_new;
-				break;
-			case "mtime_old":
-				result = fileOrder.mtime_old;
-				break;
-			case "ctime_new":
-				result = fileOrder.ctime_new;
-				break;
-			case "ctime_old":
-				result = fileOrder.ctime_old;
-				break;
-			case "alphabetical":
-				result = fileOrder.alphabetical;
-				break;
-			case "alphabetical_rev":
-				result = fileOrder.alphabetical_rev;
-				break;
-			default:
-				result = fileOrder.default;
-				break;
-		}
 	}
 
-	return result;
+	switch (value.toLowerCase()) {
+		case "mtime_new":
+			return fileOrder.mtime_new;
+		case "mtime_old":
+			return fileOrder.mtime_old;
+		case "ctime_new":
+			return fileOrder.ctime_new;
+		case "ctime_old":
+			return fileOrder.ctime_old;
+		case "alphabetical":
+			return fileOrder.alphabetical;
+		case "alphabetical_rev":
+			return fileOrder.alphabetical_rev;
+		case "default":
+		default:
+			return fileOrder.default;
+	}
 }
 
-export async function fileExists(adapter: DataAdapterWrapper, fileName: string): Promise<boolean> {
-	const result = await adapter.exists(fileName + ".md");
-
-	if (result) {
-		console.log("Already existing file " + fileName + ".md");
-	}
-
-	return result;
+export async function fileExists(
+	vault: { getAbstractFileByPath: (path: string) => any },
+	filePath: string
+): Promise<boolean> {
+	const normalized = filePath.endsWith(".md") ? filePath : `${filePath}.md`;
+	return vault.getAbstractFileByPath(normalized) !== null;
 }
 
 export async function cleanFiles(
@@ -96,62 +76,46 @@ export async function cleanFiles(
 ): Promise<TFile[]> {
 	const cleanedNotes: TFile[] = [];
 
-	notesTFiles.forEach(async (file: TFile) => {
-		const fileContent: string = await vault.cachedRead(file);
-		if (!fileContent.includes("---\ntags: obsidian-auto-glossary\n---\n")) {
+	for (const file of notesTFiles) {
+		try {
+			const fileContent: string = await vault.cachedRead(file);
+			if (!fileContent.includes("obsidian-auto-glossary")) {
+				cleanedNotes.push(file);
+			}
+		} catch {
+			// If reading fails for a file, keep it in the list
 			cleanedNotes.push(file);
 		}
-	});
+	}
 
 	return cleanedNotes;
 }
 
-/* c8 ignore next */
-export function sortFiles(notesTFile: TFile[], fileOrder: fileOrder) {
-	switch (fileOrder) {
-		case "ctime_new":
-			notesTFile.sort((a, b) => b.stat.ctime - a.stat.ctime);
-			break;
-		case "ctime_old":
-			notesTFile.sort((a, b) => a.stat.ctime - b.stat.ctime);
-			break;
-		case "mtime_new":
-			notesTFile.sort((a, b) => b.stat.mtime - a.stat.mtime);
-			break;
-		case "mtime_old":
-			notesTFile.sort((a, b) => a.stat.mtime - b.stat.mtime);
-			break;
-		case "alphabetical":
-			notesTFile.sort((a, b) => {
-				const nameA = a.name.toUpperCase(); // ignore upper and lowercase
-				const nameB = b.name.toUpperCase(); // ignore upper and lowercase
-				if (nameA < nameB) {
-					return -1;
-				}
-				if (nameA > nameB) {
-					return 1;
-				}
+export function sortFiles(notesTFile: TFile[], order: fileOrder): TFile[] {
+	if (!notesTFile || !Array.isArray(notesTFile)) {
+		throw new Error("Invalid file list provided to sortFiles");
+	}
 
-				// names must be equal
-				return 0;
-			});
+	switch (order) {
+		case fileOrder.ctime_new:
+			notesTFile.sort((a, b) => (b.stat?.ctime ?? 0) - (a.stat?.ctime ?? 0));
 			break;
-		case "alphabetical_rev":
-			notesTFile.sort((a, b) => {
-				const nameA = a.name.toUpperCase(); // ignore upper and lowercase
-				const nameB = b.name.toUpperCase(); // ignore upper and lowercase
-				if (nameA > nameB) {
-					return -1;
-				}
-				if (nameA < nameB) {
-					return 1;
-				}
-
-				// names must be equal
-				return 0;
-			});
+		case fileOrder.ctime_old:
+			notesTFile.sort((a, b) => (a.stat?.ctime ?? 0) - (b.stat?.ctime ?? 0));
 			break;
-		case "default":
+		case fileOrder.mtime_new:
+			notesTFile.sort((a, b) => (b.stat?.mtime ?? 0) - (a.stat?.mtime ?? 0));
+			break;
+		case fileOrder.mtime_old:
+			notesTFile.sort((a, b) => (a.stat?.mtime ?? 0) - (b.stat?.mtime ?? 0));
+			break;
+		case fileOrder.alphabetical:
+			notesTFile.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+			break;
+		case fileOrder.alphabetical_rev:
+			notesTFile.sort((a, b) => b.name.localeCompare(a.name, undefined, { sensitivity: "base" }));
+			break;
+		case fileOrder.default:
 		default:
 			break;
 	}

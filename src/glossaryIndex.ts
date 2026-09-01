@@ -1,8 +1,7 @@
-import { App, DataAdapter, normalizePath, Notice } from "obsidian";
+import { App, normalizePath, Notice, TFile, TFolder } from "obsidian";
 import {
 	fileType,
 	cleanFiles,
-	fileExists,
 	sortFiles,
 	fileOrder,
 } from "./utils";
@@ -13,59 +12,51 @@ export async function createArrays(
 	fileInclusion: boolean,
 	fileName?: string,
 	chosenFolder?: string,
-	fileOrder?: fileOrder
-): Promise<string[]> {
-	let notesTFile = app.vault.getMarkdownFiles();
-	const notes: string[] = [];
+	order?: fileOrder
+): Promise<[string, string]> {
+	let notesTFile: TFile[] = app.vault.getMarkdownFiles();
+
+	// Filter files within the specified folder
+	if (chosenFolder && chosenFolder !== "/" && chosenFolder !== "") {
+		const normalizedFolder = normalizePath(chosenFolder);
+		notesTFile = notesTFile.filter((file) => {
+			if (file.parent && file.parent.path === normalizedFolder) {
+				return true;
+			}
+			return file.path.startsWith(normalizedFolder + "/");
+		});
+	}
 
 	if (!fileInclusion) {
 		notesTFile = await cleanFiles(app.vault, notesTFile);
 	}
 
-	if (fileOrder) {
-		notesTFile = sortFiles(notesTFile, fileOrder);
+	if (order) {
+		notesTFile = sortFiles(notesTFile, order);
 	}
-
-	notesTFile.forEach((file) => {
-		if (
-			(chosenFolder && file.path.includes(chosenFolder)) ||
-			!chosenFolder
-		) {
-			notes.push(file.name);
-		}
-	});
 
 	const glossaryArray: string[] = [];
 	const indexArray: string[] = [];
 
-	notes.forEach((note) => {
-		// To obtain the note name in a 'linkable' format we have to remove the extension (aka the last 3 character)
-		const noteName = note.slice(0, -3);
+	for (const file of notesTFile) {
+		const noteName = file.basename;
 
-		// Array of strings that will show up as an index. If clicked, each entry takes to the point in the same document where the note is embedded
-		if (requestedFile == fileType.gi) {
-			indexArray.push(
-				"- [[" + fileName + "#" + noteName + "|" + noteName + "]]\n"
-			);
+		if (requestedFile === fileType.gi) {
+			const targetName = fileName ? fileName.replace(/\.md$/, "") : requestedFile;
+			indexArray.push(`- [[${targetName}#${noteName}|${noteName}]]\n`);
 		} else {
-			indexArray.push("- [[" + noteName + "]]\n");
+			indexArray.push(`- [[${noteName}]]\n`);
 		}
 
-		// Array of strings that will show up as embedded notes
-		// #### to make them findable as sections
-		glossaryArray.push("#### ![[" + noteName + "]]\n\n***\n\n");
-	});
+		glossaryArray.push(`#### ![[${noteName}]]\n\n***\n\n`);
+	}
 
-	// Arrays toString + remove only the commas that separate the entries
-	const indexText =
-		"## Index\n" + indexArray.toString().replace(/,-\s\[\[/g, "- [[");
-	const glossaryText =
-		"## Glossary\n" +
-		glossaryArray.toString().replace(/,####\s!\[\[/g, "#### ![[");
+	const indexText = `## Index\n${indexArray.join("")}`;
+	const glossaryText = `## Glossary\n${glossaryArray.join("")}`;
+
 	return [indexText, glossaryText];
 }
 
-// This takes in which type of file we want to create and an optional fileName
 export async function createFile(
 	app: App,
 	requestedFile: fileType,
@@ -73,53 +64,60 @@ export async function createFile(
 	fileOverwrite: boolean,
 	fileName: string,
 	chosenFolder?: string,
-	fileOrder?: fileOrder,
+	order?: fileOrder,
 	destFolder?: string
-) {
-	let completeFileName = "";
+): Promise<void> {
+	let rawPath = "";
 
-	if (destFolder) {
-		if (fileName) {
-			completeFileName = normalizePath(destFolder + "/" + fileName);
-		} else {
-			completeFileName = normalizePath(destFolder + "/" + requestedFile);
-		}
-	} else if (chosenFolder) {
-		if (fileName) {
-			completeFileName = normalizePath(chosenFolder + "/" + fileName);
-		} else {
-			completeFileName = normalizePath(
-				chosenFolder + "/" + requestedFile
-			);
-		}
+	const baseName = fileName ? fileName.replace(/\.md$/, "") : requestedFile;
+
+	if (destFolder && destFolder.trim() !== "") {
+		rawPath = `${destFolder}/${baseName}.md`;
+	} else if (chosenFolder && chosenFolder.trim() !== "") {
+		rawPath = `${chosenFolder}/${baseName}.md`;
 	} else {
-		completeFileName = normalizePath(requestedFile);
+		rawPath = `${baseName}.md`;
 	}
 
-	const fileExistsBool = await fileExists(app.vault.adapter, completeFileName);
-	const adapter: DataAdapter = app.vault.adapter;
+	const completeFilePath = normalizePath(rawPath);
 
-	console.log("destFolder: " + destFolder);
-	console.log("fileName: " + fileName);
-	console.log("requestedFile: " + requestedFile);
-	console.log("chosenFolder: " + chosenFolder);
-	console.log("completeFileName: " + completeFileName);
+	const content = await createText(
+		app,
+		requestedFile,
+		fileInclusion,
+		baseName,
+		chosenFolder,
+		order
+	);
 
-	if (fileExistsBool && !fileOverwrite) {
-		new Notice(`${completeFileName} file already exists. Try again with overwrite enabled or a different file name.`);
-	} else {
-		adapter.write(
-			completeFileName + ".md",
-			await createText(
-				app,
-				requestedFile,
-				fileInclusion,
-				fileName,
-				chosenFolder,
-				fileOrder
-			)
-		);
-		new Notice(`${completeFileName} file updated`);
+	try {
+		const existingAbstract = app.vault.getAbstractFileByPath(completeFilePath);
+
+		if (existingAbstract instanceof TFile) {
+			if (!fileOverwrite) {
+				new Notice(
+					`"${completeFilePath}" already exists. Enable overwrite or choose a different name.`
+				);
+				return;
+			}
+			await app.vault.modify(existingAbstract, content);
+			new Notice(`Updated: ${completeFilePath}`);
+		} else if (existingAbstract instanceof TFolder) {
+			new Notice(`Error: A folder named "${completeFilePath}" already exists.`);
+			return;
+		} else {
+			// Ensure parent folder exists if writing to a subfolder
+			const folderPath = completeFilePath.substring(0, completeFilePath.lastIndexOf("/"));
+			if (folderPath && !app.vault.getAbstractFileByPath(folderPath)) {
+				await app.vault.createFolder(folderPath);
+			}
+
+			await app.vault.create(completeFilePath, content);
+			new Notice(`Created: ${completeFilePath}`);
+		}
+	} catch (err) {
+		console.error("Auto Glossary failed to create or update file:", err);
+		new Notice(`Auto Glossary error: Failed to save "${completeFilePath}"`);
 	}
 }
 
@@ -129,27 +127,28 @@ async function createText(
 	fileInclusion: boolean,
 	fileName?: string,
 	chosenFolder?: string,
-	fileOrder?: fileOrder
+	order?: fileOrder
 ): Promise<string> {
-	const array = await createArrays(
+	const [indexText, glossaryText] = await createArrays(
 		app,
 		requestedFile,
 		fileInclusion,
 		fileName,
 		chosenFolder,
-		fileOrder
+		order
 	);
+
 	let text = "---\ntags: obsidian-auto-glossary\n---\n";
 
 	switch (requestedFile) {
 		case fileType.g:
-			text += array[1];
+			text += glossaryText;
 			break;
 		case fileType.i:
-			text += array[0];
+			text += indexText;
 			break;
 		case fileType.gi:
-			text += array[0] + "\n***\n\n" + array[1];
+			text += `${indexText}\n***\n\n${glossaryText}`;
 			break;
 		default:
 			break;
@@ -157,3 +156,4 @@ async function createText(
 
 	return text;
 }
+

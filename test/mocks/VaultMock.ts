@@ -7,4 +7,8 @@ export class VaultMock {
     async cachedRead(file: TFile): Promise<string> {
         throw new Error("Not implemented");
     }
+
+    getAbstractFileByPath(path: string): any {
+        throw new Error("Not implemented");
+    }
 }
