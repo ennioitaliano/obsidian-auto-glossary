@@ -101,22 +101,45 @@ export async function createArrays(
 ): Promise<[string, string]> {
 	let files: TFile[] = [];
 
-	if (options?.includeNonMarkdown && typeof app.vault.getFiles === "function") {
-		files = app.vault.getFiles();
-	} else if (typeof app.vault.getMarkdownFiles === "function") {
-		files = app.vault.getMarkdownFiles();
-	} else if (typeof app.vault.getFiles === "function") {
-		files = app.vault.getFiles();
-	}
-
 	// Filter files within the specified folder
 	const rawChosen = chosenFolder ? normalizePath(chosenFolder) : "";
 	const normalizedChosenFolder = rawChosen === "/" || rawChosen === "." ? "" : rawChosen;
 
 	if (normalizedChosenFolder) {
-		files = files.filter((file) => {
-			return file.path.startsWith(normalizedChosenFolder + "/");
-		});
+		const targetFolder = app.vault.getAbstractFileByPath(normalizedChosenFolder);
+		if (targetFolder instanceof TFolder) {
+			const collectFiles = (folder: TFolder): TFile[] => {
+				const result: TFile[] = [];
+				for (const child of folder.children) {
+					if (child instanceof TFile) {
+						result.push(child);
+					} else if (child instanceof TFolder && options?.includeSubfolders !== false) {
+						result.push(...collectFiles(child));
+					}
+				}
+				return result;
+			};
+			files = collectFiles(targetFolder);
+		} else {
+			if (options?.includeNonMarkdown && typeof app.vault.getFiles === "function") {
+				files = app.vault.getFiles();
+			} else if (typeof app.vault.getMarkdownFiles === "function") {
+				files = app.vault.getMarkdownFiles();
+			} else if (typeof app.vault.getFiles === "function") {
+				files = app.vault.getFiles();
+			}
+			files = files.filter((file) => {
+				return file.path.startsWith(normalizedChosenFolder + "/");
+			});
+		}
+	} else {
+		if (options?.includeNonMarkdown && typeof app.vault.getFiles === "function") {
+			files = app.vault.getFiles();
+		} else if (typeof app.vault.getMarkdownFiles === "function") {
+			files = app.vault.getMarkdownFiles();
+		} else if (typeof app.vault.getFiles === "function") {
+			files = app.vault.getFiles();
+		}
 	}
 
 	files = filterFiles(
@@ -138,8 +161,8 @@ export async function createArrays(
 		);
 	}
 
-	const isGlossaryIndex =
-		requestedFile === FileType.GlossaryIndex || requestedFile === "glossaryIndex";
+	const fileTypeEnum = getEnumFT(requestedFile);
+	const isGlossaryIndex = fileTypeEnum === FileType.GlossaryIndex;
 
 	let knownFolderPaths: string[] | undefined;
 	if (options?.includeEmptyFolders && typeof app.vault.getAllLoadedFiles === "function") {

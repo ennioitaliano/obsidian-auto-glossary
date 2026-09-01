@@ -204,7 +204,7 @@ export class CreateFileModal extends Modal {
 					})
 			);
 
-		contentEl.createEl("h3", { text: "Inclusion Options" });
+		new Setting(contentEl).setName("Inclusion Options").setHeading();
 
 		new Setting(contentEl)
 			.setName("Include subfolders")

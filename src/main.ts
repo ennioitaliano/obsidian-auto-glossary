@@ -1,7 +1,7 @@
 import { Plugin, TFolder } from "obsidian";
 import { CreateFileModal } from "./modal";
 import { createFile } from "./glossaryIndex";
-import { FileOrder, FileType, formatFileName, getEnumFO, getEnumFT } from "./utils";
+import { FileType, formatFileName, getEnumFO, getEnumFT } from "./utils";
 import { AutoGlossarySettings, DEFAULT_SETTINGS, SettingTab } from "./settings";
 
 export default class AutoGlossaryPlugin extends Plugin {

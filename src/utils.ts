@@ -37,9 +37,12 @@ export const fileOrder = {
 export type fileOrder = FileOrder;
 
 // Function to get the file type enum key from the string
-export function getEnumFT(value?: string): FileType {
+export function getEnumFT(value?: string | FileType): FileType {
 	if (!value) {
 		return FileType.GlossaryIndex;
+	}
+	if (value === FileType.Glossary || value === FileType.Index || value === FileType.GlossaryIndex) {
+		return value;
 	}
 
 	switch (value.toLowerCase()) {
@@ -48,16 +51,26 @@ export function getEnumFT(value?: string): FileType {
 		case "index":
 			return FileType.Index;
 		case "glossaryindex":
-			return FileType.GlossaryIndex;
 		default:
 			return FileType.GlossaryIndex;
 	}
 }
 
 // Function to get the file order enum key from the string
-export function getEnumFO(value?: string): FileOrder {
+export function getEnumFO(value?: string | FileOrder): FileOrder {
 	if (!value) {
 		return FileOrder.Default;
+	}
+	if (
+		value === FileOrder.Default ||
+		value === FileOrder.MtimeNew ||
+		value === FileOrder.MtimeOld ||
+		value === FileOrder.CtimeNew ||
+		value === FileOrder.CtimeOld ||
+		value === FileOrder.Alphabetical ||
+		value === FileOrder.AlphabeticalRev
+	) {
+		return value;
 	}
 
 	switch (value.toLowerCase()) {
@@ -297,7 +310,9 @@ export function sortFiles(notesTFile: TFile[], order: FileOrder | string): TFile
 		throw new Error("Invalid file list provided to sortFiles");
 	}
 
-	switch (order) {
+	const normalizedOrder = getEnumFO(order);
+
+	switch (normalizedOrder) {
 		case FileOrder.CtimeNew:
 			notesTFile.sort((a, b) => (b.stat?.ctime ?? 0) - (a.stat?.ctime ?? 0));
 			break;
@@ -329,7 +344,9 @@ export function sortFolders(folders: FolderTreeNode[], order: FileOrder | string
 		return folders;
 	}
 
-	switch (order) {
+	const normalizedOrder = getEnumFO(order);
+
+	switch (normalizedOrder) {
 		case FileOrder.AlphabeticalRev:
 			folders.sort((a, b) => b.name.localeCompare(a.name, undefined, { sensitivity: "base", numeric: true }));
 			break;

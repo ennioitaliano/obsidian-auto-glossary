@@ -1,7 +1,6 @@
 import { describe, it, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { TFile, FileStats, TFolder, TAbstractFile } from "obsidian";
-import { cloneDeep } from "lodash";
 
 import * as utils from "../src/utils";
 import { createStubInstance, SinonStubbedInstance } from "sinon";
@@ -147,8 +146,8 @@ describe("sortFiles", () => {
 	let testFilenames: Array<string>;
 
 	beforeEach(() => {
-		testFiles = cloneDeep(TEST_FILES);
-		testFilenames = cloneDeep(TEST_FILENAME);
+		testFiles = TEST_FILES.map((f) => Object.assign(new (TFile as unknown as { new (): TFile })(), f, { stat: { ...f.stat } }));
+		testFilenames = [...TEST_FILENAME];
 	});
 
 	it(`sorts ${utils.FileOrder.CtimeNew} files correctly`, () => {
@@ -283,7 +282,7 @@ describe("cleanFiles", () => {
 	let testFiles: Array<TFile>;
 
 	beforeEach(() => {
-		testFiles = cloneDeep(TEST_FILES);
+		testFiles = TEST_FILES.map((f) => Object.assign(new (TFile as unknown as { new (): TFile })(), f, { stat: { ...f.stat } }));
 	});
 
 	it("successfully cleans file", async () => {

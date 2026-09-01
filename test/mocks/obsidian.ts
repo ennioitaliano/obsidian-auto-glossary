@@ -83,6 +83,12 @@ export class PluginSettingTab {
 			empty: () => {},
 		} as unknown as HTMLElement;
 	}
+	getControlValue(key: string): unknown {
+		return undefined;
+	}
+	setControlValue(key: string, value: unknown): void | Promise<void> {}
+	refreshDomState(): void {}
+	display(): void {}
 }
 
 export class Setting {
@@ -93,6 +99,9 @@ export class Setting {
 	setDesc(desc: string): this {
 		return this;
 	}
+	setHeading(): this {
+		return this;
+	}
 	setClass(cls: string): this {
 		return this;
 	}
@@ -100,9 +109,11 @@ export class Setting {
 		return this;
 	}
 	addToggle(cb: (toggle: unknown) => unknown): this {
-		cb({
-			setValue: () => ({ onChange: () => {} }),
-		});
+		const toggle: Record<string, unknown> = {};
+		toggle.setValue = () => toggle;
+		toggle.onChange = () => toggle;
+		toggle.setDisabled = () => toggle;
+		cb(toggle);
 		return this;
 	}
 	addText(cb: (text: unknown) => unknown): this {
@@ -115,19 +126,21 @@ export class Setting {
 		return this;
 	}
 	addDropdown(cb: (dropdown: unknown) => unknown): this {
-		cb({
-			addOption: () => ({
-				addOption: () => {},
-				setValue: () => ({ onChange: () => {} }),
-			}),
-			setValue: () => ({ onChange: () => {} }),
-		});
+		const drop: Record<string, unknown> = {};
+		drop.addOption = () => drop;
+		drop.setValue = () => drop;
+		drop.onChange = () => drop;
+		drop.setDisabled = () => drop;
+		cb(drop);
 		return this;
 	}
 	addButton(cb: (button: unknown) => unknown): this {
-		cb({
-			setButtonText: () => ({ setCta: () => ({ onClick: () => {} }) }),
-		});
+		const btn: Record<string, unknown> = {};
+		btn.setButtonText = () => btn;
+		btn.setCta = () => btn;
+		btn.onClick = () => btn;
+		btn.setDisabled = () => btn;
+		cb(btn);
 		return this;
 	}
 }

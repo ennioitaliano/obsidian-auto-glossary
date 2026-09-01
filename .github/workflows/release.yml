@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 jobs:
   build:
@@ -31,11 +33,12 @@ jobs:
       - name: Build plugin
         run: npm run build
 
-      - name: Package release zip
-        run: |
-          mkdir -p auto-glossary
-          cp main.js manifest.json auto-glossary/
-          zip -r auto-glossary.zip auto-glossary
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            main.js
+            manifest.json
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -43,7 +46,6 @@ jobs:
           files: |
             main.js
             manifest.json
-            auto-glossary.zip
           draft: false
           prerelease: false
           generate_release_notes: true
