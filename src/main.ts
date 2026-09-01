@@ -22,7 +22,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 
 				// Quick generation options
 				menu.addItem((item) => {
-					item.setTitle("Auto Glossary: New index")
+					item.setTitle("Auto Glossary: New index (links)")
 						.setIcon("list")
 						.setSection("auto-glossary")
 						.onClick(async () => {
@@ -40,7 +40,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 				});
 
 				menu.addItem((item) => {
-					item.setTitle("Auto Glossary: New glossary")
+					item.setTitle("Auto Glossary: New glossary (embeds)")
 						.setIcon("layout-list")
 						.setSection("auto-glossary")
 						.onClick(async () => {
@@ -58,7 +58,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 				});
 
 				menu.addItem((item) => {
-					item.setTitle("Auto Glossary: New index+glossary")
+					item.setTitle("Auto Glossary: New combined index & glossary")
 						.setIcon("list-ordered")
 						.setSection("auto-glossary")
 						.onClick(async () => {
@@ -77,7 +77,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 
 				// Advanced generation options
 				menu.addItem((item) => {
-					item.setTitle("Auto Glossary: Advanced index")
+					item.setTitle("Auto Glossary: Advanced index (links)")
 						.setIcon("list")
 						.setSection("auto-glossary-advanced")
 						.onClick(() => {
@@ -114,7 +114,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 				});
 
 				menu.addItem((item) => {
-					item.setTitle("Auto Glossary: Advanced glossary")
+					item.setTitle("Auto Glossary: Advanced glossary (embeds)")
 						.setIcon("layout-list")
 						.setSection("auto-glossary-advanced")
 						.onClick(() => {
@@ -151,7 +151,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 				});
 
 				menu.addItem((item) => {
-					item.setTitle("Auto Glossary: Advanced index+glossary")
+					item.setTitle("Auto Glossary: Advanced combined index & glossary")
 						.setIcon("list-ordered")
 						.setSection("auto-glossary-advanced")
 						.onClick(() => {
@@ -192,7 +192,7 @@ export default class AutoGlossaryPlugin extends Plugin {
 		// Add Command Palette Command
 		this.addCommand({
 			id: "create-glossary-index",
-			name: "Create glossary or index",
+			name: "Create index or glossary",
 			callback: () => {
 				const activeFile = this.app.workspace.getActiveFile();
 				const defaultFolder = activeFile?.parent?.path ?? "";

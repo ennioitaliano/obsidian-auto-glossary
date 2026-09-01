@@ -3,7 +3,7 @@
 	"name": "Auto Glossary",
 	"version": "1.0.0",
 	"minAppVersion": "1.0.0",
-	"description": "Automatically generate and organize indexes (MOCs), glossaries, or combined glossary indexes from folders.",
+	"description": "Automatically generate and organize indexes (MOCs), glossaries with note embeds, or combined overview notes from folders.",
 	"author": "Ennio Italiano",
 	"authorUrl": "https://github.com/ennioitaliano",
 	"fundingUrl": "https://github.com/sponsors/ennioitaliano",

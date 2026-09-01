@@ -1,7 +1,7 @@
 {
 	"name": "obsidian-auto-glossary",
 	"version": "1.0.0",
-	"description": "Obsidian plugin to automatically create and organize indexes (MOCs), glossaries, or combined glossary indexes from folders.",
+	"description": "Obsidian plugin to automatically create and organize indexes (MOCs), glossaries with note embeds, or combined overview notes from folders.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",

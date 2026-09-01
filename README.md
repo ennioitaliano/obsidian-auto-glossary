@@ -4,15 +4,15 @@
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/ennioitaliano/obsidian-auto-glossary?color=%23483699)](https://github.com/ennioitaliano/obsidian-auto-glossary/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Auto Glossary** is an Obsidian plugin that automatically generates and updates a [MOC (Map of Content) / Index](https://notes.linkingyourthinking.com/Cards/MOCs+Overview), a [Glossary](https://en.wikipedia.org/wiki/Glossary) with embedded note previews, or a combined Glossary & Index from any folder in your vault.
+**Auto Glossary** is an Obsidian plugin that automatically generates and updates a [MOC (Map of Content) / Index](https://notes.linkingyourthinking.com/Cards/MOCs+Overview), a [Glossary](https://en.wikipedia.org/wiki/Glossary) with embedded note previews, or a combined Overview from any folder in your vault.
 
 ---
 
-## ✨ Features
+## Features
 
-- **Index (MOC)**: Creates a list of wikilinks to all notes in the selected folder.
-- **Glossary**: Creates a document embedding (`![[Note]]`) all notes in the selected folder, formatted with headers and dividers.
-- **Index + Glossary**: Creates an index with anchor links at the top pointing directly to each note's section in the glossary below.
+- **Index (Links only / MOC)**: Creates a list of wikilinks (`[[Note]]`) to all notes in the selected folder.
+- **Glossary (Note embeds)**: Creates a document embedding (`![[Note]]`) all notes in the selected folder, formatted with headers and dividers.
+- **Combined Index & Glossary**: Creates an index with anchor links at the top pointing directly to each note's embedded section in the glossary below.
 - **Flexible Sorting**: Sort notes by:
   - Default (Vault order)
   - Modification time (Newest to oldest / Oldest to newest)
@@ -24,25 +24,25 @@
 
 ---
 
-## 🚀 How to Use
+## How to Use
 
 ### 1. Context Menu (Quick & Advanced)
 - Right-click on any folder in the Obsidian File Explorer.
 - Choose from:
-  - **New index**: Creates `<FolderName>_Index.md` in the folder.
-  - **New glossary**: Creates `<FolderName>_Glossary.md` in the folder.
-  - **New index+glossary**: Creates `<FolderName>_GlossaryIndex.md` in the folder.
+  - **New index (links)**: Creates `<FolderName>_Index.md` in the folder.
+  - **New glossary (embeds)**: Creates `<FolderName>_Glossary.md` in the folder.
+  - **New combined index & glossary**: Creates `<FolderName>_GlossaryIndex.md` in the folder.
   - **Advanced options**: Opens a dialog to customize the destination folder, target filename, sorting order, file type, and overwrite preferences.
 
 ### 2. Command Palette
-- Press `Ctrl/Cmd + P` and search for **Auto Glossary: Create glossary or index**.
+- Press `Ctrl/Cmd + P` and search for **Auto Glossary: Create index or glossary**.
 - Choose your desired settings and generate the file.
 
 ---
 
-## ⚙️ Settings
+## Settings
 
-- **File Inclusion**: Toggle whether to include previously generated Auto Glossary files in newly created indexes.
+- **File Inclusion**: Toggle whether to include previously generated Auto Glossary files in newly created indexes and glossaries.
 - **Same destination as folder**: Set whether files are created in the target folder or a global custom destination.
 - **Default Destination Folder**: If custom destination is enabled, choose the folder where generated files are saved.
 - **Overwrite existing files**: Set default behavior when a file with the same name already exists.
@@ -50,7 +50,7 @@
 
 ---
 
-## 📦 Installation
+## Installation
 
 ### From Obsidian Community Plugins
 1. Open **Settings** > **Community plugins**.
@@ -65,7 +65,7 @@
 
 ---
 
-## 📄 License
+## License
 
 This plugin is licensed under the [MIT License](LICENSE).
 

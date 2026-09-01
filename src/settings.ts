@@ -35,7 +35,7 @@ export class SettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("File inclusion")
 			.setDesc(
-				"Include previously generated files in glossaries and indexes."
+				"Include previously generated Auto Glossary files in newly created indexes and glossaries."
 			)
 			.addToggle((toggle) =>
 				toggle
@@ -100,7 +100,7 @@ export class SettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("File order")
-			.setDesc("The default sort order for files in generated indexes.")
+			.setDesc("The default sort order for notes in generated files.")
 			.addDropdown((drop) =>
 				drop
 					.addOption("default", "Default")

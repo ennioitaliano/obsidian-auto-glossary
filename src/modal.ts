@@ -146,12 +146,17 @@ export class CreateFileModal extends Modal {
 
 		new Setting(contentEl)
 			.setName("File Type")
-			.setDesc("Choose between Index (MOC), Glossary, or combined Index+Glossary.")
+			.setDesc(
+				"Choose between Index (links only), Glossary (note embeds), or Combined Index & Glossary."
+			)
 			.addDropdown((drop) =>
 				drop
-					.addOption(FileType.GlossaryIndex, "Glossary with Index")
-					.addOption(FileType.Index, "Index only")
-					.addOption(FileType.Glossary, "Glossary only")
+					.addOption(
+						FileType.GlossaryIndex,
+						"Combined Index & Glossary"
+					)
+					.addOption(FileType.Index, "Index (links only)")
+					.addOption(FileType.Glossary, "Glossary (note embeds)")
 					.setValue(this.option ? this.option : FileType.GlossaryIndex)
 					.onChange((chosen) => {
 						this.option = chosen;
